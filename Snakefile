@@ -1,48 +1,40 @@
 batches = [x.strip() for x in open("batches.txt")]
+batches = [x for x in batches if x.find("gonorrhoeae") != -1]
 print(batches)
 
-burl = f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel/compressed_indexes/"
+cobs_url = (
+    f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel/compressed_indexes"
+)
+
+asm_zenodo = 4602622
+asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
 
 
 rule all:
     input:
-        "final_cobs_file_stats.tsv"
+        [f"asms/{x}.tar.xz" for x in batches],
+        [f"cobs/{x}.xz" for x in batches],
 
-rule merge_stats:
+
+rule download_asm_batch:
     output:
-        "final_cobs_file_stats.tsv"
-    input:
-        [f"{x}.cobs_classic.xz.size" for x in batches],
-    shell:
-        """
-           cat {input} \\
-               | awk 'x[$1]++==0' \\
-               > {output}
-        """
-
-
-rule size:
-    output:
-        txt="{name}.cobs_classic.xz.size",
-    input:
-        xz="{name}.cobs_classic.xz",
-    shell:
-        """
-        a=$(cat {input.xz} | wc -c)
-        b=$(xzcat {input.xz} | wc -c)
-        (
-            printf "%s\t%s\t%s\n" batch cobs_bytes cobs_xz_bytes
-            printf "%s\t%s\t%s\n" {wildcards.name} $b $a
-        ) > {output.txt}
-        """
-
-
-rule download:
-    output:
-        xz="{name}.cobs_classic.xz",
+        xz="asms/{name}.xz",
     params:
-        burl=burl,
+        url=asms_url,
     shell:
         """
-        curl "{params.burl}/{wildcards.name}.cobs_classic.xz"  > {output.xz}
+        mkdir -p asms
+        curl "{params.url}/{wildcards.name}.tar.xz"  > {output.xz}
+        """
+
+
+rule download_cobs_batch:
+    output:
+        xz="cobs/{name}.xz",
+    params:
+        url=cobs_url,
+    shell:
+        """
+        mkdir -p cobs
+        curl "{params.url}/{wildcards.name}.cobs_classic.xz"  > {output.xz}
         """

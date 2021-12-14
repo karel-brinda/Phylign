@@ -1,2 +1,3 @@
 .snakemake/
-*.tar.gz
+asms/*.xz
+cobs/*.xz
