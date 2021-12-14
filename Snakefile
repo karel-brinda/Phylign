@@ -23,7 +23,6 @@ rule download_asm_batch:
         url=asms_url,
     shell:
         """
-        mkdir -p asms
         curl "{params.url}/{wildcards.name}.tar.xz"  > {output.xz}
         """
 
@@ -35,6 +34,5 @@ rule download_cobs_batch:
         url=cobs_url,
     shell:
         """
-        mkdir -p cobs
         curl "{params.url}/{wildcards.name}.cobs_classic.xz"  > {output.xz}
         """
