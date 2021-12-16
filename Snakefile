@@ -53,10 +53,30 @@ rule run_cobs:
     input:
         cobs="intermediate/00_cobs/{batch}.xz",
         fa="input/{qfile}.fa",
+    params:
+        kmer_thres=0.25,
     shell:
         """
         docker run leandroishilima/cobs:1915fc query \\
+            -t {params.kmer_thres} \\
+            -T {threads} \\
+            --load-complete \\
             -i {input.cobs} \\
             -f {input.fa} \\
+            | xz -v \\
             > {output.match}
+        """
+
+rule translate_matches:
+    output:
+        matches="intermediate/02_translated_matches/{batch}.xz",
+    input:
+        matches="intermediate/01_match/{batch}.xz",
+    params:
+        table="../leandro_name_translation/pseudonames_to_sample_names.tsv.xz"
+    shell:
+        """
+        ./scripts/translate_cobs_matches.py {input.matches} {input.table} \
+            | xz \
+            > {output.matches}
         """
