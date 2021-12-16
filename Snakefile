@@ -3,7 +3,7 @@ batches = [x for x in batches if x.find("gonorrhoeae") != -1]
 print(batches)
 
 cobs_url = (
-    f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel/compressed_indexes"
+    f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
 )
 
 asm_zenodo = 4602622
