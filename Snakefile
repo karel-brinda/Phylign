@@ -19,10 +19,7 @@ rule all:
         [f"asms/{x}.tar.xz" for x in batches],
         [f"cobs/{x}.xz" for x in batches],
         [
-            [
-                f"intermediate/02_translate/{batch}____{qfile}.xz"
-                for batch in batches
-            ]
+            [f"intermediate/02_translate/{batch}____{qfile}.xz" for batch in batches]
             for qfile in qfiles
         ],
 
@@ -51,7 +48,7 @@ rule download_cobs_batch:
 
 rule decompress_cobs:
     output:
-        cobs="intermediate/00_cobs/{batch}.cobs",
+        cobs=temp("intermediate/00_cobs/{batch}.cobs"),
     input:
         xz="cobs/{batch}.xz",
     shell:
@@ -74,12 +71,13 @@ rule run_cobs:
     input:
         cobs="intermediate/00_cobs/{batch}.cobs",
         fa="queries/{qfile}.fa",
-    threads: 8
+    threads: workflow.cores - 1
     # singularity:
     #     "docker://leandroishilima/cobs:1915fc"
     params:
         kmer_thres=0.33,
         cobs=cobs_linux,
+    priority: 999
     shell:
         """
         {params.cobs} \\
