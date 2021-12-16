@@ -78,8 +78,8 @@ rule run_cobs:
     # singularity:
     #     "docker://leandroishilima/cobs:1915fc"
     params:
-        kmer_thres=0.25,
-        cobs=cobs_mac,
+        kmer_thres=0.5,
+        cobs=cobs_linux,
     shell:
         """
         {params.cobs} \\
