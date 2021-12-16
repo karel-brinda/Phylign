@@ -63,6 +63,7 @@ rule run_cobs:
         kmer_thres=0.25,
     #singularity:
     #     "docker://leandroishilima/cobs:1915fc"
+    threads: 8
     shell:
         """
         docker run \\

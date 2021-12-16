@@ -7,7 +7,9 @@ SHELL=/usr/bin/env bash -eo pipefail
 .SUFFIXES:
 
 all:
-	snakemake -p -j 1 -k #--use-singularity
+	snakemake \
+		--rerun-incomplete \
+		-p -j all -k #--use-singularity
 
 help: ## Print help message
 	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"
