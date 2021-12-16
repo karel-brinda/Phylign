@@ -18,7 +18,7 @@ rule all:
 
 rule download_asm_batch:
     output:
-        xz="asms/{name}.xz",
+        xz="asms/{name}.tar.xz",
     params:
         url=asms_url,
     shell:
