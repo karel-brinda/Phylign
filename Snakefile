@@ -20,7 +20,7 @@ rule all:
         [f"cobs/{x}.xz" for x in batches],
         [
             [
-                f"intermediate/02_translated_matches/{batch}____{qfile}.xz"
+                f"intermediate/02_translate/{batch}____{qfile}.xz"
                 for batch in batches
             ]
             for qfile in qfiles
@@ -95,7 +95,7 @@ rule run_cobs:
 
 rule translate_matches:
     output:
-        matches="intermediate/02_translated_matches/{batch}____{qfile}.xz",
+        matches="intermediate/02_translate/{batch}____{qfile}.xz",
     input:
         matches="intermediate/01_match/{batch}____{qfile}.xz",
     shell:
