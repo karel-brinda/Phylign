@@ -98,11 +98,9 @@ rule translate_matches:
         matches="intermediate/02_translated_matches/{batch}____{qfile}.xz",
     input:
         matches="intermediate/01_match/{batch}____{qfile}.xz",
-    params:
-        table="../leandro_name_translation/pseudonames_to_sample_names.tsv.xz",
     shell:
         """
-        ./scripts/translate_cobs_matches.py {input.matches} {input.table} \
+        ./scripts/translate_cobs_matches.py {input.matches} \
             | xz \
             > {output.matches}
         """

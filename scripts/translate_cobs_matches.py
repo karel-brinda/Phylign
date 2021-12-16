@@ -9,10 +9,8 @@ import sys
 from xopen import xopen
 
 
-def translate(matches_fn, transl_fn):
+def translate(matches_fn):
     qname = None
-    print("Loading translation dictionary", file=sys.stderr)
-    d = _load_transl_dict(transl_fn)
     print("Translating matches", file=sys.stderr)
     with xopen(matches_fn) as f:
         for x in f:
@@ -26,18 +24,9 @@ def translate(matches_fn, transl_fn):
                 if nmatches == 0:
                     print("NA", qname, 0, sep="\t")
             else:
-                rid, kmers = x.split()
-                ref = d[rid]
+                name, kmers = x.split()
+                rid, ref = name.split("_")
                 print(ref, qname, kmers, sep="\t")
-
-
-def _load_transl_dict(transl_fn):
-    d = {}
-    with xopen(transl_fn) as f:
-        for x in f:
-            a, b = x.strip().split()
-            d[a] = b
-    return d
 
 
 def main():
@@ -49,15 +38,9 @@ def main():
         help='',
     )
 
-    parser.add_argument(
-        'transl',
-        metavar='name_translation.tsv.xz',
-        help='',
-    )
-
     args = parser.parse_args()
 
-    translate(args.matches, args.transl)
+    translate(args.matches)
 
 
 if __name__ == "__main__":
