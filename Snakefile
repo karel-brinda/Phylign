@@ -2,9 +2,7 @@ batches = [x.strip() for x in open("batches.txt")]
 batches = [x for x in batches if x.find("gonorrhoeae") != -1]
 print(batches)
 
-cobs_url = (
-    f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
-)
+cobs_url = f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
 
 asm_zenodo = 4602622
 asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
@@ -18,21 +16,47 @@ rule all:
 
 rule download_asm_batch:
     output:
-        xz="asms/{name}.tar.xz",
+        xz="asms/{batch}.tar.xz",
     params:
         url=asms_url,
     shell:
         """
-        curl "{params.url}/{wildcards.name}.tar.xz"  > {output.xz}
+        curl "{params.url}/{wildcards.batch}.tar.xz"  > {output.xz}
         """
 
 
 rule download_cobs_batch:
     output:
-        xz="cobs/{name}.xz",
+        xz="cobs/{batch}.xz",
     params:
         url=cobs_url,
     shell:
         """
-        curl "{params.url}/{wildcards.name}.cobs_classic.xz"  > {output.xz}
+        curl "{params.url}/{wildcards.batch}.cobs_classic.xz"  > {output.xz}
+        """
+
+
+rule decompress_cobs:
+    output:
+        cobs="intermediate/00_cobs/{batch}.xz",
+    input:
+        xz="cobs/{batch}.xz",
+    shell:
+        """
+        xzcat "{input.xz}" > "{output.cobs}"
+        """
+
+
+rule run_cobs:
+    output:
+        match="intermediate/01_match/{batch}.xz",
+    input:
+        cobs="intermediate/00_cobs/{batch}.xz",
+        fa="input/{qfile}.fa",
+    shell:
+        """
+        docker run leandroishilima/cobs:1915fc query \\
+            -i {input.cobs} \\
+            -f {input.fa} \\
+            > {output.match}
         """
