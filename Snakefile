@@ -61,9 +61,14 @@ rule run_cobs:
         fa="queries/{qfile}.fa",
     params:
         kmer_thres=0.25,
+    #singularity:
+    #     "docker://leandroishilima/cobs:1915fc"
     shell:
         """
-        docker run leandroishilima/cobs:1915fc query \\
+        docker run \\
+            -v $PWD:/experiment \\
+            --workdir /experiment \\
+            leandroishilima/cobs:1915fc query \\
             -t {params.kmer_thres} \\
             -T {threads} \\
             --load-complete \\
