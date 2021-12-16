@@ -1,3 +1,6 @@
+shell.prefix("set -euo pipefail")
+from pathlib import Path
+
 batches = [x.strip() for x in open("batches.txt")]
 batches = [x for x in batches if x.find("gonorrhoeae") != -1]
 print(batches)
@@ -7,11 +10,14 @@ cobs_url = f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
 asm_zenodo = 4602622
 asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
 
+qfiles=[x.with_suffix('').name for x in Path("queries").glob("*.fa")]
+print(f"Query files: {qfiles}", file=sys.stderr)
 
 rule all:
     input:
         [f"asms/{x}.tar.xz" for x in batches],
         [f"cobs/{x}.xz" for x in batches],
+        [f"intermediate/02_translated_matches/{batch}____{qfile}.xz" for batch in batches for qfile in qfiles],
 
 
 rule download_asm_batch:
@@ -38,7 +44,7 @@ rule download_cobs_batch:
 
 rule decompress_cobs:
     output:
-        cobs="intermediate/00_cobs/{batch}.xz",
+        cobs="intermediate/00_cobs/{batch}.cobs",
     input:
         xz="cobs/{batch}.xz",
     shell:
@@ -49,10 +55,10 @@ rule decompress_cobs:
 
 rule run_cobs:
     output:
-        match="intermediate/01_match/{batch}.xz",
+        match="intermediate/01_match/{batch}____{qfile}.xz",
     input:
-        cobs="intermediate/00_cobs/{batch}.xz",
-        fa="input/{qfile}.fa",
+        cobs="intermediate/00_cobs/{batch}.cobs",
+        fa="queries/{qfile}.fa",
     params:
         kmer_thres=0.25,
     shell:
@@ -69,9 +75,9 @@ rule run_cobs:
 
 rule translate_matches:
     output:
-        matches="intermediate/02_translated_matches/{batch}.xz",
+        matches="intermediate/02_translated_matches/{batch}____{qfile}.xz",
     input:
-        matches="intermediate/01_match/{batch}.xz",
+        matches="intermediate/01_match/{batch}____{qfile}.xz",
     params:
         table="../leandro_name_translation/pseudonames_to_sample_names.tsv.xz"
     shell:
