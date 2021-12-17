@@ -17,10 +17,19 @@ class BestMatches:
     def __init__(self, keep):
         self._keep = keep
 
-    def process_file(self, fn):
-        pass
+    #def
 
-    def print_output(self, fn):
+    def process_file(self, fn):
+        with xopen(fn) as fo:
+            print(f"Processing {fn}", file=sys.stderr)
+            batch,_,_=Path(fn).name.partition("____")
+            print(batch)
+            for x in fo:
+                sample, read, kmers=x.strip().split()
+                print(sample, read, kmers)
+
+
+    def print_output(self):
         pass
 
 
