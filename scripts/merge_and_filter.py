@@ -12,21 +12,46 @@ from pprint import pprint
 
 KEEP = 100
 
+"""
+For every read we want to know top 100 matches
+"""
 
+
+class Read:
+    """A simple optimized buffer for top matches for a single read.
+    """
+    def __init__(self, keep):
+        self._min_kmers_filter=0 #should be increased once the number of records >keep
+
+    def add_rec(self, batch, sample, kmers):
+        self._matches.append( (batch, sample, kmers) )
+
+    def _sort_and_prune(self):
+        #1. sort
+        self.list.sort(key=lambda x: (x[2], x[0], x[1])) # todo: function
+        #2. identify where to stop
+        #3. trim the list
+        #4. update _min_kmers_filter according to this value
+
+##
+## TODO: add support for empty matches / NA values
+##
 class BestMatches:
     def __init__(self, keep):
         self._keep = keep
+        self._read_dict=collections.OrderedDict(lambda: Read(keep=self._keep))
 
-    #def
+    def _add_rec(batch, sample, read, kmers):
+        self._read_dict[read].add_rec(batch, sample, kmers)
 
     def process_file(self, fn):
         with xopen(fn) as fo:
             print(f"Processing {fn}", file=sys.stderr)
             batch,_,_=Path(fn).name.partition("____")
-            print(batch)
+            #print(batch)
             for x in fo:
                 sample, read, kmers=x.strip().split()
-                print(sample, read, kmers)
+                self._add_rec(batch, sample, read, kmers)
 
 
     def print_output(self):
