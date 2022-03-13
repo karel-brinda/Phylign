@@ -1,8 +1,9 @@
 #! /usr/bin/env python3
 
 import argparse
+import atexit
 import collections
-import os
+import osx
 import re
 import sys
 
@@ -37,7 +38,7 @@ class Read:
         ###
 
         #1. sort
-        self.list.sort(key=lambda x: (x[2], x[0], x[1])) # todo: function
+        self._matches.sort(key=lambda x: (x[2], x[0], x[1])) # todo: function
         #2. identify where to stop
         #3. trim the list
         #4. update _min_kmers_filter according to this value
@@ -51,6 +52,9 @@ class BestMatches:
     def __init__(self, keep):
         self._keep = keep
         self._read_dict=collections.OrderedDict(lambda: Read(keep=self._keep))
+        self._output_fastas={}
+        atexit.register(self._cleanup)
+
 
     def _add_rec(self, batch, sample, read, kmers):
         """Process one translated cobs output line.
@@ -68,14 +72,27 @@ class BestMatches:
                 sample, read, kmers=x.strip().split()
                 self._add_rec(batch, sample, read, kmers)
 
-    def _print_output_1read(self):
-        pass
+    def _print_output_1read(self, rname, best_refs):
+        """TODO: Add a buffer of opened files
+        """
+        for ref in best_refs:
+            try:
+                self._output_fastas[ref]
+            except KeyError:
+                self._output_fastas[ref]=open(f"{ref}.fa", "w+")
+            self._output_fastas[ref].write(">\n{rname}\n")
+
+    def _cleanup(self):
+        for fo in self._output_fastas:
+            fo.close()
 
 
     def print_output(self):
         """Iterate over top matches and print them into FASTA files.
         """
-        pass
+        for rname,read in self._read_dict.iteritems():
+            best_refs=[x[1] for x in read._matches]
+            self._print_output_1read(rname, best_refs)
 
 
 def merge_and_filter(fns, keep):
