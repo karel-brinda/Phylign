@@ -7,6 +7,14 @@ print(batches)
 
 cobs_url = f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
 
+def cobs_url(wildcards):
+    x=wildcards.batch
+    if x>"escherichia_coli_":
+        return f"https://zenodo.org/record/6345389/files/{x}.cobs_classic.xz"
+    else:
+        return f"https://zenodo.org/record/6347571/files/{x}.cobs_classic.xz"
+
+
 asm_zenodo = 4602622
 asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
 
@@ -39,10 +47,10 @@ rule download_cobs_batch:
     output:
         xz="cobs/{batch}.xz",
     params:
-        url=cobs_url,
+        url=cobs_url
     shell:
         """
-        curl "{params.url}/{wildcards.batch}.cobs_classic.xz"  > {output.xz}
+        curl "{params.url}"  > {output.xz}
         """
 
 
