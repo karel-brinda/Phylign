@@ -33,6 +33,8 @@ rule all:
 
 
 rule download_asm_batch:
+    """Download compressed assemblies
+    """
     output:
         xz="asms/{batch}.tar.xz",
     params:
@@ -44,6 +46,8 @@ rule download_asm_batch:
 
 
 rule download_cobs_batch:
+    """Download compressed cobs indexes
+    """
     output:
         xz="cobs/{batch}.xz",
     params:
@@ -55,6 +59,8 @@ rule download_cobs_batch:
 
 
 rule decompress_cobs:
+    """Decompress cobs indexes
+    """
     output:
         cobs=temp("intermediate/00_cobs/{batch}.cobs"),
     input:
@@ -74,6 +80,8 @@ cobs_linux = ("cobs query --load-complete",)
 
 
 rule run_cobs:
+    """Cobs matching
+    """
     output:
         match="intermediate/01_match/{batch}____{qfile}.xz",
     input:
@@ -84,7 +92,7 @@ rule run_cobs:
     #     "docker://leandroishilima/cobs:1915fc"
     params:
         kmer_thres=0.33,
-        cobs=cobs_linux,
+        cobs=cobs_mac,
     priority: 999
     shell:
         """
@@ -100,6 +108,11 @@ rule run_cobs:
 
 
 rule translate_matches:
+    """Translate cobs matches.
+
+    Output:
+        ref - read - matches
+    """
     output:
         matches="intermediate/02_translate/{batch}____{qfile}.xz",
     input:
@@ -110,3 +123,7 @@ rule translate_matches:
             | xz \
             > {output.matches}
         """
+
+rule merge_and_filter:
+    """
+    """
