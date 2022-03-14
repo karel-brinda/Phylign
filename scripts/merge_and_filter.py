@@ -12,7 +12,6 @@ from xopen import xopen
 from pprint import pprint
 
 KEEP = 100
-
 """
 For every read we want to know top 100 matches
 
@@ -26,11 +25,12 @@ Approach:
 class Read:
     """A simple optimized buffer for top matches for a single read accross batches. Doesn't know its own read name.
     """
+
     def __init__(self, keep):
-        self._min_matching_kmers=0 #should be increased once the number of records >keep
+        self._min_matching_kmers = 0  #should be increased once the number of records >keep
 
     def add_rec(self, batch, sample, kmers):
-        self._matches.append( (batch, sample, kmers) )
+        self._matches.append((batch, sample, kmers))
 
     def _sort_and_prune(self):
         ###
@@ -38,10 +38,11 @@ class Read:
         ###
 
         #1. sort
-        self._matches.sort(key=lambda x: (x[2], x[0], x[1])) # todo: function
+        self._matches.sort(key=lambda x: (x[2], x[0], x[1]))  # todo: function
         #2. identify where to stop
         #3. trim the list
         #4. update _min_kmers_filter according to this value
+
 
 ##
 ## TODO: add support for empty matches / NA values
@@ -49,12 +50,13 @@ class Read:
 class BestMatches:
     """Class for all reads.
     """
+
     def __init__(self, keep):
         self._keep = keep
-        self._read_dict=collections.OrderedDict(lambda: Read(keep=self._keep))
-        self._output_fastas={}
+        self._read_dict = collections.OrderedDict(
+            lambda: Read(keep=self._keep))
+        self._output_fastas = {}
         atexit.register(self._cleanup)
-
 
     def _add_rec(self, batch, sample, read, kmers):
         """Process one translated cobs output line.
@@ -66,10 +68,10 @@ class BestMatches:
         """
         with xopen(fn) as fo:
             print(f"Processing {fn}", file=sys.stderr)
-            batch,_,_=Path(fn).name.partition("____")
+            batch, _, _ = Path(fn).name.partition("____")
             #print(batch)
             for x in fo:
-                sample, read, kmers=x.strip().split()
+                sample, read, kmers = x.strip().split()
                 self._add_rec(batch, sample, read, kmers)
 
     def _print_output_1read(self, rname, best_refs):
@@ -79,19 +81,18 @@ class BestMatches:
             try:
                 self._output_fastas[ref]
             except KeyError:
-                self._output_fastas[ref]=open(f"{ref}.fa", "w+")
+                self._output_fastas[ref] = open(f"{ref}.fa", "w+")
             self._output_fastas[ref].write(">\n{rname}\n")
 
     def _cleanup(self):
         for fo in self._output_fastas:
             fo.close()
 
-
     def print_output(self):
         """Iterate over top matches and print them into FASTA files.
         """
-        for rname,read in self._read_dict.iteritems():
-            best_refs=[x[1] for x in read._matches]
+        for rname, read in self._read_dict.iteritems():
+            best_refs = [x[1] for x in read._matches]
             self._print_output_1read(rname, best_refs)
 
 
