@@ -3,7 +3,7 @@
 import argparse
 import atexit
 import collections
-import osx
+import os
 import re
 import sys
 
@@ -28,6 +28,7 @@ class Read:
 
     def __init__(self, keep):
         self._min_matching_kmers = 0  #should be increased once the number of records >keep
+        self._matches=[]
 
     def add_rec(self, batch, sample, kmers):
         self._matches.append((batch, sample, kmers))
@@ -53,7 +54,7 @@ class BestMatches:
 
     def __init__(self, keep):
         self._keep = keep
-        self._read_dict = collections.OrderedDict(
+        self._read_dict = collections.defaultdict(
             lambda: Read(keep=self._keep))
         self._output_fastas = {}
         atexit.register(self._cleanup)
@@ -82,16 +83,16 @@ class BestMatches:
                 self._output_fastas[ref]
             except KeyError:
                 self._output_fastas[ref] = open(f"{ref}.fa", "w+")
-            self._output_fastas[ref].write(">\n{rname}\n")
+            self._output_fastas[ref].write(f">{rname}\nAA\n")
 
     def _cleanup(self):
-        for fo in self._output_fastas:
+        for _, fo in self._output_fastas.items() :
             fo.close()
 
     def print_output(self):
         """Iterate over top matches and print them into FASTA files.
         """
-        for rname, read in self._read_dict.iteritems():
+        for rname, read in self._read_dict.items():
             best_refs = [x[1] for x in read._matches]
             self._print_output_1read(rname, best_refs)
 
