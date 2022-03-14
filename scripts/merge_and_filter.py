@@ -11,6 +11,22 @@ from pathlib import Path
 from xopen import xopen
 from pprint import pprint
 
+
+"""
+TODO:
+    - add filtering so that the number of candidate files is low
+    - loads seqs
+    - output hierarchy - batch / file; or maybe just batch files to  keep it
+    simple and then some piping ot minimap in another script?
+       - maybe read name - list of refs?
+    - double check that reads are in the right order
+    - references don't have to be - we will be just iterating through them and
+    side checking dict queries
+    - document the assumption that the number of reads is small
+"""
+
+
+
 KEEP = 100
 """
 For every read we want to know top 100 matches
