@@ -12,18 +12,6 @@ from xopen import xopen
 from pathlib import Path
 from xopen import xopen
 from pprint import pprint
-"""
-TODO:
-    - add filtering so that the number of candidate files is low
-    - loads seqs
-    - output hierarchy - batch / file; or maybe just batch files to  keep it
-    simple and then some piping ot minimap in another script?
-       - maybe read name - list of refs?
-    - double check that reads are in the right order
-    - references don't have to be - we will be just iterating through them and
-    side checking dict queries
-    - document the assumption that the number of reads is small
-"""
 
 KEEP = 100
 """
@@ -40,7 +28,7 @@ def cobs_iterator(cobs_matches_fn):
     """Iterator for cobs matches.
 
     Assumes that cobs ref names start with a random sorting prefix followed by
-    an underscore.
+    an underscore (embedded by Leandro).
 
     Args:
         cobs_matches_fn (str): File name of cobs output.
@@ -48,13 +36,12 @@ def cobs_iterator(cobs_matches_fn):
     Returns:
         (qname, matches): Qname and list of assignments of the same query, in the form (ref, kmers)
 
-
-
     Todo:
         - if necessary in the future, add batch name from the file name
     """
     qname = None
     matches_buffer = []
+    batch=os.path.basename(cobs_matches_fn).split("____")[0]
     print(f"Translating matches {cobs_matches_fn}", file=sys.stderr)
     with xopen(cobs_matches_fn) as f:
         for x in f:
@@ -65,7 +52,7 @@ def cobs_iterator(cobs_matches_fn):
                 ## HEADER
                 # empty buffer
                 if qname is not None:
-                    yield qname, matches_buffer
+                    yield qname, batch,matches_buffer
                     matches_buffer = []
                 # parse header
                 parts = x[1:].split("\t")
@@ -76,7 +63,7 @@ def cobs_iterator(cobs_matches_fn):
                 tmp_name, kmers = x.split()
                 rid, ref = tmp_name.split("_")
                 matches_buffer.append((ref, kmers))
-    yield qname, matches_buffer
+    yield qname, batch, matches_buffer
 
 
 class SingleQuery:
@@ -95,14 +82,14 @@ class SingleQuery:
         self._matches = []
         self._qname = qname
 
-    def add_matches(self, matches):
+    def add_matches(self, batch, matches):
         """Add matches.
         """
         for mtch in matches:
             ref, kmers = mtch
             kmers = int(kmers)
             if kmers >= self._min_matching_kmers:
-                self._matches.append((ref, kmers))
+                self._matches.append((batch, ref, kmers))
 
     def _housekeeping(self):
         ###
@@ -110,7 +97,7 @@ class SingleQuery:
         ###
 
         #1. sort
-        self._matches.sort(key=lambda x: (x[1], x[0]))
+        self._matches.sort(key=lambda x: (x[2], x[0], x[1]))
         #2. identify where to stop
         #3. trim the list below
         #4. update _min_kmers_filter according to this value
@@ -125,17 +112,22 @@ class Sift:
         self._keep_matches = keep_matches
 
     def process_cobs_file(self, cobs_fn):
-        for i,(qname, matches) in enumerate(cobs_iterator(cobs_fn)):
-            print(f"Processing query #{i} ({qname})", file=sys.stderr)
+        for i,(qname,batch, matches) in enumerate(cobs_iterator(cobs_fn)):
+            print(f"Processing batch {batch} query #{i} ({qname})", file=sys.stderr)
             try:
                 _=self._query_dict[qname]
             except KeyError:
                 self._query_dict[qname]=SingleQuery(qname, self._keep_matches)
-            self._query_dict[qname].add_matches(matches)
+            #print(f"qname {qname} batch {batch} matches {matches}")
+            self._query_dict[qname].add_matches(batch, matches)
             #print(qname)
 
     def print_output(self):
-        pass
+        d=self._query_dict
+        for q in d:
+            pass
+            print(q, d[q]._matches)
+
 
 
 ##
