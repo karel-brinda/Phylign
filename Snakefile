@@ -2,7 +2,7 @@ shell.prefix("set -euo pipefail")
 from pathlib import Path
 
 batches = [x.strip() for x in open("batches.txt")]
-batches = [x for x in batches if x.find("gonorrhoeae") != -1]
+#batches = [x for x in batches if x.find("gonorrhoeae") != -1]
 print(batches)
 
 cobs_url = f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
@@ -93,7 +93,7 @@ rule run_cobs:
     #     "docker://leandroishilima/cobs:1915fc"
     params:
         kmer_thres=0.33,
-        cobs=cobs_mac,
+        cobs=cobs_linux,
     priority: 999
     shell:
         """
