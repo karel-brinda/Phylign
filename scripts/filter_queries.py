@@ -147,6 +147,12 @@ class SingleQuery:
                 else:
                     break
 
+    def fasta_record_matches(self):
+        name = self._qname
+        com = ",".join([x[1] for x in self._matches])
+        seq = self._seq
+        return f">{name} {com}\n{seq}"
+
 
 class Sift:
     """Sifting class for all reported cobs assignments.
@@ -181,7 +187,7 @@ class Sift:
             self._query_dict[qname].add_matches(batch, matches)
             #print(qname)
 
-    def print_output(self):
+    def print_tsv_summary(self):
         d = self._query_dict
         for q in d:
             #print(q, d[q]._matches)
@@ -189,17 +195,18 @@ class Sift:
             for mtch in d[q]._matches:
                 print(q, *mtch, sep="\t")
 
-
-##
-## TODO: add support for empty matches / NA values
-##
+    def print_fa(self):
+        d = self._query_dict
+        for q in d:
+            frm = d[q].fasta_record_matches()
+            print(frm)
 
 
 def process_files(query_fn, match_fns, keep_matches):
     sift = Sift(keep_matches=keep_matches, query_fn=query_fn)
     for fn in match_fns:
         sift.process_cobs_file(fn)
-    sift.print_output()
+    sift.print_fa()
 
 
 def main():
