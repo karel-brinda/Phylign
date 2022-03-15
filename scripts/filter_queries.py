@@ -52,7 +52,7 @@ def cobs_iterator(cobs_matches_fn):
         cobs_matches_fn (str): File name of cobs output.
 
     Returns:
-        matches (list): List of assignments of the same read, in the form (ref, qname, kmers)
+        (qname, matches): Qname and list of assignments of the same query, in the form (ref, kmers)
 
 
 
@@ -71,7 +71,7 @@ def cobs_iterator(cobs_matches_fn):
                 ## HEADER
                 # empty buffer
                 if qname is not None:
-                    yield matches
+                    yield qname, matches
                     matches_buffer=[]
                 # parse header
                 parts = x[1:].split()
@@ -81,8 +81,8 @@ def cobs_iterator(cobs_matches_fn):
                 ## MATCH
                 tmp_name, kmers = x.split()
                 rid, ref = tmp_name.split("_")
-                matches_buffer.append( (ref, qname, kmers) )
-    yield matches_buffer
+                matches_buffer.append( (ref, kmers) )
+    yield qname, matches_buffer
 
 
 
@@ -97,18 +97,16 @@ class SingleQuery:
         _matches (list): A list of (ref, kmers)
     """
 
-    def __init__(self, keep_matches=100):
+    def __init__(self, qname, keep_matches=100):
         self._min_matching_kmers = 0  #should be increased once the number of records >keep
         self._matches=[]
-        self._qname=None # will be assigned automatically and checked automatically
+        self._qname=qname
 
     def add_matches(self, matches):
         """Add matches.
         """
         for mtch in matches:
-            ref, qname, kmers=mtch
-            assert self._qname is None or self._qname==qname
-            self._qname = qname
+            ref, kmers=mtch
             if kmers >= self._min_matching_kmers:
                 self._matches.append( (ref, kmers) )
 
@@ -124,15 +122,30 @@ class SingleQuery:
         #4. update _min_kmers_filter according to this value
 
 
+class Sift:
+    """Sifting class for processing all cobs assignemnts.
+    """
+    def __init__(self, keep_matches):
+        self._read_dict = collections.OrderedDict()
+        self._keep_matches=keep_matches
+
+    def add_cobs_output(self, cobs_fn):
+        for qname, matches in cobs_iterator(cobs_fn):
+            print(qname, matches)
+
+    def print_output(self):
+        pass
+
+
 ##
 ## TODO: add support for empty matches / NA values
 ##
 
-def merge_and_filter(fns, keep):
-    bm = BestMatches(keep)
+def process_files(fns, keep_matches):
+    sift = Sift(keep_matches=keep_matches)
     for fn in fns:
-        bm.process_file(fn)
-    bm.print_output()
+        sift.process_cobs_file(fn)
+    sift.print_output()
 
 
 def main():
@@ -155,7 +168,7 @@ def main():
     )
 
     args = parser.parse_args()
-    merge_and_filter(args.match_fn, args.keep)
+    process_files(args.match_fn, args.keep)
 
 
 if __name__ == "__main__":
