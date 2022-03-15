@@ -137,8 +137,10 @@ class Sift:
     def print_output(self):
         d = self._query_dict
         for q in d:
-            pass
-            print(q, d[q]._matches)
+            #print(q, d[q]._matches)
+            #pass
+            for mtch in d[q]._matches:
+                print(q, *mtch, sep="\t")
 
 
 ##
