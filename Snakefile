@@ -26,10 +26,11 @@ rule all:
     input:
         [f"asms/{x}.tar.xz" for x in batches],
         [f"cobs/{x}.xz" for x in batches],
-        [
-            [f"intermediate/02_translate/{batch}____{qfile}.xz" for batch in batches]
-            for qfile in qfiles
-        ],
+        [f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles]
+#        [
+#            [f"intermediate/02_translate/{batch}____{qfile}.xz" for batch in batches]
+#            for qfile in qfiles
+#        ],
 
 
 rule download_asm_batch:
@@ -106,6 +107,7 @@ rule run_cobs:
             ##--load-complete \\
         """
 
+#./scripts/filter_queries.py -q ./queries/gc01_1kl.fa ./intermediate/01_match/*.xz  |L
 
 rule translate_matches:
     """Translate cobs matches.
@@ -114,15 +116,31 @@ rule translate_matches:
         ref - read - matches
     """
     output:
-        matches="intermediate/02_translate/{batch}____{qfile}.xz",
+        fa="intermediate/02_filter/{qfile}.fa",
     input:
-        matches="intermediate/01_match/{batch}____{qfile}.xz",
+        fa="queries/{qfile}.fa",
+        all_matches=[f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches],
     shell:
         """
-        ./scripts/translate_cobs_matches.py {input.matches} \
-            | xz \
-            > {output.matches}
+        ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \
+            > {output.fa}
         """
+#rule translate_matches:
+#    """Translate cobs matches.
+#
+#    Output:
+#        ref - read - matches
+#    """
+#    output:
+#        matches="intermediate/02_translate/{batch}____{qfile}.xz",
+#    input:
+#        matches="intermediate/01_match/{batch}____{qfile}.xz",
+#    shell:
+#        """
+#        ./scripts/translate_cobs_matches.py {input.matches} \
+#            | xz \
+#            > {output.matches}
+#        """
 
 rule merge_and_filter:
     """
