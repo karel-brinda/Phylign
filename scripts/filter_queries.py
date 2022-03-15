@@ -41,7 +41,7 @@ def cobs_iterator(cobs_matches_fn):
     """
     qname = None
     matches_buffer = []
-    batch=os.path.basename(cobs_matches_fn).split("____")[0]
+    batch = os.path.basename(cobs_matches_fn).split("____")[0]
     print(f"Translating matches {cobs_matches_fn}", file=sys.stderr)
     with xopen(cobs_matches_fn) as f:
         for x in f:
@@ -52,7 +52,7 @@ def cobs_iterator(cobs_matches_fn):
                 ## HEADER
                 # empty buffer
                 if qname is not None:
-                    yield qname, batch,matches_buffer
+                    yield qname, batch, matches_buffer
                     matches_buffer = []
                 # parse header
                 parts = x[1:].split("\t")
@@ -77,7 +77,8 @@ class SingleQuery:
         _matches (list): A list of (ref, kmers)
     """
 
-    def __init__(self, qname, keep_matches=100):
+    def __init__(self, qname, keep_matches):
+        self._keep_matches = keep_matches
         self._min_matching_kmers = 0  #should be increased once the number of records >keep
         self._matches = []
         self._qname = qname
@@ -90,21 +91,30 @@ class SingleQuery:
             kmers = int(kmers)
             if kmers >= self._min_matching_kmers:
                 self._matches.append((batch, ref, kmers))
+        self._housekeeping()
 
     def _housekeeping(self):
-        ###
-        ### TODO: Finish
-        ###
-
-        #1. sort
+        # 1. sort and exit if not full
         self._matches.sort(key=lambda x: (x[2], x[0], x[1]))
-        #2. identify where to stop
-        #3. trim the list below
-        #4. update _min_kmers_filter according to this value
+
+        # 2. separate losers
+        losers = self._matches[self._keep_matches:]
+        self._matches = self._matches[:self._keep_matches]
+
+        # 3. return back tie records from losers
+        if losers:
+            #get the tie value
+            self._min_matching_kmers = self._matches[-1][2]
+            for x in losers:
+                if x[2] == self._min_matching_kmers:
+                    #print(f"Returning {x}", file=sys.stderr)
+                    self._matches.append(x)
+                else:
+                    break
 
 
 class Sift:
-    """Sifting class for processing all cobs assignemnts.
+    """Sifting class for all reported cobs assignments.
     """
 
     def __init__(self, keep_matches):
@@ -112,22 +122,23 @@ class Sift:
         self._keep_matches = keep_matches
 
     def process_cobs_file(self, cobs_fn):
-        for i,(qname,batch, matches) in enumerate(cobs_iterator(cobs_fn)):
-            print(f"Processing batch {batch} query #{i} ({qname})", file=sys.stderr)
+        for i, (qname, batch, matches) in enumerate(cobs_iterator(cobs_fn)):
+            print(f"Processing batch {batch} query #{i} ({qname})",
+                  file=sys.stderr)
             try:
-                _=self._query_dict[qname]
+                _ = self._query_dict[qname]
             except KeyError:
-                self._query_dict[qname]=SingleQuery(qname, self._keep_matches)
+                self._query_dict[qname] = SingleQuery(qname,
+                                                      self._keep_matches)
             #print(f"qname {qname} batch {batch} matches {matches}")
             self._query_dict[qname].add_matches(batch, matches)
             #print(qname)
 
     def print_output(self):
-        d=self._query_dict
+        d = self._query_dict
         for q in d:
             pass
             print(q, d[q]._matches)
-
 
 
 ##
@@ -157,6 +168,7 @@ def main():
         '-k',
         metavar='int',
         dest='keep',
+        type=int,
         default=KEEP,
         help=f'no. of best hits to keep [{KEEP}]',
     )
