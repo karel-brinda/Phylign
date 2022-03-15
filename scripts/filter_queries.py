@@ -229,7 +229,7 @@ def main():
     )
 
     parser.add_argument(
-        '-k',
+        '-n',
         metavar='int',
         dest='keep',
         type=int,
