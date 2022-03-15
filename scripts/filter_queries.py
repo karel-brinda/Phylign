@@ -95,7 +95,7 @@ class SingleQuery:
 
     def _housekeeping(self):
         # 1. sort and exit if not full
-        self._matches.sort(key=lambda x: (x[2], x[0], x[1]))
+        self._matches.sort(key=lambda x: (-x[2], x[0], x[1]))
 
         # 2. separate losers
         losers = self._matches[self._keep_matches:]
