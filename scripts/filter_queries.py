@@ -100,6 +100,7 @@ class SingleQuery:
         """
         for mtch in matches:
             ref, kmers = mtch
+            kmers = int(kmers)
             if kmers >= self._min_matching_kmers:
                 self._matches.append((ref, kmers))
 
@@ -120,13 +121,18 @@ class Sift:
     """
 
     def __init__(self, keep_matches):
-        self._read_dict = collections.OrderedDict()
+        self._query_dict = collections.OrderedDict()
         self._keep_matches = keep_matches
 
     def process_cobs_file(self, cobs_fn):
-        for qname, matches in cobs_iterator(cobs_fn):
-            #print(qname, matches)
-            print(qname)
+        for i,(qname, matches) in enumerate(cobs_iterator(cobs_fn)):
+            print(f"Processing query #{i} ({qname})", file=sys.stderr)
+            try:
+                _=self._query_dict[qname]
+            except KeyError:
+                self._query_dict[qname]=SingleQuery(qname, self._keep_matches)
+            self._query_dict[qname].add_matches(matches)
+            #print(qname)
 
     def print_output(self):
         pass
