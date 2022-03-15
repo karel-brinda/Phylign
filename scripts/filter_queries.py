@@ -66,6 +66,40 @@ def cobs_iterator(cobs_matches_fn):
     yield qname, batch, matches_buffer
 
 
+def readfq(fp):  # this is a generator function
+    # From https://github.com/lh3/readfq/blob/master/readfq.py
+    last = None  # this is a buffer keeping the last unprocessed line
+    while True:  # mimic closure; is it a bad idea?
+        if not last:  # the first record or a record following a fastq
+            for l in fp:  # search for the start of the next record
+                if l[0] in '>@':  # fasta/q header line
+                    last = l[:-1]  # save this line
+                    break
+        if not last: break
+        name, seqs, last = last[1:].partition(" ")[0], [], None
+        for l in fp:  # read the sequence
+            if l[0] in '@+>':
+                last = l[:-1]
+                break
+            seqs.append(l[:-1])
+        if not last or last[0] != '+':  # this is a fasta record
+            yield name, ''.join(seqs), None  # yield a fasta record
+            if not last: break
+        else:  # this is a fastq record
+            seq, leng, seqs = ''.join(seqs), 0, []
+            for l in fp:  # read the quality
+                seqs.append(l[:-1])
+                leng += len(l) - 1
+                if leng >= len(seq):  # have read enough quality
+                    last = None
+                    yield name, seq, ''.join(seqs)
+                    # yield a fastq record
+                    break
+            if last:  # reach EOF before reading enough quality
+                yield name, seq, None  # yield a fasta record instead
+                break
+
+
 class SingleQuery:
     """A simple optimized buffer for keeping top matches for a single read accross batches.
 
@@ -77,11 +111,12 @@ class SingleQuery:
         _matches (list): A list of (ref, kmers)
     """
 
-    def __init__(self, qname, keep_matches):
+    def __init__(self, qname, seq, keep_matches):
         self._keep_matches = keep_matches
         self._min_matching_kmers = 0  #should be increased once the number of records >keep
         self._matches = []
         self._qname = qname
+        self._seq = seq
 
     def add_matches(self, batch, matches):
         """Add matches.
@@ -117,19 +152,31 @@ class Sift:
     """Sifting class for all reported cobs assignments.
     """
 
-    def __init__(self, keep_matches):
-        self._query_dict = collections.OrderedDict()
+    def __init__(self, query_fn, keep_matches):
+        self._query_fn = query_fn
         self._keep_matches = keep_matches
+        #self._query_dict = collections.OrderedDict()
+        self._query_dict = self._create_query_dict(query_fn, keep_matches)
+
+    @staticmethod
+    def _create_query_dict(fx_fn, keep_matches):
+        d = collections.OrderedDict()
+        with xopen(fx_fn) as fo:
+            for qname, seq, _ in readfq(fo):
+                d[qname] = SingleQuery(qname=qname,
+                                       keep_matches=keep_matches,
+                                       seq=seq)
+        #pprint(d)
+        return d
 
     def process_cobs_file(self, cobs_fn):
         for i, (qname, batch, matches) in enumerate(cobs_iterator(cobs_fn)):
             print(f"Processing batch {batch} query #{i} ({qname})",
                   file=sys.stderr)
-            try:
-                _ = self._query_dict[qname]
-            except KeyError:
-                self._query_dict[qname] = SingleQuery(qname,
-                                                      self._keep_matches)
+            #try:
+            #    _ = self._query_dict[qname]
+            #except KeyError:
+            #    self._query_dict[qname] = SingleQuery(qname, self._keep_matches)
             #print(f"qname {qname} batch {batch} matches {matches}")
             self._query_dict[qname].add_matches(batch, matches)
             #print(qname)
@@ -148,9 +195,9 @@ class Sift:
 ##
 
 
-def process_files(fns, keep_matches):
-    sift = Sift(keep_matches=keep_matches)
-    for fn in fns:
+def process_files(query_fn, match_fns, keep_matches):
+    sift = Sift(keep_matches=keep_matches, query_fn=query_fn)
+    for fn in match_fns:
         sift.process_cobs_file(fn)
     sift.print_output()
 
@@ -167,6 +214,14 @@ def main():
     )
 
     parser.add_argument(
+        '-q',
+        metavar='str',
+        dest='query_fn',
+        required=True,
+        help=f'query file',
+    )
+
+    parser.add_argument(
         '-k',
         metavar='int',
         dest='keep',
@@ -176,7 +231,7 @@ def main():
     )
 
     args = parser.parse_args()
-    process_files(args.match_fn, args.keep)
+    process_files(args.query_fn, args.match_fn, args.keep)
 
 
 if __name__ == "__main__":
