@@ -12,8 +12,6 @@ from xopen import xopen
 from pathlib import Path
 from xopen import xopen
 from pprint import pprint
-
-
 """
 TODO:
     - add filtering so that the number of candidate files is low
@@ -27,8 +25,6 @@ TODO:
     - document the assumption that the number of reads is small
 """
 
-
-
 KEEP = 100
 """
 For every read we want to know top 100 matches
@@ -38,8 +34,6 @@ Approach:
     - iterate over all translated cobs outputs
     - keep just top k scores
 """
-
-
 
 
 def cobs_iterator(cobs_matches_fn):
@@ -60,7 +54,7 @@ def cobs_iterator(cobs_matches_fn):
         - if necessary in the future, add batch name from the file name
     """
     qname = None
-    matches_buffer=[]
+    matches_buffer = []
     print(f"Translating matches {cobs_matches_fn}", file=sys.stderr)
     with xopen(cobs_matches_fn) as f:
         for x in f:
@@ -71,19 +65,18 @@ def cobs_iterator(cobs_matches_fn):
                 ## HEADER
                 # empty buffer
                 if qname is not None:
-                    yield qname, matches
-                    matches_buffer=[]
+                    yield qname, matches_buffer
+                    matches_buffer = []
                 # parse header
-                parts = x[1:].split()
-                qname = part[0].split(" ")[0] # remove fasta comments
-                nmatches = int(parts[2])
+                parts = x[1:].split("\t")
+                qname = parts[0].split(" ")[0]  # remove fasta comments
+                nmatches = int(parts[1])
             else:
                 ## MATCH
                 tmp_name, kmers = x.split()
                 rid, ref = tmp_name.split("_")
-                matches_buffer.append( (ref, kmers) )
+                matches_buffer.append((ref, kmers))
     yield qname, matches_buffer
-
 
 
 class SingleQuery:
@@ -99,16 +92,16 @@ class SingleQuery:
 
     def __init__(self, qname, keep_matches=100):
         self._min_matching_kmers = 0  #should be increased once the number of records >keep
-        self._matches=[]
-        self._qname=qname
+        self._matches = []
+        self._qname = qname
 
     def add_matches(self, matches):
         """Add matches.
         """
         for mtch in matches:
-            ref, kmers=mtch
+            ref, kmers = mtch
             if kmers >= self._min_matching_kmers:
-                self._matches.append( (ref, kmers) )
+                self._matches.append((ref, kmers))
 
     def _housekeeping(self):
         ###
@@ -125,13 +118,15 @@ class SingleQuery:
 class Sift:
     """Sifting class for processing all cobs assignemnts.
     """
+
     def __init__(self, keep_matches):
         self._read_dict = collections.OrderedDict()
-        self._keep_matches=keep_matches
+        self._keep_matches = keep_matches
 
-    def add_cobs_output(self, cobs_fn):
+    def process_cobs_file(self, cobs_fn):
         for qname, matches in cobs_iterator(cobs_fn):
-            print(qname, matches)
+            #print(qname, matches)
+            print(qname)
 
     def print_output(self):
         pass
@@ -140,6 +135,7 @@ class Sift:
 ##
 ## TODO: add support for empty matches / NA values
 ##
+
 
 def process_files(fns, keep_matches):
     sift = Sift(keep_matches=keep_matches)
@@ -173,4 +169,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
