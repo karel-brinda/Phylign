@@ -7,6 +7,8 @@ import os
 import re
 import sys
 
+from xopen import xopen
+
 from pathlib import Path
 from xopen import xopen
 from pprint import pprint
@@ -38,80 +40,93 @@ Approach:
 """
 
 
-class Read:
-    """A simple optimized buffer for top matches for a single read accross batches. Doesn't know its own read name.
+
+
+def cobs_iterator(cobs_matches_fn):
+    """Iterator for cobs matches.
+
+    Assumes that cobs ref names start with a random sorting prefix followed by
+    an underscore.
+
+    Args:
+        cobs_matches_fn (str): File name of cobs output.
+
+    Returns:
+        matches (list): List of assignments of the same read, in the form (ref, qname, kmers)
+
+
+
+    Todo:
+        - if necessary in the future, add batch name from the file name
+    """
+    qname = None
+    matches_buffer=[]
+    print(f"Translating matches {cobs_matches_fn}", file=sys.stderr)
+    with xopen(cobs_matches_fn) as f:
+        for x in f:
+            x = x.strip()
+            if not x:
+                continue
+            if x[0] == "*":
+                ## HEADER
+                # empty buffer
+                if qname is not None:
+                    yield matches
+                    matches_buffer=[]
+                # parse header
+                parts = x[1:].split()
+                qname = part[0].split(" ")[0] # remove fasta comments
+                nmatches = int(parts[2])
+            else:
+                ## MATCH
+                tmp_name, kmers = x.split()
+                rid, ref = tmp_name.split("_")
+                matches_buffer.append( (ref, qname, kmers) )
+    yield matches_buffer
+
+
+
+class SingleQuery:
+    """A simple optimized buffer for keeping top matches for a single read accross batches.
+
+    Args:
+        keep_matches (int): The number of top matches to keep.
+
+
+    Attributes:
+        _matches (list): A list of (ref, kmers)
     """
 
-    def __init__(self, keep):
+    def __init__(self, keep_matches=100):
         self._min_matching_kmers = 0  #should be increased once the number of records >keep
         self._matches=[]
+        self._qname=None # will be assigned automatically and checked automatically
 
-    def add_rec(self, batch, sample, kmers):
-        self._matches.append((batch, sample, kmers))
+    def add_matches(self, matches):
+        """Add matches.
+        """
+        for mtch in matches:
+            ref, qname, kmers=mtch
+            assert self._qname is None or self._qname==qname
+            self._qname = qname
+            if kmers >= self._min_matching_kmers:
+                self._matches.append( (ref, kmers) )
 
-    def _sort_and_prune(self):
+    def _housekeeping(self):
         ###
         ### TODO: Finish
         ###
 
         #1. sort
-        self._matches.sort(key=lambda x: (x[2], x[0], x[1]))  # todo: function
+        self._matches.sort(key=lambda x: (x[1], x[0]))
         #2. identify where to stop
-        #3. trim the list
+        #3. trim the list below
         #4. update _min_kmers_filter according to this value
 
 
 ##
 ## TODO: add support for empty matches / NA values
 ##
-class BestMatches:
-    """Class for all reads.
-    """
-
-    def __init__(self, keep):
-        self._keep = keep
-        self._read_dict = collections.defaultdict(
-            lambda: Read(keep=self._keep))
-        self._output_fastas = {}
-        atexit.register(self._cleanup)
-
-    def _add_rec(self, batch, sample, read, kmers):
-        """Process one translated cobs output line.
-        """
-        self._read_dict[read].add_rec(batch, sample, kmers)
-
-    def process_file(self, fn):
-        """Process a translated cobs file.
-        """
-        with xopen(fn) as fo:
-            print(f"Processing {fn}", file=sys.stderr)
-            batch, _, _ = Path(fn).name.partition("____")
-            #print(batch)
-            for x in fo:
-                sample, read, kmers = x.strip().split()
-                self._add_rec(batch, sample, read, kmers)
-
-    def _print_output_1read(self, rname, best_refs):
-        """TODO: Add a buffer of opened files
-        """
-        for ref in best_refs:
-            try:
-                self._output_fastas[ref]
-            except KeyError:
-                self._output_fastas[ref] = open(f"{ref}.fa", "w+")
-            self._output_fastas[ref].write(f">{rname}\nAA\n")
-
-    def _cleanup(self):
-        for _, fo in self._output_fastas.items() :
-            fo.close()
-
-    def print_output(self):
-        """Iterate over top matches and print them into FASTA files.
-        """
-        for rname, read in self._read_dict.items():
-            best_refs = [x[1] for x in read._matches]
-            self._print_output_1read(rname, best_refs)
-
 
 def merge_and_filter(fns, keep):
     bm = BestMatches(keep)
@@ -140,56 +155,9 @@ def main():
     )
 
     args = parser.parse_args()
-
     merge_and_filter(args.match_fn, args.keep)
 
 
 if __name__ == "__main__":
     main()
-#! /usr/bin/env python3
 
-import argparse
-import collections
-import os
-import re
-import sys
-
-from xopen import xopen
-
-
-def translate(matches_fn):
-    qname = None
-    print("Translating matches", file=sys.stderr)
-    with xopen(matches_fn) as f:
-        for x in f:
-            x = x.strip()
-            if not x:
-                continue
-            if x[0] == "*":
-                parts = x[1:].split()
-                qname = parts[0]
-                nmatches = int(parts[-1])
-                if nmatches == 0:
-                    print("NA", qname, 0, sep="\t")
-            else:
-                name, kmers = x.split()
-                rid, ref = name.split("_")
-                print(ref, qname, kmers, sep="\t")
-
-
-def main():
-    parser = argparse.ArgumentParser(description="")
-
-    parser.add_argument(
-        'matches',
-        metavar='matches.txt.xz',
-        help='',
-    )
-
-    args = parser.parse_args()
-
-    translate(args.matches)
-
-
-if __name__ == "__main__":
-    main()
