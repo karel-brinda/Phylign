@@ -79,6 +79,10 @@ cobs_mac = """docker run \\
 """
 cobs_linux = ("cobs query --load-complete",)
 
+if sys.platform == "darwin":
+    cobs=cobs_mac
+else:
+    cobs=cobs_linux
 
 rule run_cobs:
     """Cobs matching
@@ -93,7 +97,7 @@ rule run_cobs:
     #     "docker://leandroishilima/cobs:1915fc"
     params:
         kmer_thres=0.33,
-        cobs=cobs_linux,
+        cobs=cobs,
     priority: 999
     shell:
         """
