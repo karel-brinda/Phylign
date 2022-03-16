@@ -87,7 +87,7 @@ rule run_cobs:
     """Cobs matching
     """
     output:
-        match="intermediate/01_match/{batch}____{qfile}.xz",
+        match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
         cobs="intermediate/00_cobs/{batch}.cobs",
         fa="queries/{qfile}.fa",
