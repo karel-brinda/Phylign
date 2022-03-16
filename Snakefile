@@ -9,7 +9,7 @@ cobs_url = f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
 
 def cobs_url(wildcards):
     x=wildcards.batch
-    if x>"escherichia_coli_":
+    if x>="eubacterium":
         return f"https://zenodo.org/record/6345389/files/{x}.cobs_classic.xz"
     else:
         return f"https://zenodo.org/record/6347571/files/{x}.cobs_classic.xz"
