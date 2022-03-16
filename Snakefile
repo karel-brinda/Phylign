@@ -2,14 +2,15 @@ shell.prefix("set -euo pipefail")
 from pathlib import Path
 
 batches = [x.strip() for x in open("batches.txt")]
-#batches = [x for x in batches if x.find("gonorrhoeae") != -1]
+# batches = [x for x in batches if x.find("gonorrhoeae") != -1]
 print(batches)
 
 cobs_url = f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
 
+
 def cobs_url(wildcards):
-    x=wildcards.batch
-    if x>="eubacterium":
+    x = wildcards.batch
+    if x >= "eubacterium":
         return f"https://zenodo.org/record/6345389/files/{x}.cobs_classic.xz"
     else:
         return f"https://zenodo.org/record/6347571/files/{x}.cobs_classic.xz"
@@ -26,7 +27,9 @@ rule all:
     input:
         [f"asms/{x}.tar.xz" for x in batches],
         [f"cobs/{x}.xz" for x in batches],
-        [f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles]
+        [f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
+
+
 #        [
 #            [f"intermediate/02_translate/{batch}____{qfile}.xz" for batch in batches]
 #            for qfile in qfiles
@@ -52,7 +55,7 @@ rule download_cobs_batch:
     output:
         xz="cobs/{batch}.xz",
     params:
-        url=cobs_url
+        url=cobs_url,
     shell:
         """
         curl "{params.url}"  > {output.xz}
@@ -107,7 +110,9 @@ rule run_cobs:
             ##--load-complete \\
         """
 
-#./scripts/filter_queries.py -q ./queries/gc01_1kl.fa ./intermediate/01_match/*.xz  |L
+
+# ./scripts/filter_queries.py -q ./queries/gc01_1kl.fa ./intermediate/01_match/*.xz  |L
+
 
 rule translate_matches:
     """Translate cobs matches.
@@ -119,13 +124,17 @@ rule translate_matches:
         fa="intermediate/02_filter/{qfile}.fa",
     input:
         fa="queries/{qfile}.fa",
-        all_matches=[f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches],
+        all_matches=[
+            f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches
+        ],
     shell:
         """
         ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \
             > {output.fa}
         """
-#rule translate_matches:
+
+
+# rule translate_matches:
 #    """Translate cobs matches.
 #
 #    Output:
@@ -141,7 +150,6 @@ rule translate_matches:
 #            | xz \
 #            > {output.matches}
 #        """
-
-rule merge_and_filter:
-    """
-    """
+# rule merge_and_filter:
+#    """
+#    """
