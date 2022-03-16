@@ -49,14 +49,24 @@ def readfq(fp):  # this is a generator function
 
 
 def iterate_over_batch(asms_fn):
-    pass
+    print(asms_fn)
+    with xopen(asms_fn) as fo:
+        tar = tarfile.open(fileobj=fo)
+        print(tar)
+
 
 
 def load_qdicts(query_fn):
+    qname_to_qfa=collections.OrderedDict()
+    rname_to_qname={}
     with xopen(query_fn) as fo:
-        for x in readfq(fo):
-            print(x)
-    #return qname_to_qfa, rname_to_qname
+        for qname, qseq, qquals in readfq(fo):
+            qcom=""
+            qname_to_qfa[qname]=f"{qname}\n{qseq}\n"
+            rnames=qcom.split(",")
+            for rname in rnames:
+                rname_to_qname[rname]=qname
+    return qname_to_qfa, rname_to_qname
 
 
 def minimap2(rfa, qfa):
@@ -65,13 +75,14 @@ def minimap2(rfa, qfa):
 
 def map_queries_to_batch(asms_fn, query_fn):
     qname_to_qfa, rname_to_qname = load_qdicts(query_fn)
-    return
 
     for rname, rfa in iterate_over_batch(asms_fn):
+        qfas=[]
         for qname in rname_to_qname[rname]:
             qfa = rname_to_qfa[qname]
-            result = minimap2(rfa, qfa)
-            print(result)
+            qfas.append(qfa)
+        result = minimap2(rfa, "".join(qfas))
+        print(result)
 
 
 def main():
