@@ -6,6 +6,7 @@ import collections
 import os
 import re
 import sys
+import tarfile
 
 from xopen import xopen
 
@@ -59,36 +60,48 @@ def readfq(fp):  # this is a generator function
                 break
 
 
-def iterate_over_batch(asms_fn):
-    print(asms_fn)
-    with xopen(asms_fn) as fo:
-        tar = tarfile.open(fileobj=fo)
-        print(tar)
+def iterate_over_batch(asms_fn, selected_rnames):
+    print(f"Opening {asms_fn}", file=sys.stderr)
+    with tarfile.open(asms_fn, mode="r:xz") as tar:
+        for member in tar.getmembers():
+            name = member.name
+            rname = Path(name).stem
+            #print("name",name)
+            #print("rname",rname)
+            if rname not in selected_rnames:
+                continue
+            f = tar.extractfile(member)
+            rfa = f.read()
+            #print(rfa)
+            print(f"Extracting {rname} ({name})", file=sys.stderr)
+            yield rname, rfa
 
 
 def load_qdicts(query_fn):
     qname_to_qfa = collections.OrderedDict()
-    rname_to_qname = {}
+    rname_to_qnames = collections.defaultdict(lambda: [])
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, qquals in readfq(fo):
             qname_to_qfa[qname] = f"{qname}\n{qseq}\n"
             rnames = qcom.split(",")
             for rname in rnames:
-                rname_to_qname[rname] = qname
-    return qname_to_qfa, rname_to_qname
+                rname_to_qnames[rname].append(qname)
+    return qname_to_qfa, rname_to_qnames
 
 
 def minimap2(rfa, qfa):
+    print(rfa, qfa)
     pass
 
 
 def map_queries_to_batch(asms_fn, query_fn):
-    qname_to_qfa, rname_to_qname = load_qdicts(query_fn)
+    qname_to_qfa, rname_to_qnames = load_qdicts(query_fn)
 
-    for rname, rfa in iterate_over_batch(asms_fn):
+    selected_rnames = set([x for x in rname_to_qnames])
+    for rname, rfa in iterate_over_batch(asms_fn, selected_rnames):
         qfas = []
-        for qname in rname_to_qname[rname]:
-            qfa = rname_to_qfa[qname]
+        for qname in rname_to_qnames[rname]:
+            qfa = qname_to_qfa[qname]
             qfas.append(qfa)
         result = minimap2(rfa, "".join(qfas))
         print(result)
