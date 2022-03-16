@@ -1,4 +1,4 @@
-.PHONY: all help clean cleanall submit
+.PHONY: all help clean cleanall cluster
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -20,11 +20,11 @@ clean: ## Clean
 cleanall: clean ## Clean all
 	rm -f {asms,cobs}/*.xz
 
-submit:
+cluster:
 	sbatch \
-        -c 20 \
+        -c 10 \
         -p priority \
         --mem=80GB \
-        -t 3-00:00:00 \
+        -t 0-02:00:00 \
         --wrap="snakemake --rerun-incomplete -p -j all -k"
 
