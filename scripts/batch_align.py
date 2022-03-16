@@ -24,14 +24,25 @@ def readfq(fp):  # this is a generator function
                     last = l[:-1]  # save this line
                     break
         if not last: break
-        name, seqs, last = last[1:].partition(" ")[0], [], None
+
+        ####
+        # modified to include comments
+        ####
+        #name, seqs, last = last[1:].partition(" ")[0], [], None
+        name, _, comment = last[1:].partition(" ")
+        seqs = []
+        last = None
+        ####
+        # end of the modified part
+        ####
+
         for l in fp:  # read the sequence
             if l[0] in '@+>':
                 last = l[:-1]
                 break
             seqs.append(l[:-1])
         if not last or last[0] != '+':  # this is a fasta record
-            yield name, ''.join(seqs), None  # yield a fasta record
+            yield name, comment, ''.join(seqs), None  # yield a fasta record
             if not last: break
         else:  # this is a fastq record
             seq, leng, seqs = ''.join(seqs), 0, []
@@ -40,11 +51,11 @@ def readfq(fp):  # this is a generator function
                 leng += len(l) - 1
                 if leng >= len(seq):  # have read enough quality
                     last = None
-                    yield name, seq, ''.join(seqs)
+                    yield name, comment, seq, ''.join(seqs)
                     # yield a fastq record
                     break
             if last:  # reach EOF before reading enough quality
-                yield name, seq, None  # yield a fasta record instead
+                yield name, comment, seq, None  # yield a fasta record instead
                 break
 
 
@@ -55,17 +66,15 @@ def iterate_over_batch(asms_fn):
         print(tar)
 
 
-
 def load_qdicts(query_fn):
-    qname_to_qfa=collections.OrderedDict()
-    rname_to_qname={}
+    qname_to_qfa = collections.OrderedDict()
+    rname_to_qname = {}
     with xopen(query_fn) as fo:
-        for qname, qseq, qquals in readfq(fo):
-            qcom=""
-            qname_to_qfa[qname]=f"{qname}\n{qseq}\n"
-            rnames=qcom.split(",")
+        for qname, qcom, qseq, qquals in readfq(fo):
+            qname_to_qfa[qname] = f"{qname}\n{qseq}\n"
+            rnames = qcom.split(",")
             for rname in rnames:
-                rname_to_qname[rname]=qname
+                rname_to_qname[rname] = qname
     return qname_to_qfa, rname_to_qname
 
 
@@ -77,7 +86,7 @@ def map_queries_to_batch(asms_fn, query_fn):
     qname_to_qfa, rname_to_qname = load_qdicts(query_fn)
 
     for rname, rfa in iterate_over_batch(asms_fn):
-        qfas=[]
+        qfas = []
         for qname in rname_to_qname[rname]:
             qfa = rname_to_qfa[qname]
             qfas.append(qfa)
