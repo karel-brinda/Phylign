@@ -6,13 +6,19 @@ import collections
 import os
 import re
 import sys
+import subprocess
 import tarfile
-
-from xopen import xopen
+import tempfile
 
 from pathlib import Path
-from xopen import xopen
 from pprint import pprint
+from subprocess import check_output
+from subprocess import PIPE
+from subprocess import Popen
+from xopen import xopen
+
+
+# ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
 
 def readfq(fp):  # this is a generator function
@@ -90,8 +96,31 @@ def load_qdicts(query_fn):
 
 
 def minimap2(rfa, qfa):
-    print(rfa, qfa)
-    pass
+    with tempfile.NamedTemporaryFile("wb") as rfile:
+        with tempfile.NamedTemporaryFile("wt") as qfile:
+            #print(rfa)
+            rfile.write(rfa)
+            rfile.delete = False
+            qfile.write(qfa)
+            qfile.delete = False
+
+            try:
+                #p = Popen(["minimap2", rfile.name, qfile.name])
+                output = check_output(["minimap2","-x","map-ont", rfile.name, qfile.name])
+                #p = Popen(["minimap2", rfile.name, qfile.name],
+                #        stdout=subprocess.STDOUT)
+                #p = Popen(["minimap2", rfile.name, qfile.name],
+                #        stdout=PIPE)
+                #output = p.communicate()[0]
+                # or
+                # output = check_output(["pram_axdnull", str(kmer), input_filename,
+                #print(output)
+                                        #file.name])
+            finally:
+                pass
+                #os.remove(rfile.name)
+                #os.remove(qfile.name)
+    return output
 
 
 def map_queries_to_batch(asms_fn, query_fn):
