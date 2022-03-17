@@ -17,7 +17,6 @@ from subprocess import PIPE
 from subprocess import Popen
 from xopen import xopen
 
-
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
 
@@ -88,7 +87,7 @@ def load_qdicts(query_fn):
     rname_to_qnames = collections.defaultdict(lambda: [])
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, qquals in readfq(fo):
-            qname_to_qfa[qname] = f">{qname}\n{qseq}\n"
+            qname_to_qfa[qname] = f">{qname}\n{qseq}"
             rnames = qcom.split(",")
             for rname in rnames:
                 rname_to_qnames[rname].append(qname)
@@ -111,7 +110,8 @@ def minimap2(rfa, qfa):
 
             try:
                 #p = Popen(["minimap2", rfile.name, qfile.name])
-                output = check_output(["minimap2","-a","-x","map-ont", rfile.name, qfile.name])
+                output = check_output(
+                    ["minimap2", "-x", "map-ont", rfile.name, qfile.name])
                 #p = Popen(["minimap2", rfile.name, qfile.name],
                 #        stdout=subprocess.STDOUT)
                 #p = Popen(["minimap2", rfile.name, qfile.name],
@@ -120,7 +120,7 @@ def minimap2(rfa, qfa):
                 # or
                 # output = check_output(["pram_axdnull", str(kmer), input_filename,
                 #print(output)
-                                        #file.name])
+                #file.name])
             finally:
                 pass
                 #os.remove(rfile.name)
@@ -137,8 +137,8 @@ def map_queries_to_batch(asms_fn, query_fn):
         for qname in rname_to_qnames[rname]:
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
-        result = minimap2(rfa, "".join(qfas))
-        print(result)
+        result = minimap2(rfa, "\n".join(qfas))
+        print(result, end="")
 
 
 def main():
