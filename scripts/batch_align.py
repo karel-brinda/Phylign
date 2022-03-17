@@ -88,7 +88,7 @@ def load_qdicts(query_fn):
     rname_to_qnames = collections.defaultdict(lambda: [])
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, qquals in readfq(fo):
-            qname_to_qfa[qname] = f"{qname}\n{qseq}\n"
+            qname_to_qfa[qname] = f">{qname}\n{qseq}\n"
             rnames = qcom.split(",")
             for rname in rnames:
                 rname_to_qnames[rname].append(qname)
@@ -104,9 +104,14 @@ def minimap2(rfa, qfa):
             qfile.write(qfa)
             qfile.delete = False
 
+            #print("reference")
+            #print(rfa)
+            #print("query")
+            #print(qfa)
+
             try:
                 #p = Popen(["minimap2", rfile.name, qfile.name])
-                output = check_output(["minimap2","-x","map-ont", rfile.name, qfile.name])
+                output = check_output(["minimap2","-a","-x","map-ont", rfile.name, qfile.name])
                 #p = Popen(["minimap2", rfile.name, qfile.name],
                 #        stdout=subprocess.STDOUT)
                 #p = Popen(["minimap2", rfile.name, qfile.name],
@@ -120,7 +125,7 @@ def minimap2(rfa, qfa):
                 pass
                 #os.remove(rfile.name)
                 #os.remove(qfile.name)
-    return output
+    return output.decode("utf-8")
 
 
 def map_queries_to_batch(asms_fn, query_fn):
