@@ -26,8 +26,12 @@ asm_zenodo = 4602622
 asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
 
 qfiles = [x.with_suffix("").name for x in Path("queries").glob("*.fa")]
-print(f"Query files: {qfiles}", file=sys.stderr)
+print(f"Query files: {qfiles}")
 
+##########################################################################
+
+wildcard_constraints:
+    batch=".+__\d\d"
 
 rule all:
     input:
@@ -146,7 +150,7 @@ rule translate_matches:
 
 rule minimap2:
     output:
-        sam="intermediate/03_map/{batch}__{qfile}.sam",
+        sam="intermediate/03_map/{batch}____{qfile}.sam",
     input:
         qfa="intermediate/02_filter/{qfile}.fa",
         asm="asms/{batch}.tar.xz",
