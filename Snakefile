@@ -1,6 +1,12 @@
 shell.prefix("set -euo pipefail")
 from pathlib import Path
 
+# TODO:
+# - limit parallel download threads
+# - limit
+
+
+
 batches = [x.strip() for x in open("batches.txt")]
 # batches = [x for x in batches if x.find("gonorrhoeae") != -1]
 print(batches)
@@ -25,10 +31,15 @@ print(f"Query files: {qfiles}", file=sys.stderr)
 
 rule all:
     input:
-        [f"asms/{x}.tar.xz" for x in batches],
-        [f"cobs/{x}.xz" for x in batches],
-        [f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
-
+        #[f"asms/{x}.tar.xz" for x in batches],
+        #[f"cobs/{x}.xz" for x in batches],
+        #[f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
+#
+    #"intermediate/03_map/{batch}__{qfile}.sam
+        [
+            [f"intermediate/03_map/{batch}____{qfile}.sam" for batch in batches]
+            for qfile in qfiles
+        ],
 
 #        [
 #            [f"intermediate/02_translate/{batch}____{qfile}.xz" for batch in batches]
@@ -132,6 +143,21 @@ rule translate_matches:
         ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \
             > {output.fa}
         """
+
+rule minimap2:
+    output:
+        sam="intermediate/03_map/{batch}__{qfile}.sam",
+    input:
+        qfa="intermediate/02_filter/{qfile}.fa",
+        asm="asms/{batch}.tar.xz",
+    shell:
+        """
+        ./scripts/batch_align.py \\
+            {input.asm} \\
+            {input.qfa} \\
+            > {output.sam}
+        """
+
 
 
 # rule translate_matches:

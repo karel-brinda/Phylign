@@ -25,6 +25,6 @@ cluster:
         -c 10 \
         -p priority \
         --mem=80GB \
-        -t 0-02:00:00 \
+        -t 0-08:00:00 \
         --wrap="snakemake --rerun-incomplete -p -j all -k"
 
