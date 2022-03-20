@@ -6,7 +6,6 @@ from pathlib import Path
 # - limit
 
 
-
 batches = [x.strip() for x in open("batches.txt")]
 # batches = [x for x in batches if x.find("gonorrhoeae") != -1]
 print(batches)
@@ -30,20 +29,24 @@ print(f"Query files: {qfiles}")
 
 ##########################################################################
 
+
 wildcard_constraints:
-    batch=".+__\d\d"
+    batch=".+__\d\d",
+
 
 rule all:
     input:
         #[f"asms/{x}.tar.xz" for x in batches],
         #[f"cobs/{x}.xz" for x in batches],
         #[f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
-#
-    #"intermediate/03_map/{batch}__{qfile}.sam
-        [
-            [f"intermediate/03_map/{batch}____{qfile}.sam" for batch in batches]
-            for qfile in qfiles
-        ],
+        #
+        #"intermediate/03_map/{batch}__{qfile}.sam
+        [f"output/{qfile}.sam_summary.xz" for qfile in qfiles],
+        #[
+        #    [f"intermediate/03_map/{batch}____{qfile}.sam" for batch in batches]
+        #    for qfile in qfiles
+        #],
+
 
 #        [
 #            [f"intermediate/02_translate/{batch}____{qfile}.xz" for batch in batches]
@@ -148,6 +151,7 @@ rule translate_matches:
             > {output.fa}
         """
 
+
 rule minimap2:
     output:
         sam="intermediate/03_map/{batch}____{qfile}.sam",
@@ -162,6 +166,19 @@ rule minimap2:
             > {output.sam}
         """
 
+
+rule aggregate_sams:
+    output:
+        pseudosam="output/{qfile}.sam_summary.xz",
+    input:
+        sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
+    shell:
+        """
+        head -n 9999999 {input.sam} \
+            | grep -v "@" \
+            | xz \
+            > {output.pseudosam}
+        """
 
 
 # rule translate_matches:
@@ -180,6 +197,3 @@ rule minimap2:
 #            | xz \
 #            > {output.matches}
 #        """
-# rule merge_and_filter:
-#    """
-#    """
