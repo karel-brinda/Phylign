@@ -1,4 +1,4 @@
-.PHONY: all help clean cleanall cluster
+.PHONY: all help clean cleanall cluster download
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -6,10 +6,15 @@ SHELL=/usr/bin/env bash -eo pipefail
 
 .SUFFIXES:
 
-all:
+all: ## Run everything
 	snakemake \
 		--rerun-incomplete \
-		-p -j all -k #--use-singularity
+		-p -j all -k
+
+download: ## Download assemblies and cobs indexes
+	snakemake \
+		--rerun-incomplete \
+		-p -j all -k download
 
 help: ## Print help message
 	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"
@@ -20,7 +25,7 @@ clean: ## Clean
 cleanall: clean ## Clean all
 	rm -f {asms,cobs}/*.xz
 
-cluster:
+cluster: ## Submit to a SLURM cluster
 	sbatch \
         -c 10 \
         -p priority \

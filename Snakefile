@@ -36,8 +36,6 @@ wildcard_constraints:
 
 rule all:
     input:
-        #[f"asms/{x}.tar.xz" for x in batches],
-        #[f"cobs/{x}.xz" for x in batches],
         #[f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
         #
         #"intermediate/03_map/{batch}__{qfile}.sam
@@ -52,6 +50,13 @@ rule all:
 #            [f"intermediate/02_translate/{batch}____{qfile}.xz" for batch in batches]
 #            for qfile in qfiles
 #        ],
+
+
+rule download:
+    input:
+        [f"asms/{x}.tar.xz" for x in batches],
+        [f"cobs/{x}.xz" for x in batches],
+
 
 
 rule download_asm_batch:
