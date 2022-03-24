@@ -58,7 +58,6 @@ rule download:
         [f"cobs/{x}.xz" for x in batches],
 
 
-
 rule download_asm_batch:
     """Download compressed assemblies
     """
@@ -67,7 +66,7 @@ rule download_asm_batch:
     params:
         url=asms_url,
     resources:
-        download_thr=1
+        download_thr=1,
     shell:
         """
         curl "{params.url}/{wildcards.batch}.tar.xz"  > {output.xz}
@@ -83,7 +82,7 @@ rule download_cobs_batch:
     params:
         url=cobs_url,
     resources:
-        download_thr=1
+        download_thr=1,
     shell:
         """
         curl "{params.url}"  > {output.xz}
@@ -99,7 +98,7 @@ rule decompress_cobs:
     input:
         xz="cobs/{batch}.xz",
     resources:
-        decomp_thr=1
+        decomp_thr=1,
     shell:
         """
         xzcat "{input.xz}" > "{output.cobs}"
@@ -112,7 +111,7 @@ cobs_mac = """docker run \\
     leandroishilima/cobs:1915fc query \\
 """
 cobs_linux = ("cobs query --load-complete",)
-cobs= "cobs query"
+cobs = "cobs query"
 
 
 rule run_cobs:
@@ -123,7 +122,7 @@ rule run_cobs:
     input:
         cobs="intermediate/00_cobs/{batch}.cobs",
         fa="queries/{qfile}.fa",
-    #threads: workflow.cores - 1
+    # threads: workflow.cores - 1
     threads: min(6, workflow.cores)
     # singularity:
     #     "docker://leandroishilima/cobs:1915fc"
@@ -162,7 +161,7 @@ rule translate_matches:
         ],
     shell:
         """
-        ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \
+        ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \\
             > {output.fa}
         """
 
@@ -189,9 +188,9 @@ rule aggregate_sams:
         sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
     shell:
         """
-        head -n 9999999 {input.sam} \
-            | grep -v "@" \
-            | xz \
+        head -n 9999999 {input.sam} \\
+            | grep -v "@" \\
+            | xz \\
             > {output.pseudosam}
         """
 
