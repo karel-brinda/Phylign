@@ -66,6 +66,8 @@ rule download_asm_batch:
         xz="asms/{batch}.tar.xz",
     params:
         url=asms_url,
+    resources:
+        download_thr=1
     shell:
         """
         curl "{params.url}/{wildcards.batch}.tar.xz"  > {output.xz}
@@ -80,6 +82,8 @@ rule download_cobs_batch:
         xz="cobs/{batch}.xz",
     params:
         url=cobs_url,
+    resources:
+        download_thr=1
     shell:
         """
         curl "{params.url}"  > {output.xz}
@@ -94,6 +98,8 @@ rule decompress_cobs:
         cobs=temp("intermediate/00_cobs/{batch}.cobs"),
     input:
         xz="cobs/{batch}.xz",
+    resources:
+        decomp_thr=1
     shell:
         """
         xzcat "{input.xz}" > "{output.cobs}"
