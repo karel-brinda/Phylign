@@ -70,7 +70,7 @@ rule download_asm_batch:
     shell:
         """
         curl "{params.url}/{wildcards.batch}.tar.xz"  > {output.xz}
-        set +o pipefail && xzcat {output.xz} | head -c 20
+        scripts/test_xz.py {output.xz}
         """
 
 
@@ -86,7 +86,7 @@ rule download_cobs_batch:
     shell:
         """
         curl "{params.url}"  > {output.xz}
-        set +o pipefail && xzcat {output.xz} | head -c 20
+        scripts/test_xz.py {output.xz}
         """
 
 
