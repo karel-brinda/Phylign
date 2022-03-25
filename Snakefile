@@ -105,12 +105,7 @@ rule decompress_cobs:
         """
 
 
-cobs_mac = """docker run \\
-    -v $PWD:/experiment \\
-    --workdir /experiment \\
-    leandroishilima/cobs:1915fc query \\
-"""
-cobs_linux = ("cobs query --load-complete",)
+#cobs = "cobs query --load-complete"
 cobs = "cobs query"
 
 
@@ -123,11 +118,11 @@ rule run_cobs:
         cobs="intermediate/00_cobs/{batch}.cobs",
         fa="queries/{qfile}.fa",
     # threads: workflow.cores - 1
-    threads: min(6, workflow.cores)
+    threads: 2
     # singularity:
     #     "docker://leandroishilima/cobs:1915fc"
     params:
-        kmer_thres=0.33,
+        kmer_thres=0.50,
         cobs=cobs,
     priority: 999
     shell:

@@ -111,7 +111,7 @@ def minimap2(rfa, qfa):
             try:
                 #p = Popen(["minimap2", rfile.name, qfile.name])
                 output = check_output(
-                    ["minimap2", "-a","-x", "map-ont", rfile.name, qfile.name])
+                    ["minimap2", "-a","-x", "sr", rfile.name, qfile.name])
                 #p = Popen(["minimap2", rfile.name, qfile.name],
                 #        stdout=subprocess.STDOUT)
                 #p = Popen(["minimap2", rfile.name, qfile.name],

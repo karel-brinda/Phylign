@@ -9,7 +9,7 @@ SHELL=/usr/bin/env bash -eo pipefail
 all: ## Run everything
 	snakemake \
 		--rerun-incomplete \
-		--resources decomp_thr=5 download_thr=5 \
+		--resources decomp_thr=5 download_thr=10 \
 		-p -j all -k
 
 download: ## Download assemblies and cobs indexes
