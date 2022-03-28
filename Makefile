@@ -1,4 +1,4 @@
-.PHONY: all help clean cleanall cluster download
+.PHONY: all help clean cleanall cluster download match map
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -8,17 +8,20 @@ SHELL=/usr/bin/env bash -eo pipefail
 
 DECOMP_THR=$(shell cat config.json | jq .decomp_thr)
 DOWNLOAD_THR=$(shell cat config.json | jq .download_thr)
+THR=$(shell cat config.json | jq .thr)
+SMK_PARAMS=--jobs ${THR} --rerun-incomplete --keep-going --printshellcmds --resources decomp_thr=$(DECOMP_THR) download_thr=$(DOWNLOAD_THR)
 
 all: ## Run everything
-	snakemake \
-		--rerun-incomplete \
-		--resources decomp_thr=$(DECOMP_THR) download_thr=$(DOWNLOAD_THR) \
-		-p -j all -k
+	snakemake $(SMK_PARAMS)
 
-download: ## Download assemblies and cobs indexes
-	snakemake \
-		--rerun-incomplete \
-		-p -j 10 -k download
+download: ## Download assemblies and COBS indexes
+	snakemake $(SMK_PARAMS) -- download
+
+match: ## Match queries to the COBS indexes
+	snakemake $(SMK_PARAMS) -- match
+
+map: ## Map reads to the assemblies
+	snakemake $(SMK_PARAMS) -- map
 
 help: ## Print help message
 	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"

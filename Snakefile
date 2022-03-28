@@ -6,7 +6,9 @@ from snakemake.utils import min_version
 ## Initialization
 ##################################
 
+
 configfile: "config.json"
+
 
 min_version("6.2.0")
 shell.prefix("set -euo pipefail")
@@ -41,32 +43,43 @@ asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
 
 
 ##################################
-## Rules
+## Top-level rules
 ##################################
 
 
 rule all:
+    """Run all
+    """
     input:
-        #[f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
-        #
         #"intermediate/03_map/{batch}__{qfile}.sam
         [f"output/{qfile}.sam_summary.xz" for qfile in qfiles],
-        #[
-        #    [f"intermediate/03_map/{batch}____{qfile}.sam" for batch in batches]
-        #    for qfile in qfiles
-        #],
-
-
-#        [
-#            [f"intermediate/02_translate/{batch}____{qfile}.xz" for batch in batches]
-#            for qfile in qfiles
-#        ],
 
 
 rule download:
+    """Download assemblies and COBS indexes.
+    """
     input:
         [f"asms/{x}.tar.xz" for x in batches],
         [f"cobs/{x}.xz" for x in batches],
+
+
+rule match:
+    """Match reads to the COBS indexes.
+    """
+    input:
+        [f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
+
+
+rule map:
+    """Map reads to the assemblies.
+    """
+    input:
+        [f"output/{qfile}.sam_summary.xz" for qfile in qfiles],
+
+
+##################################
+## Other rules
+##################################
 
 
 rule download_asm_batch:
