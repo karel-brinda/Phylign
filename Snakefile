@@ -123,6 +123,7 @@ rule decompress_cobs:
         xz="cobs/{batch}.xz",
     resources:
         decomp_thr=1,
+    threads: 2  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     shell:
         """
         xzcat "{input.xz}" > "{output.cobs}"
@@ -137,10 +138,9 @@ rule run_cobs:
     input:
         cobs="intermediate/00_cobs/{batch}.cobs",
         fa="queries/{qfile}.fa",
+    threads: 2  # Small number in order to guarantee Snakemake parallelization
     # threads: workflow.cores - 1
-    threads: min(6, workflow.cores)
-    # singularity:
-    #     "docker://leandroishilima/cobs:1915fc"
+    # threads: min(6, workflow.cores)
     params:
         kmer_thres=0.33,
         cobs="cobs query",
@@ -181,7 +181,7 @@ rule translate_matches:
         """
 
 
-rule minimap2:
+rule batch_align:
     output:
         sam="intermediate/03_map/{batch}____{qfile}.sam",
     input:
