@@ -1,16 +1,29 @@
-shell.prefix("set -euo pipefail")
 from pathlib import Path
+from snakemake.utils import min_version
 
-# TODO:
-# - limit parallel download threads
-# - limit
 
+##################################
+## Initialization
+##################################
+
+min_version("6.2.0")
+shell.prefix("set -euo pipefail")
 
 batches = [x.strip() for x in open("batches.txt")]
 # batches = [x for x in batches if x.find("gonorrhoeae") != -1]
-print(batches)
+print(f"Batches: {batches}")
 
-cobs_url = f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
+qfiles = [x.with_suffix("").name for x in Path("queries").glob("*.fa")]
+print(f"Query files: {qfiles}")
+
+
+wildcard_constraints:
+    batch=".+__\d\d",
+
+
+##################################
+## Download params
+##################################
 
 
 def cobs_url(wildcards):
@@ -24,14 +37,10 @@ def cobs_url(wildcards):
 asm_zenodo = 4602622
 asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
 
-qfiles = [x.with_suffix("").name for x in Path("queries").glob("*.fa")]
-print(f"Query files: {qfiles}")
 
-##########################################################################
-
-
-wildcard_constraints:
-    batch=".+__\d\d",
+##################################
+## Rules
+##################################
 
 
 rule all:
@@ -105,15 +114,6 @@ rule decompress_cobs:
         """
 
 
-cobs_mac = """docker run \\
-    -v $PWD:/experiment \\
-    --workdir /experiment \\
-    leandroishilima/cobs:1915fc query \\
-"""
-cobs_linux = ("cobs query --load-complete",)
-cobs = "cobs query"
-
-
 rule run_cobs:
     """Cobs matching
     """
@@ -128,7 +128,7 @@ rule run_cobs:
     #     "docker://leandroishilima/cobs:1915fc"
     params:
         kmer_thres=0.33,
-        cobs=cobs,
+        cobs="cobs query",
     priority: 999
     shell:
         """
@@ -193,21 +193,3 @@ rule aggregate_sams:
             | xz \\
             > {output.pseudosam}
         """
-
-
-# rule translate_matches:
-#    """Translate cobs matches.
-#
-#    Output:
-#        ref - read - matches
-#    """
-#    output:
-#        matches="intermediate/02_translate/{batch}____{qfile}.xz",
-#    input:
-#        matches="intermediate/01_match/{batch}____{qfile}.xz",
-#    shell:
-#        """
-#        ./scripts/translate_cobs_matches.py {input.matches} \
-#            | xz \
-#            > {output.matches}
-#        """
