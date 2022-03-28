@@ -6,10 +6,13 @@ SHELL=/usr/bin/env bash -eo pipefail
 
 .SUFFIXES:
 
+DECOMP_THR=$(shell cat config.json | jq .decomp_thr)
+DOWNLOAD_THR=$(shell cat config.json | jq .download_thr)
+
 all: ## Run everything
 	snakemake \
 		--rerun-incomplete \
-		--resources decomp_thr=5 download_thr=5 \
+		--resources decomp_thr=$(DECOMP_THR) download_thr=$(DOWNLOAD_THR) \
 		-p -j all -k
 
 download: ## Download assemblies and cobs indexes

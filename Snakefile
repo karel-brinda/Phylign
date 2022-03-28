@@ -6,6 +6,8 @@ from snakemake.utils import min_version
 ## Initialization
 ##################################
 
+configfile: "config.json"
+
 min_version("6.2.0")
 shell.prefix("set -euo pipefail")
 
