@@ -94,7 +94,7 @@ def load_qdicts(query_fn):
     return qname_to_qfa, rname_to_qnames
 
 
-def minimap2(rfa, qfa):
+def minimap2(rfa, qfa, minimap_preset):
     with tempfile.NamedTemporaryFile("wb") as rfile:
         with tempfile.NamedTemporaryFile("wt") as qfile:
             #print(rfa)
@@ -111,7 +111,7 @@ def minimap2(rfa, qfa):
             try:
                 #p = Popen(["minimap2", rfile.name, qfile.name])
                 output = check_output(
-                    ["minimap2", "-a","-x", "map-ont", rfile.name, qfile.name])
+                    ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfile.name, qfile.name])
                 #p = Popen(["minimap2", rfile.name, qfile.name],
                 #        stdout=subprocess.STDOUT)
                 #p = Popen(["minimap2", rfile.name, qfile.name],
@@ -128,7 +128,7 @@ def minimap2(rfa, qfa):
     return output.decode("utf-8")
 
 
-def map_queries_to_batch(asms_fn, query_fn):
+def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
     qname_to_qfa, rname_to_qnames = load_qdicts(query_fn)
 
     selected_rnames = set([x for x in rname_to_qnames])
@@ -137,13 +137,20 @@ def map_queries_to_batch(asms_fn, query_fn):
         for qname in rname_to_qnames[rname]:
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
-        result = minimap2(rfa, "\n".join(qfas))
+        result = minimap2(rfa, "\n".join(qfas), minimap_preset)
         print(result, end="")
 
 
 def main():
 
     parser = argparse.ArgumentParser(description="")
+
+    parser.add_argument(
+        '--minimap-preset',
+        metavar='str',
+        default='sr',
+        help='minimap preset [sr]',
+    )
 
     parser.add_argument(
         'batch_fn',
@@ -158,7 +165,7 @@ def main():
     )
 
     args = parser.parse_args()
-    map_queries_to_batch(args.batch_fn, args.query_fn)
+    map_queries_to_batch(args.batch_fn, args.query_fn, minimap_preset=args.minimap_preset)
 
 
 if __name__ == "__main__":

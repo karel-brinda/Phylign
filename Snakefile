@@ -179,15 +179,18 @@ rule translate_matches:
         """
 
 
-rule batch_align:
+rule batch_align_minimap2:
     output:
         sam="intermediate/03_map/{batch}____{qfile}.sam",
     input:
         qfa="intermediate/02_filter/{qfile}.fa",
         asm="asms/{batch}.tar.xz",
+    params:
+        minimap_preset=config["minimap_preset"]
     shell:
         """
         ./scripts/batch_align.py \\
+            --minimap-preset {params.minimap_preset} \\
             {input.asm} \\
             {input.qfa} \\
             > {output.sam}
