@@ -1,4 +1,4 @@
-.PHONY: all help clean cleanall cluster download match map
+.PHONY: all help clean cleanall cluster download match map format
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -22,6 +22,11 @@ match: ## Match queries to the COBS indexes
 
 map: ## Map reads to the assemblies
 	snakemake $(SMK_PARAMS) -- map
+
+
+format: ## Reformat Python and Snakemake files
+	yapf -i */*.py
+	snakefmt Snakefile
 
 help: ## Print help message
 	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"

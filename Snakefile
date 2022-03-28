@@ -186,7 +186,7 @@ rule batch_align_minimap2:
         qfa="intermediate/02_filter/{qfile}.fa",
         asm="asms/{batch}.tar.xz",
     params:
-        minimap_preset=config["minimap_preset"]
+        minimap_preset=config["minimap_preset"],
     shell:
         """
         ./scripts/batch_align.py \\

@@ -110,8 +110,10 @@ def minimap2(rfa, qfa, minimap_preset):
 
             try:
                 #p = Popen(["minimap2", rfile.name, qfile.name])
-                output = check_output(
-                    ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfile.name, qfile.name])
+                output = check_output([
+                    "minimap2", "-a", "--eqx", "-x", minimap_preset,
+                    rfile.name, qfile.name
+                ])
                 #p = Popen(["minimap2", rfile.name, qfile.name],
                 #        stdout=subprocess.STDOUT)
                 #p = Popen(["minimap2", rfile.name, qfile.name],
@@ -165,7 +167,9 @@ def main():
     )
 
     args = parser.parse_args()
-    map_queries_to_batch(args.batch_fn, args.query_fn, minimap_preset=args.minimap_preset)
+    map_queries_to_batch(args.batch_fn,
+                         args.query_fn,
+                         minimap_preset=args.minimap_preset)
 
 
 if __name__ == "__main__":
