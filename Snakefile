@@ -7,7 +7,7 @@ from snakemake.utils import min_version
 ##################################
 
 
-configfile: "config.json"
+configfile: "config.yaml"
 
 
 min_version("6.2.0")

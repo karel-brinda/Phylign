@@ -6,9 +6,9 @@ SHELL=/usr/bin/env bash -eo pipefail
 
 .SUFFIXES:
 
-DECOMP_THR=$(shell cat config.json | jq .decomp_thr)
-DOWNLOAD_THR=$(shell cat config.json | jq .download_thr)
-THR=$(shell cat config.json | jq .thr)
+DECOMP_THR=$(shell cat config.yaml | yq .decomp_thr)
+DOWNLOAD_THR=$(shell cat config.yaml | yq .download_thr)
+THR=$(shell cat config.yaml | yq .thr)
 SMK_PARAMS=--jobs ${THR} --rerun-incomplete --keep-going --printshellcmds --resources decomp_thr=$(DECOMP_THR) download_thr=$(DOWNLOAD_THR)
 
 all: ## Run everything
