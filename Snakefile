@@ -1,16 +1,33 @@
-shell.prefix("set -euo pipefail")
 from pathlib import Path
+from snakemake.utils import min_version
 
-# TODO:
-# - limit parallel download threads
-# - limit
 
+##################################
+## Initialization
+##################################
+
+
+configfile: "config.yaml"
+
+
+min_version("6.2.0")
+shell.prefix("set -euo pipefail")
 
 batches = [x.strip() for x in open("batches.txt")]
 # batches = [x for x in batches if x.find("gonorrhoeae") != -1]
-print(batches)
+print(f"Batches: {batches}")
 
-cobs_url = f"http://ftp.ebi.ac.uk/pub/software/pandora/2020/cobs/karel"
+qfiles = [x.with_suffix("").name for x in Path("queries").glob("*.fa")]
+print(f"Query files: {qfiles}")
+
+
+wildcard_constraints:
+    batch=".+__\d\d",
+
+
+##################################
+## Download params
+##################################
 
 
 def cobs_url(wildcards):
@@ -24,38 +41,45 @@ def cobs_url(wildcards):
 asm_zenodo = 4602622
 asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
 
-qfiles = [x.with_suffix("").name for x in Path("queries").glob("*.fa")]
-print(f"Query files: {qfiles}")
 
-##########################################################################
-
-
-wildcard_constraints:
-    batch=".+__\d\d",
+##################################
+## Top-level rules
+##################################
 
 
 rule all:
+    """Run all
+    """
     input:
-        #[f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
-        #
         #"intermediate/03_map/{batch}__{qfile}.sam
         [f"output/{qfile}.sam_summary.xz" for qfile in qfiles],
-        #[
-        #    [f"intermediate/03_map/{batch}____{qfile}.sam" for batch in batches]
-        #    for qfile in qfiles
-        #],
-
-
-#        [
-#            [f"intermediate/02_translate/{batch}____{qfile}.xz" for batch in batches]
-#            for qfile in qfiles
-#        ],
 
 
 rule download:
+    """Download assemblies and COBS indexes.
+    """
     input:
         [f"asms/{x}.tar.xz" for x in batches],
         [f"cobs/{x}.xz" for x in batches],
+
+
+rule match:
+    """Match reads to the COBS indexes.
+    """
+    input:
+        [f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
+
+
+rule map:
+    """Map reads to the assemblies.
+    """
+    input:
+        [f"output/{qfile}.sam_summary.xz" for qfile in qfiles],
+
+
+##################################
+## Other rules
+##################################
 
 
 rule download_asm_batch:
@@ -99,19 +123,11 @@ rule decompress_cobs:
         xz="cobs/{batch}.xz",
     resources:
         decomp_thr=1,
+    threads: 2  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     shell:
         """
         xzcat "{input.xz}" > "{output.cobs}"
         """
-
-
-cobs_mac = """docker run \\
-    -v $PWD:/experiment \\
-    --workdir /experiment \\
-    leandroishilima/cobs:1915fc query \\
-"""
-cobs_linux = ("cobs query --load-complete",)
-cobs = "cobs query"
 
 
 rule run_cobs:
@@ -122,24 +138,21 @@ rule run_cobs:
     input:
         cobs="intermediate/00_cobs/{batch}.cobs",
         fa="queries/{qfile}.fa",
+    threads: 2  # Small number in order to guarantee Snakemake parallelization
     # threads: workflow.cores - 1
-    threads: min(6, workflow.cores)
-    # singularity:
-    #     "docker://leandroishilima/cobs:1915fc"
+    # threads: min(6, workflow.cores)
     params:
-        kmer_thres=0.33,
-        cobs=cobs,
+        kmer_thres=config["cobs_kmer_thres"],
     priority: 999
     shell:
         """
-        {params.cobs} \\
+        cobs query \\
             -t {params.kmer_thres} \\
             -T {threads} \\
             -i {input.cobs} \\
             -f {input.fa} \\
-            | xz -v \\
-            > {output.match}
-            ##--load-complete \\
+        | xz -v \\
+        > {output.match}
         """
 
 
@@ -166,15 +179,18 @@ rule translate_matches:
         """
 
 
-rule minimap2:
+rule batch_align_minimap2:
     output:
         sam="intermediate/03_map/{batch}____{qfile}.sam",
     input:
         qfa="intermediate/02_filter/{qfile}.fa",
         asm="asms/{batch}.tar.xz",
+    params:
+        minimap_preset=config["minimap_preset"],
     shell:
         """
         ./scripts/batch_align.py \\
+            --minimap-preset {params.minimap_preset} \\
             {input.asm} \\
             {input.qfa} \\
             > {output.sam}
@@ -193,21 +209,3 @@ rule aggregate_sams:
             | xz \\
             > {output.pseudosam}
         """
-
-
-# rule translate_matches:
-#    """Translate cobs matches.
-#
-#    Output:
-#        ref - read - matches
-#    """
-#    output:
-#        matches="intermediate/02_translate/{batch}____{qfile}.xz",
-#    input:
-#        matches="intermediate/01_match/{batch}____{qfile}.xz",
-#    shell:
-#        """
-#        ./scripts/translate_cobs_matches.py {input.matches} \
-#            | xz \
-#            > {output.matches}
-#        """
