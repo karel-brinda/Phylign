@@ -3,5 +3,6 @@ thr: "all"
 decomp_thr: 5
 download_thr: 8
 download_thr: 9
+cobs_kmer_thres: 0.33
 
 

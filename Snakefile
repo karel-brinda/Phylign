@@ -142,19 +142,17 @@ rule run_cobs:
     # threads: workflow.cores - 1
     # threads: min(6, workflow.cores)
     params:
-        kmer_thres=0.33,
-        cobs="cobs query",
+        kmer_thres=config["cobs_kmer_thres"],
     priority: 999
     shell:
         """
-        {params.cobs} \\
+        cobs query \\
             -t {params.kmer_thres} \\
             -T {threads} \\
             -i {input.cobs} \\
             -f {input.fa} \\
-            | xz -v \\
-            > {output.match}
-            ##--load-complete \\
+        | xz -v \\
+        > {output.match}
         """
 
 
