@@ -341,6 +341,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
             qfas.append(qfa)
         logging.info(f"Mapping {qnames} to {rname}")
         result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
+        assert result and result[0]=="@", f"Output of Minimap2 is empty ('{result}')"
         logging.debug(f"Minimap result: {result}")
         print(result, end="")
         naligns = count_alignments(result)
