@@ -168,34 +168,59 @@ def minimap2_4(rfa, qfa, minimap_preset):
             command = [
                 "minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn
             ]
-            logging.info(f"Running command: {command}")
+
+            logging.info(f"Creating ThreadPoolExecutor for writing fasta")
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                _check_fifo(rfn)
+                _check_fifo(qfn)
+
+                rf_t = executor.submit(_write_to_file, rfn, rfa)
+                qf_t = executor.submit(_write_to_file, qfn, str.encode(qfa))
+
+                logging.info(f"Running command: {command}")
+                output=subprocess.check_output(command, timeout=2)
+
+                logging.info(f"Joining fasta writing threads")
+                rf_r = rf_t.result(2)
+                qf_r = qf_t.result(2)
+                return output.decode("utf-8")
+
             with Popen(command, stdout=PIPE) as p:
-                logging.info(f"Popen opened, creating fasta writing threads")
+                #logging.info(f"Popen opened, creating fasta writing threads")
                 #logging.info(f"Popen opened, creating a thread pool executor")
                 #with ProcessPoolExecutor(max_workers=3) as executor:
                 #with concurrent.futures.ProcesProcessPoolExecutor() as executor:
 
-                _check_fifo(rfn)
-                rf_t = threading.Thread(target=_write_to_file, args=(rfn, rfa))
-                rf_t.daemon = True
-                rf_t.start()
+                logging.info(f"Popen opened, creating ThreadPoolExecutor for writing fasta")
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    _check_fifo(rfn)
+                    _check_fifo(qfn)
+
+                    rf_t = executor.submit(_write_to_file, rfn, rfa)
+                    qf_t = executor.submit(_write_to_file, qfn, str.encode(qfa))
+                    logging.info(f"Running p.communicate")
+                    output = p.communicate(timeout=2)[0]
+                    logging.info(f"Joining fasta writing threads")
+                    rf_r = rf_t.result(2)
+                    qf_r = qf_t.result(2)
+                    return output.decode("utf-8")
+                #_check_fifo(rfn)
+                #rf_t = threading.Thread(target=_write_to_file, args=(rfn, rfa))
+                #rf_t.daemon = True
+                #rf_t.start()
                 #executor.submit(_write_to_file,rfn, rfa)
                 #_write_to_file(rfn, rfa)
 
-                _check_fifo(qfn)
-                qf_t = threading.Thread(target=_write_to_file,
-                                        args=(qfn, str.encode(qfa)))
-                qf_t.daemon = True
-                qf_t.start()
-                #executor.submit(_write_to_file,qfn, str.encode(qfa))
+                #_check_fifo(qfn)
+                #qf_t = threading.Thread(target=_write_to_file,
+                #                        args=(qfn, str.encode(qfa)))
+                #qf_t.daemon = True
+                #qf_t.start()
+                ##executor.submit(_write_to_file,qfn, str.encode(qfa))
                 #_write_to_file(qfn, str.encode(qfa))
 
-                logging.info(f"Running p.communicate")
-
-                output = p.communicate(timeout=2)[0]
-                rf_t.join(2)
-                qf_t.join(2)
-                return output.decode("utf-8")
+                    #rf_t.join(2)
+                    #qf_t.join(2)
 
 
 def minimap2_3(rfa, qfa, minimap_preset):
