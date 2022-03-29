@@ -148,9 +148,14 @@ def _check_fifo(fn):
 def minimap2_5(rfa, qfa, minimap_preset):
     """Like minimap2_4, but run as a separate thread with a timeout
     """
-    t = threading.Thread(target=minimap2_4, args=(rfa, qfa, minimap_preset))
-    t.start()
-    t.join(2)
+    #t = threading.Thread(target=minimap2_4, args=(rfa, qfa, minimap_preset))
+    #t.start()
+    #t.join(2)
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future = executor.submit(minimap2_4, rfa, qfa, minimap_preset)
+        return_value = future.result(2)
+        return return_value
 
 
 def minimap2_4(rfa, qfa, minimap_preset):
@@ -302,7 +307,7 @@ def minimap2(rfa, qfa, minimap_preset):
 def count_alignments(sam):
     j = 0
     #for x in sam.encode("utf8"):
-    for x in sam.split():
+    for x in sam.split("\n"):
         if x and x[0] != "@":
             #logging.info(x)
             j += 1
