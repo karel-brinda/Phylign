@@ -103,20 +103,26 @@ def load_qdicts(query_fn):
 
 
 def minimap2_3(rfa, qfa, minimap_preset):
-    logging.debug(f"Running minimap with the following sequences:")
+    logging.debug(f"Going to run minimap with the following sequences:")
     logging.debug(f"   rfa: {rfa}")
     logging.debug(f"   qfa: {qfa}")
 
     tmpdir = tempfile.mkdtemp()
     rfn = os.path.join(tmpdir, 'ref.fa')
     qfn = os.path.join(tmpdir, 'query.fa')
-    logging.debug(f"Opening ref fasta")
+
+    logging.debug(f"Temporary dir: {tmpdir}")
+    logging.debug(f"Creating fifo files {rfn} and {qfn}")
+    #os.mkfifo(rfn)
+    #os.mkfifo(qfn)
+
+    logging.debug(f"Opening ref fasta {rfn}")
     with open(rfn, "wb") as rfo:
-        logging.debug(f"Opening query fasta")
+        logging.debug(f"Opening query fasta {qfn}")
         with open(qfn, "w") as qfo:
-            logging.debug(f"Writing ref fasta")
+            logging.debug(f"Writing to ref fasta")
             rfo.write(rfa)
-            logging.debug(f"Writing query fasta")
+            logging.debug(f"Writing to query fasta")
             qfo.write(qfa)
     command = [
         "minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn
@@ -124,7 +130,7 @@ def minimap2_3(rfa, qfa, minimap_preset):
     logging.info(f"Running command: {command}")
     output = check_output(command)
     logging.info(f"Cleaning {tmpdir}")
-    os.unlink(rnf)  # Remove file
+    os.unlink(rfn)  # Remove file
     os.unlink(qfn)  # Remove file
     os.rmdir(tmpdir)  # Remove directory
     return output.decode("utf-8")
