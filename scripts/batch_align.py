@@ -13,6 +13,7 @@ import stat
 import subprocess
 import tarfile
 import tempfile
+import threading
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -128,7 +129,7 @@ def _write_to_file(fn, fa):
     #print("aaaa", file=sys.stderr)
     logging.debug(f"Opening fasta file {fn}")
     #print("bbb", file=sys.stderr)
-    with open(fn, 'wb', 10**9) as fo:
+    with open(fn, 'wb', 10**8) as fo:
         logging.debug(f"Writing to fasta file {fn}")
         #print("ccc", file=sys.stderr)
         fo.write(fa)
@@ -156,19 +157,27 @@ def minimap2_4(rfa, qfa, minimap_preset):
             ]
             logging.info(f"Running command: {command}")
             with Popen(command, stdout=PIPE) as p:
-                logging.info(f"Popen opened, creating a thread pool executor")
+                logging.info(f"Popen opened, creating fasta writing threads")
+                #logging.info(f"Popen opened, creating a thread pool executor")
                 #with ProcessPoolExecutor(max_workers=3) as executor:
                 #with concurrent.futures.ProcesProcessPoolExecutor() as executor:
 
                 _check_fifo(rfn)
+                rf_t = threading.Thread(target=_write_to_file, args=(rfn, rfa))
+                rf_t.daemon = True
+                rf_t.start()
                 #executor.submit(_write_to_file,rfn, rfa)
-                _write_to_file(rfn, rfa)
+                #_write_to_file(rfn, rfa)
 
                 _check_fifo(qfn)
+                qf_t = threading.Thread(target=_write_to_file,
+                                        args=(qfn, str.encode(qfa)))
+                qf_t.daemon = True
+                qf_t.start()
                 #executor.submit(_write_to_file,qfn, str.encode(qfa))
-                _write_to_file(qfn, str.encode(qfa))
+                #_write_to_file(qfn, str.encode(qfa))
 
-                logging.info(f"Running Popen.communicate")
+                logging.info(f"Running p.communicate")
 
                 output = p.communicate()[0]
                 return output.decode("utf-8")
@@ -198,7 +207,7 @@ def minimap2_3(rfa, qfa, minimap_preset):
             qfo.write(qfa)
     command = ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn]
     logging.info(f"Running command: {command}")
-    output = check_output(command)
+    output = check_output(command, timeout=2)
     logging.info(f"Cleaning {tmpdir}")
     os.unlink(rfn)  # Remove file
     os.unlink(qfn)  # Remove file
