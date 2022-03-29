@@ -125,14 +125,14 @@ def named_pipe():
 
 
 def _write_to_file(fn, fa):
-    print("aaaa", file=sys.stderr)
+    #print("aaaa", file=sys.stderr)
     logging.debug(f"Opening fasta file {fn}")
-    print("bbb", file=sys.stderr)
-    with open(fn, 'wb') as fo:
+    #print("bbb", file=sys.stderr)
+    with open(fn, 'wb', 999999999) as fo:
         logging.debug(f"Writing to fasta file {fn}")
-        print("ccc", file=sys.stderr)
+        #print("ccc", file=sys.stderr)
         fo.write(fa)
-        print("ddd", file=sys.stderr)
+        #print("ddd", file=sys.stderr)
 
 
 #from signal import signal, SIGPIPE, SIG_DFL
@@ -158,18 +158,20 @@ def minimap2_4(rfa, qfa, minimap_preset):
             with Popen(command, stdout=PIPE) as p:
                 logging.info(f"Popen opened, creating a thread pool executor")
                 #with ProcessPoolExecutor(max_workers=3) as executor:
-                with concurrent.futures.ProcessPoolExecutor() as executor:
-                    _check_fifo(rfn)
-                    executor.submit(_write_to_file,rfn, rfa)
-                    #_write_to_file(rfn, rfa)
-                    _check_fifo(qfn)
-                    executor.submit(_write_to_file,qfn, str.encode(qfa))
-                    #_write_to_file(qfn, str.encode(qfa))
+                #with concurrent.futures.ProcesProcessPoolExecutor() as executor:
 
-                    logging.info(f"Running Popen.communicate")
+                _check_fifo(rfn)
+                #executor.submit(_write_to_file,rfn, rfa)
+                _write_to_file(rfn, rfa)
 
-                    output = p.communicate(timeout=2)[0]
-                    return output.decode("utf-8")
+                _check_fifo(qfn)
+                #executor.submit(_write_to_file,qfn, str.encode(qfa))
+                _write_to_file(qfn, str.encode(qfa))
+
+                logging.info(f"Running Popen.communicate")
+
+                output = p.communicate()[0]
+                return output.decode("utf-8")
 
 
 def minimap2_3(rfa, qfa, minimap_preset):
