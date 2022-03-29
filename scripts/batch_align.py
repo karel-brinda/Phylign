@@ -19,12 +19,14 @@ from pprint import pprint
 from subprocess import check_output
 from subprocess import PIPE
 from subprocess import Popen
+from timeit import default_timer as timer
 from xopen import xopen
 
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
 logging.basicConfig(stream=sys.stderr,
-                    level=logging.DEBUG,
+                    #level=logging.DEBUG,
+                    level=logging.INFO,
                     format='[%(asctime)s] (%(levelname)s) %(message)s')
 
 
@@ -79,14 +81,12 @@ def iterate_over_batch(asms_fn, selected_rnames):
         for member in tar.getmembers():
             name = member.name
             rname = Path(name).stem
-            #print("name",name)
-            #print("rname",rname)
             if rname not in selected_rnames:
+                logging.info(f"Skipping {rname} ({name})")
                 continue
             f = tar.extractfile(member)
             rfa = f.read()
-            #print(rfa)
-            print(f"Extracting {rname} ({name})", file=sys.stderr)
+            logging.info(f"Extracting {rname} ({name})")
             yield rname, rfa
 
 
@@ -254,6 +254,16 @@ def minimap2(rfa, qfa, minimap_preset):
     return output.decode("utf-8")
 
 
+def count_alignments(sam):
+    j=0
+    #for x in sam.encode("utf8"):
+    for x in sam.split():
+        if x and x[0]!="@":
+            #logging.info(x)
+            j+=1
+    return j
+
+
 def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
     logging.info(
         f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset"
@@ -266,15 +276,20 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
         f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}"
     )
     for rname, rfa in iterate_over_batch(asms_fn, selected_rnames):
-        logging.info(f"Iterating over {rname}")
+        start = timer()
+
         qfas = []
         for qname in rname_to_qnames[rname]:
-            logging.debug(f"Querying {qname}")
+            logging.info(f"Mapping {qname} to {rname}")
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
         result = minimap2_4(rfa, "\n".join(qfas), minimap_preset)
         logging.debug(f"Minimap result: {result}")
         print(result, end="")
+        j=count_alignments(result)
+        end = timer()
+        s=end-start
+        logging.info(f"Computed {j} alignments in {s} seconds")
 
 
 def main():
