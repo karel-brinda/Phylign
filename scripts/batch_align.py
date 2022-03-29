@@ -3,6 +3,7 @@
 import argparse
 import atexit
 import collections
+import concurrent.futures
 import logging
 import os
 import re
@@ -124,15 +125,18 @@ def named_pipe():
 
 
 def _write_to_file(fn, fa):
+    print("aaaa", file=sys.stderr)
     logging.debug(f"Opening fasta file {fn}")
+    print("bbb", file=sys.stderr)
     with open(fn, 'wb') as fo:
         logging.debug(f"Writing to fasta file {fn}")
+        print("ccc", file=sys.stderr)
         fo.write(fa)
+        print("ddd", file=sys.stderr)
 
 
-from signal import signal, SIGPIPE, SIG_DFL
-
-signal(SIGPIPE, SIG_DFL)
+#from signal import signal, SIGPIPE, SIG_DFL
+#signal(SIGPIPE, SIG_DFL)
 
 
 def _check_fifo(fn):
@@ -151,16 +155,21 @@ def minimap2_4(rfa, qfa, minimap_preset):
                 "minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn
             ]
             logging.info(f"Running command: {command}")
-            p = Popen(command, stdout=PIPE)  # read from path
+            with Popen(command, stdout=PIPE) as p:
+                logging.info(f"Popen opened, creating a thread pool executor")
+                #with ProcessPoolExecutor(max_workers=3) as executor:
+                with concurrent.futures.ProcessPoolExecutor() as executor:
+                    _check_fifo(rfn)
+                    executor.submit(_write_to_file,rfn, rfa)
+                    #_write_to_file(rfn, rfa)
+                    _check_fifo(qfn)
+                    executor.submit(_write_to_file,qfn, str.encode(qfa))
+                    #_write_to_file(qfn, str.encode(qfa))
 
-            _write_to_file(rfn, rfa)
-            _write_to_file(qfn, str.encode(qfa))
+                    logging.info(f"Running Popen.communicate")
 
-            _check_fifo(rfn)
-            _check_fifo(qfn)
-
-            output = p.communicate()[0]
-            return output.decode("utf-8")
+                    output = p.communicate(timeout=2)[0]
+                    return output.decode("utf-8")
 
 
 def minimap2_3(rfa, qfa, minimap_preset):
