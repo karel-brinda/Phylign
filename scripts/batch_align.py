@@ -3,6 +3,7 @@
 import argparse
 import atexit
 import collections
+import logging
 import os
 import re
 import sys
@@ -18,6 +19,10 @@ from subprocess import Popen
 from xopen import xopen
 
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
+
+logging.basicConfig(stream=sys.stderr,
+                    level=logging.DEBUG,
+                    format='[%(asctime)s] (%(levelname)s) %(message)s')
 
 
 def readfq(fp):  # this is a generator function
@@ -66,7 +71,7 @@ def readfq(fp):  # this is a generator function
 
 
 def iterate_over_batch(asms_fn, selected_rnames):
-    print(f"Opening {asms_fn}", file=sys.stderr)
+    logging.info(f"Opening {asms_fn}")
     with tarfile.open(asms_fn, mode="r:xz") as tar:
         for member in tar.getmembers():
             name = member.name
@@ -95,25 +100,24 @@ def load_qdicts(query_fn):
 
 
 def minimap2(rfa, qfa, minimap_preset):
-    with tempfile.NamedTemporaryFile("wb") as rfile:
-        with tempfile.NamedTemporaryFile("wt") as qfile:
-            #print(rfa)
+    logging.debug(f"Running minimap with the following sequences:")
+    logging.debug(f"   rfa: {rfa}")
+    logging.debug(f"   qfa: {qfa}")
+    with tempfile.NamedTemporaryFile("wb", delete=False) as rfile:
+        with tempfile.NamedTemporaryFile("wt", delete=False) as qfile:
             rfile.write(rfa)
             rfile.delete = False
             qfile.write(qfa)
             qfile.delete = False
 
-            #print("reference")
-            #print(rfa)
-            #print("query")
-            #print(qfa)
-
             try:
                 #p = Popen(["minimap2", rfile.name, qfile.name])
-                output = check_output([
+                command = [
                     "minimap2", "-a", "--eqx", "-x", minimap_preset,
                     rfile.name, qfile.name
-                ])
+                ]
+                logging.info(f"Running command: {command}")
+                output = check_output(command)
                 #p = Popen(["minimap2", rfile.name, qfile.name],
                 #        stdout=subprocess.STDOUT)
                 #p = Popen(["minimap2", rfile.name, qfile.name],
@@ -131,19 +135,30 @@ def minimap2(rfa, qfa, minimap_preset):
 
 
 def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
+    logging.info(
+        f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset"
+    )
     qname_to_qfa, rname_to_qnames = load_qdicts(query_fn)
 
     selected_rnames = set([x for x in rname_to_qnames])
+    nsr = len(selected_rnames)
+    logging.debug(
+        f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}"
+    )
     for rname, rfa in iterate_over_batch(asms_fn, selected_rnames):
+        logging.info(f"Iterating over {rname}")
         qfas = []
         for qname in rname_to_qnames[rname]:
+            logging.debug(f"Querying {qname}")
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
         result = minimap2(rfa, "\n".join(qfas), minimap_preset)
+        logging.debug(f"Minimap result: {result}")
         print(result, end="")
 
 
 def main():
+    logging.info("Starting")
 
     parser = argparse.ArgumentParser(description="")
 
