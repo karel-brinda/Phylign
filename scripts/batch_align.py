@@ -128,7 +128,7 @@ def _write_to_file(fn, fa):
     #print("aaaa", file=sys.stderr)
     logging.debug(f"Opening fasta file {fn}")
     #print("bbb", file=sys.stderr)
-    with open(fn, 'wb', 999999999) as fo:
+    with open(fn, 'wb', 10**9) as fo:
         logging.debug(f"Writing to fasta file {fn}")
         #print("ccc", file=sys.stderr)
         fo.write(fa)
@@ -303,8 +303,10 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
         f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}"
     )
     naligns_total = 0
+    nrefs = 0
     for rname, rfa in iterate_over_batch(asms_fn, selected_rnames):
         start = timer()
+        nrefs += 1
 
         qfas = []
         qnames = []
@@ -327,7 +329,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
     eend = timer()
     ss = round(1000 * (eend - sstart)) / 1000.0
     logging.info(
-        f"Finished mapping queries from '{query_fn}' to '{asms_fn}': computed {naligns_total} alignments to {nsr} references in {ss} seconds"
+        f"Finished mapping queries from '{query_fn}' to '{asms_fn}': computed {naligns_total} alignments to {nrefs} references in {ss} seconds"
     )
 
 
