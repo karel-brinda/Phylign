@@ -6,7 +6,9 @@ import collections
 import logging
 import os
 import re
+import shutil
 import sys
+import stat
 import subprocess
 import tarfile
 import tempfile
@@ -100,6 +102,50 @@ def load_qdicts(query_fn):
     return qname_to_qfa, rname_to_qnames
 
 
+@contextmanager
+def named_pipe():
+    dirname = tempfile.mkdtemp()
+    try:
+        path = os.path.join(dirname, 'named_pipe')
+        os.mkfifo(path)
+        yield path
+    finally:
+        shutil.rmtree(dirname)
+
+def _write_to_file(fn, fa):
+    logging.debug(f"Opening fasta file {fn}")
+    with open(fn, 'wb') as fo:
+        logging.debug(f"Writing to fasta file {fn}")
+        fo.write(fa)
+
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE,SIG_DFL)
+
+def _check_fifo(fn):
+        fifo_mode=stat.S_ISFIFO(os.stat(fn).st_mode)
+        logging.debug(f"Checking the FIFO mode of '{fn}': {fifo_mode}")
+
+def minimap2_4(rfa, qfa, minimap_preset):
+    logging.debug(f"Going to run minimap with the following sequences:")
+    logging.debug(f"   rfa: {rfa}")
+    logging.debug(f"   qfa: {qfa}")
+
+    with named_pipe() as rfn:
+        with named_pipe() as qfn:
+            command = [
+                "minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn
+            ]
+            logging.info(f"Running command: {command}")
+            p = Popen(command, stdout=PIPE) # read from path
+
+            _write_to_file(rfn, rfa)
+            _write_to_file(qfn, str.encode(qfa))
+
+            _check_fifo(rfn)
+            _check_fifo(qfn)
+
+            output = p.communicate()[0]
+            return output.decode("utf-8")
 
 
 def minimap2_3(rfa, qfa, minimap_preset):
@@ -226,7 +272,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
             logging.debug(f"Querying {qname}")
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
-        result = minimap2_3(rfa, "\n".join(qfas), minimap_preset)
+        result = minimap2_4(rfa, "\n".join(qfas), minimap_preset)
         logging.debug(f"Minimap result: {result}")
         print(result, end="")
 
