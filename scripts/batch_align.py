@@ -145,6 +145,14 @@ def _check_fifo(fn):
     logging.debug(f"Checking the FIFO mode of '{fn}': {fifo_mode}")
 
 
+def minimap2_5(rfa, qfa, minimap_preset):
+    """Like minimap2_4, but run as a separate thread with a timeout
+    """
+    t = threading.Thread(target=minimap2_4, args=(rfa, qfa, minimap_preset))
+    t.start()
+    t.join(2)
+
+
 def minimap2_4(rfa, qfa, minimap_preset):
     logging.debug(f"Going to run minimap with the following sequences:")
     logging.debug(f"   rfa: {rfa}")
@@ -326,7 +334,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
         logging.info(f"Mapping {qnames} to {rname}")
-        result = minimap2_4(rfa, "\n".join(qfas), minimap_preset)
+        result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
         logging.debug(f"Minimap result: {result}")
         print(result, end="")
         naligns = count_alignments(result)
