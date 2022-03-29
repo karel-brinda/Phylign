@@ -328,9 +328,10 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
     )
     naligns_total = 0
     nrefs = 0
+    refs = set()
     for rname, rfa in iterate_over_batch(asms_fn, selected_rnames):
         start = timer()
-        nrefs += 1
+        refs.add(rname)
 
         qfas = []
         qnames = []
@@ -352,6 +353,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
         )
     eend = timer()
     ss = round(1000 * (eend - sstart)) / 1000.0
+    nrefs = len(refs)
     logging.info(
         f"Finished mapping queries from '{query_fn}' to '{asms_fn}': computed {naligns_total} alignments to {nrefs} references in {ss} seconds"
     )
