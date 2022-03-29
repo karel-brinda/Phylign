@@ -179,7 +179,9 @@ def minimap2_4(rfa, qfa, minimap_preset):
 
                 logging.info(f"Running p.communicate")
 
-                output = p.communicate()[0]
+                output = p.communicate(timeout=2)[0]
+                rf_t.join(2)
+                qf_t.join(2)
                 return output.decode("utf-8")
 
 
