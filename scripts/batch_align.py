@@ -11,6 +11,7 @@ import subprocess
 import tarfile
 import tempfile
 
+from contextlib import contextmanager
 from pathlib import Path
 from pprint import pprint
 from subprocess import check_output
@@ -99,7 +100,74 @@ def load_qdicts(query_fn):
     return qname_to_qfa, rname_to_qnames
 
 
+
+
+def minimap2_3(rfa, qfa, minimap_preset):
+    logging.debug(f"Running minimap with the following sequences:")
+    logging.debug(f"   rfa: {rfa}")
+    logging.debug(f"   qfa: {qfa}")
+
+    tmpdir = tempfile.mkdtemp()
+    rfn = os.path.join(tmpdir, 'ref.fa')
+    qfn = os.path.join(tmpdir, 'query.fa')
+    logging.debug(f"Opening ref fasta")
+    with open(rfn, "wb") as rfo:
+        logging.debug(f"Opening query fasta")
+        with open(qfn, "w") as qfo:
+            logging.debug(f"Writing ref fasta")
+            rfo.write(rfa)
+            logging.debug(f"Writing query fasta")
+            qfo.write(qfa)
+    command = [
+        "minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn
+    ]
+    logging.info(f"Running command: {command}")
+    output = check_output(command)
+    logging.info(f"Cleaning {tmpdir}")
+    os.unlink(rnf)  # Remove file
+    os.unlink(qfn)  # Remove file
+    os.rmdir(tmpdir)  # Remove directory
+    return output.decode("utf-8")
+
+@contextmanager
+def temp_fifo():
+    """Context Manager for creating named pipes with temporary names."""
+    tmpdir = tempfile.mkdtemp()
+    filename = os.path.join(tmpdir, 'fifo')  # Temporary filename
+    os.mkfifo(filename)  # Create FIFO
+    try:
+        yield filename
+    finally:
+        os.unlink(filename)  # Remove file
+        os.rmdir(tmpdir)  # Remove directory
+
+def minimap2_2(rfa, qfa, minimap_preset):
+    # doesn't work, gets stuck at the first open
+    logging.debug(f"Running minimap with the following sequences:")
+    logging.debug(f"   rfa: {rfa}")
+    logging.debug(f"   qfa: {qfa}")
+    with temp_fifo() as rfn:
+        logging.debug(f"Opening ref fasta")
+        with open(rfn, "w") as rfo:
+            with temp_fifo() as qfn:
+                logging.debug(f"Opening query fasta")
+                with open(qfn, "w") as qfo:
+                    logging.debug(f"Writing ref fasta")
+                    rfo.write(rfa)
+                    logging.debug(f"Writing query fasta")
+                    qfo.write(qfa)
+                    command = [
+                        "minimap2", "-a", "--eqx", "-x", minimap_preset,
+                        rfn.name, qfn.name
+                    ]
+                    logging.info(f"Running command: {command}")
+                    output = check_output(command)
+                    return output.decode("utf-8")
+
+
 def minimap2(rfa, qfa, minimap_preset):
+    # doesn't always work, sometimes queries get lost and it's probably slower
+    # due to files being physical
     logging.debug(f"Running minimap with the following sequences:")
     logging.debug(f"   rfa: {rfa}")
     logging.debug(f"   qfa: {qfa}")
@@ -152,7 +220,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
             logging.debug(f"Querying {qname}")
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
-        result = minimap2(rfa, "\n".join(qfas), minimap_preset)
+        result = minimap2_3(rfa, "\n".join(qfas), minimap_preset)
         logging.debug(f"Minimap result: {result}")
         print(result, end="")
 
