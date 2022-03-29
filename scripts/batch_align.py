@@ -24,10 +24,11 @@ from xopen import xopen
 
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
-logging.basicConfig(stream=sys.stderr,
-                    #level=logging.DEBUG,
-                    level=logging.INFO,
-                    format='[%(asctime)s] (%(levelname)s) %(message)s')
+logging.basicConfig(
+    stream=sys.stderr,
+    #level=logging.DEBUG,
+    level=logging.INFO,
+    format='[%(asctime)s] (%(levelname)s) %(message)s')
 
 
 def readfq(fp):  # this is a generator function
@@ -77,17 +78,26 @@ def readfq(fp):  # this is a generator function
 
 def iterate_over_batch(asms_fn, selected_rnames):
     logging.info(f"Opening {asms_fn}")
+    skipped = 0
     with tarfile.open(asms_fn, mode="r:xz") as tar:
         for member in tar.getmembers():
+            # extract file headers
             name = member.name
             rname = Path(name).stem
             if rname not in selected_rnames:
-                logging.info(f"Skipping {rname} ({name})")
+                logging.debug(f"Skipping {rname} ({name})")
+                skipped += 1
                 continue
+            # extract file content
+            if skipped > 0:
+                logging.info(f"Skipping {skipped} references in {asms_fn}")
+                skipped = 0
+            logging.info(f"Extracting {rname} ({name})")
             f = tar.extractfile(member)
             rfa = f.read()
-            logging.info(f"Extracting {rname} ({name})")
             yield rname, rfa
+    if skipped > 0:
+        logging.info(f"Skipping {skipped} references in {asms_fn}")
 
 
 def load_qdicts(query_fn):
@@ -112,18 +122,23 @@ def named_pipe():
     finally:
         shutil.rmtree(dirname)
 
+
 def _write_to_file(fn, fa):
     logging.debug(f"Opening fasta file {fn}")
     with open(fn, 'wb') as fo:
         logging.debug(f"Writing to fasta file {fn}")
         fo.write(fa)
 
+
 from signal import signal, SIGPIPE, SIG_DFL
-signal(SIGPIPE,SIG_DFL)
+
+signal(SIGPIPE, SIG_DFL)
+
 
 def _check_fifo(fn):
-        fifo_mode=stat.S_ISFIFO(os.stat(fn).st_mode)
-        logging.debug(f"Checking the FIFO mode of '{fn}': {fifo_mode}")
+    fifo_mode = stat.S_ISFIFO(os.stat(fn).st_mode)
+    logging.debug(f"Checking the FIFO mode of '{fn}': {fifo_mode}")
+
 
 def minimap2_4(rfa, qfa, minimap_preset):
     logging.debug(f"Going to run minimap with the following sequences:")
@@ -136,7 +151,7 @@ def minimap2_4(rfa, qfa, minimap_preset):
                 "minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn
             ]
             logging.info(f"Running command: {command}")
-            p = Popen(command, stdout=PIPE) # read from path
+            p = Popen(command, stdout=PIPE)  # read from path
 
             _write_to_file(rfn, rfa)
             _write_to_file(qfn, str.encode(qfa))
@@ -170,9 +185,7 @@ def minimap2_3(rfa, qfa, minimap_preset):
             rfo.write(rfa)
             logging.debug(f"Writing to query fasta")
             qfo.write(qfa)
-    command = [
-        "minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn
-    ]
+    command = ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn]
     logging.info(f"Running command: {command}")
     output = check_output(command)
     logging.info(f"Cleaning {tmpdir}")
@@ -180,6 +193,7 @@ def minimap2_3(rfa, qfa, minimap_preset):
     os.unlink(qfn)  # Remove file
     os.rmdir(tmpdir)  # Remove directory
     return output.decode("utf-8")
+
 
 @contextmanager
 def temp_fifo():
@@ -192,6 +206,7 @@ def temp_fifo():
     finally:
         os.unlink(filename)  # Remove file
         os.rmdir(tmpdir)  # Remove directory
+
 
 def minimap2_2(rfa, qfa, minimap_preset):
     # doesn't work, gets stuck at the first open
@@ -255,16 +270,17 @@ def minimap2(rfa, qfa, minimap_preset):
 
 
 def count_alignments(sam):
-    j=0
+    j = 0
     #for x in sam.encode("utf8"):
     for x in sam.split():
-        if x and x[0]!="@":
+        if x and x[0] != "@":
             #logging.info(x)
-            j+=1
+            j += 1
     return j
 
 
 def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
+    sstart = timer()
     logging.info(
         f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset"
     )
@@ -275,21 +291,33 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
     logging.debug(
         f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}"
     )
+    naligns_total = 0
     for rname, rfa in iterate_over_batch(asms_fn, selected_rnames):
         start = timer()
 
         qfas = []
+        qnames = []
         for qname in rname_to_qnames[rname]:
-            logging.info(f"Mapping {qname} to {rname}")
+            qnames.append(qname)
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
+        logging.info(f"Mapping {qnames} to {rname}")
         result = minimap2_4(rfa, "\n".join(qfas), minimap_preset)
         logging.debug(f"Minimap result: {result}")
         print(result, end="")
-        j=count_alignments(result)
+        naligns = count_alignments(result)
+        naligns_total += naligns
         end = timer()
-        s=end-start
-        logging.info(f"Computed {j} alignments in {s} seconds")
+        s = round(1000 * (end - start)) / 1000.0
+        n_q = len(qnames)
+        logging.info(
+            f"Computed {naligns} alignments of {n_q} queries to {rname} in {s} seconds"
+        )
+    eend = timer()
+    ss = round(1000 * (eend - sstart)) / 1000.0
+    logging.info(
+        f"Finished mapping queries from '{query_fn}' to '{asms_fn}': computed {naligns_total} alignments to {nsr} references in {ss} seconds"
+    )
 
 
 def main():
