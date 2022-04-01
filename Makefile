@@ -1,4 +1,4 @@
-.PHONY: all help clean cleanall cluster download match map format
+.PHONY: all help clean cleanall cluster download match map format report
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -23,6 +23,8 @@ match: ## Match queries to the COBS indexes
 map: ## Map reads to the assemblies
 	snakemake $(SMK_PARAMS) -- map
 
+report: ## Generate Snakemake report
+	snakemake --report
 
 format: ## Reformat Python and Snakemake files
 	yapf -i */*.py
