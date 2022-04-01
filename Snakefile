@@ -185,15 +185,19 @@ rule batch_align_minimap2:
     input:
         qfa="intermediate/02_filter/{qfile}.fa",
         asm="asms/{batch}.tar.xz",
+    log:
+        log="logs/03_map/{batch}____{qfile}.log",
     params:
         minimap_preset=config["minimap_preset"],
     shell:
         """
+        ((
         ./scripts/batch_align.py \\
             --minimap-preset {params.minimap_preset} \\
             {input.asm} \\
             {input.qfa} \\
             > {output.sam}
+        ) 2>&1 ) > {log}
         """
 
 

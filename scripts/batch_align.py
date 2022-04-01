@@ -3,6 +3,7 @@
 import argparse
 import atexit
 import collections
+import concurrent.futures
 import logging
 import os
 import re
@@ -12,6 +13,7 @@ import stat
 import subprocess
 import tarfile
 import tempfile
+import threading
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -124,20 +126,36 @@ def named_pipe():
 
 
 def _write_to_file(fn, fa):
+    #print("aaaa", file=sys.stderr)
     logging.debug(f"Opening fasta file {fn}")
-    with open(fn, 'wb') as fo:
+    #print("bbb", file=sys.stderr)
+    with open(fn, 'wb', 10**8) as fo:
         logging.debug(f"Writing to fasta file {fn}")
+        #print("ccc", file=sys.stderr)
         fo.write(fa)
+        #print("ddd", file=sys.stderr)
 
 
-from signal import signal, SIGPIPE, SIG_DFL
-
-signal(SIGPIPE, SIG_DFL)
+#from signal import signal, SIGPIPE, SIG_DFL
+#signal(SIGPIPE, SIG_DFL)
 
 
 def _check_fifo(fn):
     fifo_mode = stat.S_ISFIFO(os.stat(fn).st_mode)
     logging.debug(f"Checking the FIFO mode of '{fn}': {fifo_mode}")
+
+
+def minimap2_5(rfa, qfa, minimap_preset):
+    """Like minimap2_4, but run as a separate thread with a timeout
+    """
+    #t = threading.Thread(target=minimap2_4, args=(rfa, qfa, minimap_preset))
+    #t.start()
+    #t.join(2)
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future = executor.submit(minimap2_4, rfa, qfa, minimap_preset)
+        return_value = future.result(2)
+        return return_value
 
 
 def minimap2_4(rfa, qfa, minimap_preset):
@@ -146,21 +164,68 @@ def minimap2_4(rfa, qfa, minimap_preset):
     logging.debug(f"   qfa: {qfa}")
 
     with named_pipe() as rfn:
-        with named_pipe() as qfn:
-            command = [
-                "minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn
-            ]
-            logging.info(f"Running command: {command}")
-            p = Popen(command, stdout=PIPE)  # read from path
+        #with named_pipe() as qfn:
+        command = ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, '-']
 
-            _write_to_file(rfn, rfa)
-            _write_to_file(qfn, str.encode(qfa))
-
+        logging.info(f"Creating ThreadPoolExecutor for writing fasta")
+        with concurrent.futures.ThreadPoolExecutor() as executor:
             _check_fifo(rfn)
-            _check_fifo(qfn)
+            #_check_fifo(qfn)
 
-            output = p.communicate()[0]
-            return output.decode("utf-8")
+            rf_t = executor.submit(_write_to_file, rfn, rfa)
+            #qf_t = executor.submit(_write_to_file, qfn, str.encode(qfa))
+
+            logging.info(f"Running command: {command}")
+            output = subprocess.check_output(command,
+                                             timeout=2,
+                                             input=qfa,
+                                             universal_newlines=True)
+
+            logging.info(f"Joining fasta writing threads")
+            rf_r = rf_t.result(2)
+            #qf_r = qf_t.result(2)
+            return output
+            #return output.decode("utf-8")
+
+        #with Popen(command, stdout=PIPE) as p:
+        #logging.info(f"Popen opened, creating fasta writing threads")
+        #logging.info(f"Popen opened, creating a thread pool executor")
+        #with ProcessPoolExecutor(max_workers=3) as executor:
+        #with concurrent.futures.ProcesProcessPoolExecutor() as executor:
+
+        #logging.info(
+        #    f"Popen opened, creating ThreadPoolExecutor for writing fasta")
+        #with concurrent.futures.ThreadPoolExecutor() as executor:
+        #    _check_fifo(rfn)
+        #    _check_fifo(qfn)
+
+
+#
+#rf_t = executor.submit(_write_to_file, rfn, rfa)
+#qf_t = executor.submit(_write_to_file, qfn, str.encode(qfa))
+#logging.info(f"Running p.communicate")
+#output = p.communicate(timeout=2)[0]
+#logging.info(f"Joining fasta writing threads")
+#rf_r = rf_t.result(2)
+#qf_r = qf_t.result(2)
+#return output.decode("utf-8")
+#_check_fifo(rfn)
+#rf_t = threading.Thread(target=_write_to_file, args=(rfn, rfa))
+#rf_t.daemon = True
+#rf_t.start()
+#executor.submit(_write_to_file,rfn, rfa)
+#_write_to_file(rfn, rfa)
+
+#_check_fifo(qfn)
+#qf_t = threading.Thread(target=_write_to_file,
+#                        args=(qfn, str.encode(qfa)))
+#qf_t.daemon = True
+#qf_t.start()
+##executor.submit(_write_to_file,qfn, str.encode(qfa))
+#_write_to_file(qfn, str.encode(qfa))
+
+#rf_t.join(2)
+#qf_t.join(2)
 
 
 def minimap2_3(rfa, qfa, minimap_preset):
@@ -187,7 +252,7 @@ def minimap2_3(rfa, qfa, minimap_preset):
             qfo.write(qfa)
     command = ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, qfn]
     logging.info(f"Running command: {command}")
-    output = check_output(command)
+    output = check_output(command, timeout=2)
     logging.info(f"Cleaning {tmpdir}")
     os.unlink(rfn)  # Remove file
     os.unlink(qfn)  # Remove file
@@ -272,7 +337,7 @@ def minimap2(rfa, qfa, minimap_preset):
 def count_alignments(sam):
     j = 0
     #for x in sam.encode("utf8"):
-    for x in sam.split():
+    for x in sam.split("\n"):
         if x and x[0] != "@":
             #logging.info(x)
             j += 1
@@ -292,8 +357,11 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
         f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}"
     )
     naligns_total = 0
+    nrefs = 0
+    refs = set()
     for rname, rfa in iterate_over_batch(asms_fn, selected_rnames):
         start = timer()
+        refs.add(rname)
 
         qfas = []
         qnames = []
@@ -302,7 +370,21 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
         logging.info(f"Mapping {qnames} to {rname}")
-        result = minimap2_4(rfa, "\n".join(qfas), minimap_preset)
+
+        # in the case of
+        try:
+            result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
+        except concurrent.futures._base.TimeoutError:
+            try:
+                result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
+            except concurrent.futures._base.TimeoutError:
+                try:
+                    result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
+                except concurrent.futures._base.TimeoutError:
+                    result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
+
+        assert result and result[
+            0] == "@", f"Output of Minimap2 is empty ('{result}')"
         logging.debug(f"Minimap result: {result}")
         print(result, end="")
         naligns = count_alignments(result)
@@ -315,8 +397,9 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
         )
     eend = timer()
     ss = round(1000 * (eend - sstart)) / 1000.0
+    nrefs = len(refs)
     logging.info(
-        f"Finished mapping queries from '{query_fn}' to '{asms_fn}': computed {naligns_total} alignments to {nsr} references in {ss} seconds"
+        f"Finished mapping queries from '{query_fn}' to '{asms_fn}': computed {naligns_total} alignments to {nrefs} references in {ss} seconds"
     )
 
 
