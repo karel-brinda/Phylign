@@ -36,7 +36,7 @@ help: ## Print help message
 clean: ## Clean intermediate search files
 	rm -f intermediate/{01_*,02*,03*,04*}/*.xz
 
-cleanall: clean ## Clean all (including downloaded files)
+cleanall: clean ## Clean all generated and downloaded files
 	rm -f {asms,cobs}/*.xz
 
 cluster: ## Submit to a SLURM cluster
