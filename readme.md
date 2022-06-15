@@ -3,9 +3,20 @@
 This is the pipeline for BLAST-like search within the 661k collection.
 
 
+## Dependencies
+
+* `snakemake`
+* `cobs`
+* `minimap2`
+* `curl`
+* `pprint`
+* `xz`
+
+
+
 ## Commands
 
-* `make` Run everything
+* `make`          Run everything
 * `make download` Download the 661k assemblies and COBS indexes
 * `make match`    Match queries using COBS (queries -> candidates)
 * `make map`      Map candidates to the assemblies (candidates -> alignments)
