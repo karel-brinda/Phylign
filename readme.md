@@ -29,11 +29,11 @@ This is the pipeline for BLAST-like search within the 661k collection.
 
 ## Directories
 
-* `asms/`, `cobs/` - Downloaded assemblies and COBS indexes
-* `queries/` - Queries, to be provided within one or more FASTA files (`.fa`)
-* `intermediate/` - Intermediate files
-   * `00_cobs` - Decompressed COBS indexes (tmp)
-   * `01_match` - COBS matches
-   * `02_filter` - Filtered candidates
-   * `03_map` - Minimap2 alignments
-* `output/` - Results
+* `asms/`, `cobs/` Downloaded assemblies and COBS indexes
+* `queries/` Queries, to be provided within one or more FASTA files (`.fa`) in the 1line format (!!)
+* `intermediate/` Intermediate files
+   * `00_cobs` Decompressed COBS indexes (tmp)
+   * `01_match` COBS matches
+   * `02_filter` Filtered candidates
+   * `03_map` Minimap2 alignments
+* `output/` Results
