@@ -14,13 +14,13 @@ SMK_PARAMS=--jobs ${THR} --rerun-incomplete --keep-going --printshellcmds --reso
 all: ## Run everything
 	snakemake $(SMK_PARAMS)
 
-download: ## Download assemblies and COBS indexes
+download: ## Download the 661k assemblies and COBS indexes
 	snakemake $(SMK_PARAMS) -- download
 
-match: ## Match queries to the COBS indexes
+match: ## Match queries using COBS (queries -> candidates)
 	snakemake $(SMK_PARAMS) -- match
 
-map: ## Map reads to the assemblies
+map: ## Map candidates to assemblies (candidates -> alignments)
 	snakemake $(SMK_PARAMS) -- map
 
 report: ## Generate Snakemake report
@@ -33,10 +33,10 @@ format: ## Reformat Python and Snakemake files
 help: ## Print help message
 	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"
 
-clean: ## Clean
+clean: ## Clean intermediate search files
 	rm -f intermediate/{01_*,02*,03*,04*}/*.xz
 
-cleanall: clean ## Clean all
+cleanall: clean ## Clean all (including downloaded files)
 	rm -f {asms,cobs}/*.xz
 
 cluster: ## Submit to a SLURM cluster
