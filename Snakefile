@@ -13,8 +13,7 @@ configfile: "config.yaml"
 min_version("6.2.0")
 shell.prefix("set -euo pipefail")
 
-batches = [x.strip() for x in open("batches.txt")]
-# batches = [x for x in batches if x.find("gonorrhoeae") != -1]
+batches = [x.strip() for x in open(config["batches"])]
 print(f"Batches: {batches}")
 
 qfiles = [x.with_suffix("").name for x in Path("queries").glob("*.fa")]

@@ -1,0 +1,11 @@
+acinetobacter_baumannii__01
+acinetobacter_baumannii__02
+acinetobacter_nosocomialis__01
+acinetobacter_pittii__01
+actinobacillus_pleuropneumoniae__01
+aeromonas_hydrophila__01
+aeromonas_salmonicida__01
+aeromonas_veronii__01
+bacillus_anthracis__01
+bacillus_cereus__01
+bacillus_subtilis__01
