@@ -118,9 +118,9 @@ rule decompress_cobs:
     """Decompress cobs indexes
     """
     output:
-        cobs=temp("intermediate/00_cobs/{batch}.cobs"),
+        cobs=temp("intermediate/00_cobs/{batch}.cobs_classic"),
     input:
-        xz="cobs/{batch}.xz",
+        xz="cobs/{batch}.cobs_classic.xz",
     resources:
         decomp_thr=1,
     threads: 2  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
@@ -136,7 +136,7 @@ rule run_cobs:
     output:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
-        cobs="intermediate/00_cobs/{batch}.cobs",
+        cobs="intermediate/00_cobs/{batch}.cobs_classic",
         fa="queries/{qfile}.fa",
     threads: 2  # Small number in order to guarantee Snakemake parallelization
     # threads: workflow.cores - 1
