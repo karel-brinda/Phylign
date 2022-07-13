@@ -50,7 +50,6 @@ rule all:
     """Run all
     """
     input:
-        #"intermediate/03_map/{batch}__{qfile}.sam
         [f"output/{qfile}.sam_summary.xz" for qfile in qfiles],
 
 
