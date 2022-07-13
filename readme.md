@@ -12,6 +12,7 @@ This is the pipeline for BLAST-like search within the 661k collection.
 * `pprint`
 * `xz`
 * `yq`
+* `xopen`
 
 
 
