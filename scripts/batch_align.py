@@ -23,12 +23,12 @@ from subprocess import PIPE
 from subprocess import Popen
 from timeit import default_timer as timer
 from xopen import xopen
+import time
 
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
 logging.basicConfig(
     stream=sys.stderr,
-    #level=logging.DEBUG,
     level=logging.INFO,
     format='[%(asctime)s] (%(levelname)s) %(message)s')
 
@@ -125,37 +125,27 @@ def named_pipe():
         shutil.rmtree(dirname)
 
 
-def _write_to_file(fn, fa):
-    #print("aaaa", file=sys.stderr)
-    logging.debug(f"Opening fasta file {fn}")
-    #print("bbb", file=sys.stderr)
-    with open(fn, 'wb', 10**8) as fo:
-        logging.debug(f"Writing to fasta file {fn}")
-        #print("ccc", file=sys.stderr)
-        fo.write(fa)
-        #print("ddd", file=sys.stderr)
+def _write_to_pipe(pipe_path, data):
+    byte_start = 0
+    buffer_size = 2**14  # 2**14 as it is the max pipe buffer size for linux and darwin
+    with open(pipe_path, 'wb', buffering=buffer_size) as outstream:
+        while byte_start < len(data):
+            try:
+                # this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
+                chunk_to_write = data[byte_start:byte_start+buffer_size]
+                bytes_written = outstream.write(chunk_to_write)
+                byte_start += bytes_written
+            except BrokenPipeError:
+                time.sleep(0.1)  # waits minimap2 to get the stream
 
 
-#from signal import signal, SIGPIPE, SIG_DFL
-#signal(SIGPIPE, SIG_DFL)
-
-
-def _check_fifo(fn):
-    fifo_mode = stat.S_ISFIFO(os.stat(fn).st_mode)
-    logging.debug(f"Checking the FIFO mode of '{fn}': {fifo_mode}")
-
-
-def minimap2_5(rfa, qfa, minimap_preset):
-    """Like minimap2_4, but run as a separate thread with a timeout
-    """
-    #t = threading.Thread(target=minimap2_4, args=(rfa, qfa, minimap_preset))
-    #t.start()
-    #t.join(2)
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(minimap2_4, rfa, qfa, minimap_preset)
-        return_value = future.result(2)
-        return return_value
+def run_minimap2(command, qfa):
+    logging.info(f"Running command: {command}")
+    output = subprocess.check_output(command,
+                                     input=qfa,
+                                     universal_newlines=True,
+                                     stderr=subprocess.DEVNULL)
+    return output
 
 
 def minimap2_4(rfa, qfa, minimap_preset):
@@ -164,68 +154,13 @@ def minimap2_4(rfa, qfa, minimap_preset):
     logging.debug(f"   qfa: {qfa}")
 
     with named_pipe() as rfn:
-        #with named_pipe() as qfn:
         command = ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, '-']
-
-        logging.info(f"Creating ThreadPoolExecutor for writing fasta")
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            _check_fifo(rfn)
-            #_check_fifo(qfn)
-
-            rf_t = executor.submit(_write_to_file, rfn, rfa)
-            #qf_t = executor.submit(_write_to_file, qfn, str.encode(qfa))
-
-            logging.info(f"Running command: {command}")
-            output = subprocess.check_output(command,
-                                             timeout=2,
-                                             input=qfa,
-                                             universal_newlines=True)
-
-            logging.info(f"Joining fasta writing threads")
-            rf_r = rf_t.result(2)
-            #qf_r = qf_t.result(2)
-            return output
-            #return output.decode("utf-8")
-
-        #with Popen(command, stdout=PIPE) as p:
-        #logging.info(f"Popen opened, creating fasta writing threads")
-        #logging.info(f"Popen opened, creating a thread pool executor")
-        #with ProcessPoolExecutor(max_workers=3) as executor:
-        #with concurrent.futures.ProcesProcessPoolExecutor() as executor:
-
-        #logging.info(
-        #    f"Popen opened, creating ThreadPoolExecutor for writing fasta")
-        #with concurrent.futures.ThreadPoolExecutor() as executor:
-        #    _check_fifo(rfn)
-        #    _check_fifo(qfn)
-
-
-#
-#rf_t = executor.submit(_write_to_file, rfn, rfa)
-#qf_t = executor.submit(_write_to_file, qfn, str.encode(qfa))
-#logging.info(f"Running p.communicate")
-#output = p.communicate(timeout=2)[0]
-#logging.info(f"Joining fasta writing threads")
-#rf_r = rf_t.result(2)
-#qf_r = qf_t.result(2)
-#return output.decode("utf-8")
-#_check_fifo(rfn)
-#rf_t = threading.Thread(target=_write_to_file, args=(rfn, rfa))
-#rf_t.daemon = True
-#rf_t.start()
-#executor.submit(_write_to_file,rfn, rfa)
-#_write_to_file(rfn, rfa)
-
-#_check_fifo(qfn)
-#qf_t = threading.Thread(target=_write_to_file,
-#                        args=(qfn, str.encode(qfa)))
-#qf_t.daemon = True
-#qf_t.start()
-##executor.submit(_write_to_file,qfn, str.encode(qfa))
-#_write_to_file(qfn, str.encode(qfa))
-
-#rf_t.join(2)
-#qf_t.join(2)
+            # we first try to run minimap2 to get the read stream ready, and then try to write the stream
+            # this should be slightly more efficient at most
+            minimap_2_output = executor.submit(run_minimap2, command, qfa)
+            _write_to_pipe(rfn, rfa)
+            return minimap_2_output.result()
 
 
 def minimap2_3(rfa, qfa, minimap_preset):
@@ -371,17 +306,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
             qfas.append(qfa)
         logging.info(f"Mapping {qnames} to {rname}")
 
-        # in the case of
-        try:
-            result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
-        except concurrent.futures._base.TimeoutError:
-            try:
-                result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
-            except concurrent.futures._base.TimeoutError:
-                try:
-                    result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
-                except concurrent.futures._base.TimeoutError:
-                    result = minimap2_5(rfa, "\n".join(qfas), minimap_preset)
+        result = minimap2_4(rfa, "\n".join(qfas), minimap_preset)
 
         assert result and result[
             0] == "@", f"Output of Minimap2 is empty ('{result}')"
