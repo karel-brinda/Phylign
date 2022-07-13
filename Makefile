@@ -33,8 +33,8 @@ format: ## Reformat Python and Snakemake files
 help: ## Print help message
 	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"
 
-clean: ## Clean intermediate search files
-	rm -f intermediate/{01_*,02*,03*,04*}/*.xz
+clean: ## Clean intermediate search files and output
+	rm -fv intermediate/*/* output/*
 
 cleanall: clean ## Clean all generated and downloaded files
 	rm -f {asms,cobs}/*.xz
