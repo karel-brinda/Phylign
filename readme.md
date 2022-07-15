@@ -5,15 +5,22 @@ This is the pipeline for BLAST-like search within the 661k collection.
 
 ## Dependencies
 
-* `snakemake`
-* `cobs`
-* `minimap2`
-* `curl`
-* `pprint`
-* `xz`
-* `yq`
-* `xopen`
+Some dependencies are packaged into `conda` environments that `snakemake` will automatically create.
+Others are non-standard (which you might need to install) and stardard (which you probably have).
 
+### Non-standard
+* `python3`
+* `snakemake`
+* `mamba`
+* `cobs`
+* `yq`
+
+### Standard
+* `curl`
+* `xz`
+* `sed`
+* `head`
+* `grep`
 
 
 ## Commands
