@@ -133,6 +133,24 @@ rule decompress_cobs:
         """
 
 
+rule fix_query:
+    """Fix query to expected COBS format: single line fastas composed of ACGT bases only
+    """
+    output:
+        fixed_query="intermediate/fixed_queries/{qfile}.fa",
+    input:
+        original_query="queries/{qfile}.fa",
+    threads: 1
+    conda:
+        "envs/seqtk.yaml"
+    params:
+        base_to_replace="A"
+    shell:
+        """
+        seqtk seq -A -U {input.original_query} | sed '2~2 s/[^ACGT]/{params.base_to_replace}/g' > {output.fixed_query}
+        """
+
+
 rule run_cobs:
     """Cobs matching
     """
@@ -140,7 +158,7 @@ rule run_cobs:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
         cobs="intermediate/00_cobs/{batch}.cobs_classic",
-        fa="queries/{qfile}.fa",
+        fa=rules.fix_query.output.fixed_query,
     threads: 2  # Small number in order to guarantee Snakemake parallelization
     # threads: workflow.cores - 1
     # threads: min(6, workflow.cores)
@@ -168,7 +186,7 @@ rule translate_matches:
     output:
         fa="intermediate/02_filter/{qfile}.fa",
     input:
-        fa="queries/{qfile}.fa",
+        fa=rules.fix_query.output.fixed_query,
         all_matches=[
             f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches
         ],
