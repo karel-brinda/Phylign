@@ -38,10 +38,11 @@ Others are non-standard (which you might need to install) and stardard (which yo
 ## Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
-* `queries/` Queries, to be provided within one or more FASTA files (`.fa`) in the 1line format (!!)
+* `queries/` Queries, to be provided within one or more FASTA files (`.fa`)
 * `intermediate/` Intermediate files
    * `00_cobs` Decompressed COBS indexes (tmp)
    * `01_match` COBS matches
    * `02_filter` Filtered candidates
    * `03_map` Minimap2 alignments
+   * `fixed_queries` Sanitized queries
 * `output/` Results
