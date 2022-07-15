@@ -113,6 +113,25 @@ rule download_cobs_batch:
 
 
 ##################################
+## Installation rules
+##################################
+rule install_cobs:
+    output:
+        "tools/cobs",
+    threads: 1
+    conda:
+        "envs/compile_cobs.yaml"
+    shadow: "shallow"
+    params:
+        cobs_version = "0.2.0"
+    log:
+        "logs/install_cobs.log"
+    shell: """
+        bash scripts/install_cobs.sh {params.cobs_version} {output} >{log} 2>&1
+    """
+
+
+##################################
 ## Processing rules
 ##################################
 
@@ -157,7 +176,8 @@ rule run_cobs:
     output:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
-        cobs="intermediate/00_cobs/{batch}.cobs_classic",
+        cobs_executable = rules.install_cobs.output,
+        cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
         fa=rules.fix_query.output.fixed_query,
     threads: 2  # Small number in order to guarantee Snakemake parallelization
     # threads: workflow.cores - 1
@@ -167,10 +187,10 @@ rule run_cobs:
     priority: 999
     shell:
         """
-        cobs query \\
+        {input.cobs_executable} query \\
             -t {params.kmer_thres} \\
             -T {threads} \\
-            -i {input.cobs} \\
+            -i {input.cobs_index} \\
             -f {input.fa} \\
         | xz -v \\
         > {output.match}
