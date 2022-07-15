@@ -76,7 +76,7 @@ rule map:
 
 
 ##################################
-## Other rules
+## Download rules
 ##################################
 
 
@@ -110,6 +110,11 @@ rule download_cobs_batch:
         curl "{params.url}"  > {output.xz}
         scripts/test_xz.py {output.xz}
         """
+
+
+##################################
+## Processing rules
+##################################
 
 
 rule decompress_cobs:
@@ -152,9 +157,6 @@ rule run_cobs:
         | xz -v \\
         > {output.match}
         """
-
-
-# ./scripts/filter_queries.py -q ./queries/gc01_1kl.fa ./intermediate/01_match/*.xz  |L
 
 
 rule translate_matches:
