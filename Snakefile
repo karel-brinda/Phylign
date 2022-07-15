@@ -58,7 +58,7 @@ rule download:
     """
     input:
         [f"asms/{x}.tar.xz" for x in batches],
-        [f"cobs/{x}.xz" for x in batches],
+        [f"cobs/{x}.cobs_classic.xz" for x in batches],
 
 
 rule match:
@@ -100,7 +100,7 @@ rule download_cobs_batch:
     """Download compressed cobs indexes
     """
     output:
-        xz="cobs/{batch}.xz",
+        xz="cobs/{batch}.cobs_classic.xz",
     params:
         url=cobs_url,
     resources:
