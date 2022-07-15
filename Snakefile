@@ -190,6 +190,8 @@ rule translate_matches:
         all_matches=[
             f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches
         ],
+    conda:
+        "envs/minimap2.yaml"
     shell:
         """
         ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \\
@@ -207,6 +209,8 @@ rule batch_align_minimap2:
         log="logs/03_map/{batch}____{qfile}.log",
     params:
         minimap_preset=config["minimap_preset"],
+    conda:
+        "envs/minimap2.yaml"
     shell:
         """
         ((
