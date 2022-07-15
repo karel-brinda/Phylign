@@ -1,5 +1,6 @@
 # Default values
 thr: "all"
+batches: "batches_full.txt"
 decomp_thr: 5
 download_thr: 8
 download_thr: 9

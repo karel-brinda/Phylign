@@ -5,14 +5,22 @@ This is the pipeline for BLAST-like search within the 661k collection.
 
 ## Dependencies
 
+Some dependencies are packaged into `conda` environments that `snakemake` will automatically create.
+Others are non-standard (which you might need to install) and stardard (which you probably have).
+
+### Non-standard
+* `python3`
 * `snakemake`
+* `mamba`
 * `cobs`
-* `minimap2`
-* `curl`
-* `pprint`
-* `xz`
 * `yq`
 
+### Standard
+* `curl`
+* `xz`
+* `sed`
+* `head`
+* `grep`
 
 
 ## Commands
@@ -30,10 +38,11 @@ This is the pipeline for BLAST-like search within the 661k collection.
 ## Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
-* `queries/` Queries, to be provided within one or more FASTA files (`.fa`) in the 1line format (!!)
+* `queries/` Queries, to be provided within one or more FASTA files (`.fa`)
 * `intermediate/` Intermediate files
    * `00_cobs` Decompressed COBS indexes (tmp)
    * `01_match` COBS matches
    * `02_filter` Filtered candidates
    * `03_map` Minimap2 alignments
+   * `fixed_queries` Sanitized queries
 * `output/` Results

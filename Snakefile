@@ -13,8 +13,7 @@ configfile: "config.yaml"
 min_version("6.2.0")
 shell.prefix("set -euo pipefail")
 
-batches = [x.strip() for x in open("batches.txt")]
-# batches = [x for x in batches if x.find("gonorrhoeae") != -1]
+batches = [x.strip() for x in open(config["batches"])]
 print(f"Batches: {batches}")
 
 qfiles = [x.with_suffix("").name for x in Path("queries").glob("*.fa")]
@@ -51,7 +50,6 @@ rule all:
     """Run all
     """
     input:
-        #"intermediate/03_map/{batch}__{qfile}.sam
         [f"output/{qfile}.sam_summary.xz" for qfile in qfiles],
 
 
@@ -60,7 +58,7 @@ rule download:
     """
     input:
         [f"asms/{x}.tar.xz" for x in batches],
-        [f"cobs/{x}.xz" for x in batches],
+        [f"cobs/{x}.cobs_classic.xz" for x in batches],
 
 
 rule match:
@@ -78,7 +76,7 @@ rule map:
 
 
 ##################################
-## Other rules
+## Download rules
 ##################################
 
 
@@ -102,7 +100,7 @@ rule download_cobs_batch:
     """Download compressed cobs indexes
     """
     output:
-        xz="cobs/{batch}.xz",
+        xz="cobs/{batch}.cobs_classic.xz",
     params:
         url=cobs_url,
     resources:
@@ -114,13 +112,18 @@ rule download_cobs_batch:
         """
 
 
+##################################
+## Processing rules
+##################################
+
+
 rule decompress_cobs:
     """Decompress cobs indexes
     """
     output:
-        cobs=temp("intermediate/00_cobs/{batch}.cobs"),
+        cobs=temp("intermediate/00_cobs/{batch}.cobs_classic"),
     input:
-        xz="cobs/{batch}.xz",
+        xz="cobs/{batch}.cobs_classic.xz",
     resources:
         decomp_thr=1,
     threads: 2  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
@@ -130,14 +133,32 @@ rule decompress_cobs:
         """
 
 
+rule fix_query:
+    """Fix query to expected COBS format: single line fastas composed of ACGT bases only
+    """
+    output:
+        fixed_query="intermediate/fixed_queries/{qfile}.fa",
+    input:
+        original_query="queries/{qfile}.fa",
+    threads: 1
+    conda:
+        "envs/seqtk.yaml"
+    params:
+        base_to_replace="A"
+    shell:
+        """
+        seqtk seq -A -U {input.original_query} | sed '2~2 s/[^ACGT]/{params.base_to_replace}/g' > {output.fixed_query}
+        """
+
+
 rule run_cobs:
     """Cobs matching
     """
     output:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
-        cobs="intermediate/00_cobs/{batch}.cobs",
-        fa="queries/{qfile}.fa",
+        cobs="intermediate/00_cobs/{batch}.cobs_classic",
+        fa=rules.fix_query.output.fixed_query,
     threads: 2  # Small number in order to guarantee Snakemake parallelization
     # threads: workflow.cores - 1
     # threads: min(6, workflow.cores)
@@ -156,9 +177,6 @@ rule run_cobs:
         """
 
 
-# ./scripts/filter_queries.py -q ./queries/gc01_1kl.fa ./intermediate/01_match/*.xz  |L
-
-
 rule translate_matches:
     """Translate cobs matches.
 
@@ -168,10 +186,12 @@ rule translate_matches:
     output:
         fa="intermediate/02_filter/{qfile}.fa",
     input:
-        fa="queries/{qfile}.fa",
+        fa=rules.fix_query.output.fixed_query,
         all_matches=[
             f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches
         ],
+    conda:
+        "envs/minimap2.yaml"
     shell:
         """
         ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \\
@@ -189,6 +209,8 @@ rule batch_align_minimap2:
         log="logs/03_map/{batch}____{qfile}.log",
     params:
         minimap_preset=config["minimap_preset"],
+    conda:
+        "envs/minimap2.yaml"
     shell:
         """
         ((

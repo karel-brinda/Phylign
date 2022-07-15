@@ -9,7 +9,7 @@ SHELL=/usr/bin/env bash -eo pipefail
 DECOMP_THR=$(shell cat config.yaml | yq .decomp_thr)
 DOWNLOAD_THR=$(shell cat config.yaml | yq .download_thr)
 THR=$(shell cat config.yaml | yq .thr)
-SMK_PARAMS=--jobs ${THR} --rerun-incomplete --keep-going --printshellcmds --resources decomp_thr=$(DECOMP_THR) download_thr=$(DOWNLOAD_THR)
+SMK_PARAMS=--jobs ${THR} --rerun-incomplete --keep-going --printshellcmds --use-conda --resources decomp_thr=$(DECOMP_THR) download_thr=$(DOWNLOAD_THR)
 
 all: ## Run everything
 	snakemake $(SMK_PARAMS)
@@ -34,7 +34,7 @@ help: ## Print help message
 	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"
 
 clean: ## Clean intermediate search files
-	rm -f intermediate/{01_*,02*,03*,04*}/*.xz
+	rm -fv intermediate/*/*
 
 cleanall: clean ## Clean all generated and downloaded files
 	rm -f {asms,cobs}/*.xz
