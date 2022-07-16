@@ -8,6 +8,12 @@ This is the pipeline for BLAST-like search within the 661k collection.
 Some dependencies are packaged into `conda` environments that `snakemake` will automatically create.
 Others are non-standard (which you might need to install) and stardard (which you probably have).
 
+**Warning**
+`Mac OS X` users have to necessarily install `gcc-11` to run `mof-search`. The easiest way is through `brew`:
+```
+brew install gcc@11
+```
+
 ### Non-standard
 * `python3`
 * `snakemake`
