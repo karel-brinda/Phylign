@@ -17,14 +17,16 @@ brew install gcc@11
 * `python3`
 * `snakemake`
 * `mamba`
-* `cobs`
+* `make`
 
 ### Standard
+* `bash`
 * `curl`
 * `xz`
 * `sed`
 * `head`
 * `grep`
+* `awk`
 
 
 ## Commands
