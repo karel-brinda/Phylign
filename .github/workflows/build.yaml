@@ -1,0 +1,33 @@
+name: COBS builds
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  linux_build:
+    name: Build and test linux
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        python-version: "3.9"
+
+    - name: Install dependencies
+      run: |
+        conda install -c bioconda snakemake
+        conda install -c conda-forge mamba
+
+    - name: Check out code for the build
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Test
+      run: |
+        make test
