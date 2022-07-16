@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from snakemake.utils import min_version
 
@@ -120,7 +121,7 @@ rule install_cobs:
         "tools/cobs",
     threads: 1
     conda:
-        "envs/compile_cobs.yaml"
+        f"envs/compile_cobs_{sys.platform}.yaml"
     shadow: "shallow"
     params:
         cobs_version = "0.2.0"
