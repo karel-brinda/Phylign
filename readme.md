@@ -31,6 +31,7 @@ brew install gcc@11
 ## Commands
 
 * `make`          Run everything
+* `make test`     Run the queries on 3 batches, to test the pipeline completely
 * `make download` Download the 661k assemblies and COBS indexes
 * `make match`    Match queries using COBS (queries -> candidates)
 * `make map`      Map candidates to the assemblies (candidates -> alignments)
