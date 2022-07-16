@@ -1,6 +1,19 @@
+import subprocess
 import sys
 from pathlib import Path
 from snakemake.utils import min_version
+
+
+##################################
+## checks that gcc-11 is available for darwin
+##################################
+if sys.platform=="darwin":
+    try:
+        subprocess.check_call("gcc-11 -v")
+        subprocess.check_call("g++-11 -v")
+    except subprocess.CalledProcessError:
+        print("Error: you are running on Mac OS X and gcc-11 or g++-11 were not detected. Try installing with brew install gcc@11")
+        sys.exit(1)
 
 
 ##################################
