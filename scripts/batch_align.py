@@ -27,10 +27,9 @@ import time
 
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
-logging.basicConfig(
-    stream=sys.stderr,
-    level=logging.INFO,
-    format='[%(asctime)s] (%(levelname)s) %(message)s')
+logging.basicConfig(stream=sys.stderr,
+                    level=logging.INFO,
+                    format='[%(asctime)s] (%(levelname)s) %(message)s')
 
 
 def readfq(fp):  # this is a generator function
@@ -132,7 +131,7 @@ def _write_to_pipe(pipe_path, data):
         while byte_start < len(data):
             try:
                 # this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
-                chunk_to_write = data[byte_start:byte_start+buffer_size]
+                chunk_to_write = data[byte_start:byte_start + buffer_size]
                 bytes_written = outstream.write(chunk_to_write)
                 byte_start += bytes_written
             except BrokenPipeError:
