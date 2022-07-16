@@ -1,4 +1,4 @@
-.PHONY: all help clean cleanall cluster download match map format report
+.PHONY: all test help clean cleanall cluster download match map format report
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -6,13 +6,14 @@ SHELL=/usr/bin/env bash -eo pipefail
 
 .SUFFIXES:
 
-DECOMP_THR=$(shell cat config.yaml | yq .decomp_thr)
-DOWNLOAD_THR=$(shell cat config.yaml | yq .download_thr)
 THR=$(shell cat config.yaml | yq .thr)
-SMK_PARAMS=--jobs ${THR} --rerun-incomplete --keep-going --printshellcmds --use-conda --resources decomp_thr=$(DECOMP_THR) download_thr=$(DOWNLOAD_THR)
+SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda
 
 all: ## Run everything
 	snakemake $(SMK_PARAMS)
+
+test: ## Run everything but just with 3 batches to test full pipeline first
+	snakemake $(SMK_PARAMS) --config batches=batches_small.txt
 
 download: ## Download the 661k assemblies and COBS indexes
 	snakemake $(SMK_PARAMS) -- download
