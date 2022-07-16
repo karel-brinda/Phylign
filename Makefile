@@ -12,7 +12,7 @@ SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-
 all: ## Run everything
 	snakemake $(SMK_PARAMS)
 
-test: ## Run everything but just with 3 batches to test full pipeline first
+test: ## Run everything but just with 3 batches to test full pipeline
 	snakemake $(SMK_PARAMS) --config batches=batches_small.txt
 
 download: ## Download the 661k assemblies and COBS indexes
