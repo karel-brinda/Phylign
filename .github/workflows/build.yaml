@@ -1,4 +1,4 @@
-name: COBS builds
+name: mof-search test
 
 on:
   push:
@@ -12,6 +12,29 @@ jobs:
   linux_build:
     name: Build and test linux
     runs-on: ubuntu-20.04
+    steps:
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        python-version: "3.9"
+
+    - name: Install dependencies
+      run: |
+        conda install -c conda-forge mamba
+        python -m pip install snakemake
+
+    - name: Check out code for the build
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Test
+      run: |
+        make test
+
+  mac_build:
+    name: Build and test Mac OS X
+    runs-on: macos-11
     steps:
     - uses: conda-incubator/setup-miniconda@v2
       with:
