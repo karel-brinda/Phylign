@@ -77,8 +77,6 @@ rule map:
 ##################################
 ## Download rules
 ##################################
-
-
 rule download_asm_batch:
     """Download compressed assemblies
     """
@@ -86,8 +84,7 @@ rule download_asm_batch:
         xz="asms/{batch}.tar.xz",
     params:
         url=asms_url,
-    resources:
-        download_thr=1,
+    threads: 1
     shell:
         """
         curl "{params.url}/{wildcards.batch}.tar.xz"  > {output.xz}
@@ -102,8 +99,7 @@ rule download_cobs_batch:
         xz="cobs/{batch}.cobs_classic.xz",
     params:
         url=cobs_url,
-    resources:
-        download_thr=1,
+    threads: 1
     shell:
         """
         curl "{params.url}"  > {output.xz}
@@ -133,8 +129,6 @@ rule install_cobs:
 ##################################
 ## Processing rules
 ##################################
-
-
 rule decompress_cobs:
     """Decompress cobs indexes
     """
@@ -142,9 +136,7 @@ rule decompress_cobs:
         cobs=temp("intermediate/00_cobs/{batch}.cobs_classic"),
     input:
         xz="cobs/{batch}.cobs_classic.xz",
-    resources:
-        decomp_thr=1,
-    threads: 2  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+    threads: config["decomp_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     shell:
         """
         xzcat "{input.xz}" > "{output.cobs}"
@@ -178,9 +170,7 @@ rule run_cobs:
         cobs_executable = rules.install_cobs.output,
         cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
         fa=rules.fix_query.output.fixed_query,
-    threads: 2  # Small number in order to guarantee Snakemake parallelization
-    # threads: workflow.cores - 1
-    # threads: min(6, workflow.cores)
+    threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
     priority: 999
@@ -211,6 +201,7 @@ rule translate_matches:
         ],
     conda:
         "envs/minimap2.yaml"
+    threads: 1
     shell:
         """
         ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \\
@@ -230,6 +221,7 @@ rule batch_align_minimap2:
         minimap_preset=config["minimap_preset"],
     conda:
         "envs/minimap2.yaml"
+    threads: 1
     shell:
         """
         ((
@@ -247,6 +239,7 @@ rule aggregate_sams:
         pseudosam="output/{qfile}.sam_summary.xz",
     input:
         sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
+    threads: 1
     shell:
         """
         head -n 9999999 {input.sam} \\
