@@ -31,6 +31,15 @@ Others are non-standard (which you might need to install) and stardard (which yo
 * `grep`
 * `awk`
 
+## Walkthrough
+
+This is our recommended steps to run `mof-search`:
+
+1. Run `make test` to ensure the pipeline works for the sample queries and just 3 batches. This will also setup `COBS`;
+2. Run `make download` to download all the assemblies and batches for the 661k;
+3. Run `make clean` to clean the intermediate files from the previous run;
+4. Add your desired queries to the `queries` directory and remove the sample ones;
+5. Run `make` to run align your queries to the 661k.
 
 ## Commands
 
