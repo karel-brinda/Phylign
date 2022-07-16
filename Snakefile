@@ -28,14 +28,12 @@ wildcard_constraints:
 ##################################
 ## Download params
 ##################################
-
-
 def cobs_url(wildcards):
     x = wildcards.batch
     if x >= "eubacterium":
-        return f"https://zenodo.org/record/6345389/files/{x}.cobs_classic.xz"
+        return f"https://zenodo.org/record/6845422/files/{x}.cobs_classic.xz"
     else:
-        return f"https://zenodo.org/record/6347571/files/{x}.cobs_classic.xz"
+        return f"https://zenodo.org/record/6845083/files/{x}.cobs_classic.xz"
 
 
 asm_zenodo = 4602622
