@@ -18,7 +18,6 @@ brew install gcc@11
 * `snakemake`
 * `mamba`
 * `cobs`
-* `yq`
 
 ### Standard
 * `curl`

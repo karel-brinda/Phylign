@@ -6,7 +6,7 @@ SHELL=/usr/bin/env bash -eo pipefail
 
 .SUFFIXES:
 
-THR=$(shell cat config.yaml | yq .thr)
+THR=$(shell grep "^thr:" config.yaml | awk '{print $$2}')
 SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda
 
 all: ## Run everything
