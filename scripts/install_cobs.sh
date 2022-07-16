@@ -7,7 +7,7 @@ mkdir build && cd build
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   cmake -DCMAKE_C_COMPILER=x86_64-conda-linux-gnu-gcc -DCMAKE_CXX_COMPILER=x86_64-conda-linux-gnu-g++ -DCMAKE_BUILD_TYPE=Release -DCONDA=1 ..
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  cmake -DCMAKE_C_COMPILER=x86_64-apple-darwin*-gcc-11 -DCMAKE_CXX_COMPILER=x86_64-apple-darwin*-g++-11 -DCMAKE_BUILD_TYPE=Release ..
+  cmake -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_BUILD_TYPE=Release ..
 else
   echo "Unsupported OS"
   exit 1
