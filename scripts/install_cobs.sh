@@ -1,6 +1,6 @@
+#!/usr/bin/env bash
 mkdir -p cobs_installation && cd cobs_installation
-# curl -L https://github.com/iqbal-lab-org/cobs/releases/download/v$1/cobs-$1.tar.gz -o cobs.tar.gz
-curl -L https://www.dropbox.com/s/o1wnfebfs33oclq/cobs-0.2.0.tar.gz?dl=1 -o cobs.tar.gz
+curl -L https://github.com/iqbal-lab-org/cobs/releases/download/v$1/cobs-$1.tar.gz -o cobs.tar.gz
 tar -zxvf cobs.tar.gz
 mkdir build && cd build
 
