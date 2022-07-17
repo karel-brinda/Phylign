@@ -6,3 +6,5 @@ minimap_preset: "sr" # map-pb, map-ont, map-hifi
 # performance configuration
 thr: all  # overall number of threads of the pipeline, int or all
 cobs_thr: 1  # number of threads when running COBS
+decomp_thr: 5  # maximum number of xz-decompression at a time
+download_thr: 8  # maximum number of downloads at a time

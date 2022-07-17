@@ -6,8 +6,10 @@ SHELL=/usr/bin/env bash -eo pipefail
 
 .SUFFIXES:
 
-THR=$(shell grep "^thr:" config.yaml | awk '{print $$2}')
-SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda
+DECOMP_THR=$(shell grep "^decomp_thr" config.yaml | awk '{print $$2}')
+DOWNLOAD_THR=$(shell grep "^download_thr" config.yaml | awk '{print $$2}')
+THR=$(shell grep "^thr" config.yaml | awk '{print $$2}')
+SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources decomp_thr=$(DECOMP_THR) download_thr=$(DOWNLOAD_THR)
 
 all: ## Run everything
 	snakemake $(SMK_PARAMS)

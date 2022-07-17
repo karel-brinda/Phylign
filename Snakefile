@@ -97,6 +97,8 @@ rule download_asm_batch:
         xz="asms/{batch}.tar.xz",
     params:
         url=asms_url,
+    resources:
+        download_thr=1,
     threads: 1
     shell:
         """
@@ -112,6 +114,8 @@ rule download_cobs_batch:
         xz="cobs/{batch}.cobs_classic.xz",
     params:
         url=cobs_url,
+    resources:
+        download_thr=1,
     threads: 1
     shell:
         """
@@ -149,6 +153,8 @@ rule decompress_cobs:
         cobs=temp("intermediate/00_cobs/{batch}.cobs_classic"),
     input:
         xz="cobs/{batch}.cobs_classic.xz",
+    resources:
+        decomp_thr=1,
     threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     shell:
         """
