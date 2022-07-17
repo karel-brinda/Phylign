@@ -9,8 +9,8 @@ from snakemake.utils import min_version
 ##################################
 if sys.platform=="darwin":
     try:
-        subprocess.check_call("gcc-11 -v")
-        subprocess.check_call("g++-11 -v")
+        subprocess.check_call(["gcc-11", "--version"])
+        subprocess.check_call(["g++-11", "--version"])
     except subprocess.CalledProcessError:
         print("Error: you are running on Mac OS X and gcc-11 or g++-11 were not detected. Try installing with brew install gcc@11")
         sys.exit(1)
