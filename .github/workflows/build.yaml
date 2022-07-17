@@ -59,4 +59,3 @@ jobs:
       run: |
         rm queries/backbone19Kbp.fa
         make test
-
