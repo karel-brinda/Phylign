@@ -1,0 +1,9 @@
+channels:
+ - anaconda
+ - conda-forge
+dependencies:
+ - cmake=3.16.3
+ - gcc=12.1.0
+ - gxx=12.1.0
+ - zlib=1.2.12
+ - python=3.9

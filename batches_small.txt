@@ -1,3 +1,3 @@
-acinetobacter_baumannii__02
-acinetobacter_nosocomialis__01
-acinetobacter_pittii__01
+actinobacillus_pleuropneumoniae__01
+aeromonas_salmonicida__01
+bacillus_anthracis__01

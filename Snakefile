@@ -1,5 +1,19 @@
+import subprocess
+import sys
 from pathlib import Path
 from snakemake.utils import min_version
+
+
+##################################
+## checks that gcc-11 is available for darwin
+##################################
+if sys.platform=="darwin":
+    try:
+        subprocess.check_call(["gcc-11", "--version"])
+        subprocess.check_call(["g++-11", "--version"])
+    except subprocess.CalledProcessError:
+        print("Error: you are running on Mac OS X and gcc-11 or g++-11 were not detected. Try installing with brew install gcc@11")
+        sys.exit(1)
 
 
 ##################################
@@ -27,14 +41,12 @@ wildcard_constraints:
 ##################################
 ## Download params
 ##################################
-
-
 def cobs_url(wildcards):
     x = wildcards.batch
     if x >= "eubacterium":
-        return f"https://zenodo.org/record/6345389/files/{x}.cobs_classic.xz"
+        return f"https://zenodo.org/record/6849657/files/{x}.cobs_classic.xz"
     else:
-        return f"https://zenodo.org/record/6347571/files/{x}.cobs_classic.xz"
+        return f"https://zenodo.org/record/6845083/files/{x}.cobs_classic.xz"
 
 
 asm_zenodo = 4602622
@@ -78,8 +90,6 @@ rule map:
 ##################################
 ## Download rules
 ##################################
-
-
 rule download_asm_batch:
     """Download compressed assemblies
     """
@@ -89,6 +99,7 @@ rule download_asm_batch:
         url=asms_url,
     resources:
         download_thr=1,
+    threads: 1
     shell:
         """
         curl "{params.url}/{wildcards.batch}.tar.xz"  > {output.xz}
@@ -105,6 +116,7 @@ rule download_cobs_batch:
         url=cobs_url,
     resources:
         download_thr=1,
+    threads: 1
     shell:
         """
         curl "{params.url}"  > {output.xz}
@@ -113,10 +125,27 @@ rule download_cobs_batch:
 
 
 ##################################
+## Installation rules
+##################################
+rule install_cobs:
+    output:
+        "tools/cobs",
+    threads: 1
+    conda:
+        f"envs/compile_cobs_{sys.platform}.yaml"
+    shadow: "shallow"
+    params:
+        cobs_version = "0.2.0"
+    log:
+        "logs/install_cobs.log"
+    shell: """
+        ./scripts/install_cobs.sh {params.cobs_version} {output} >{log} 2>&1
+    """
+
+
+##################################
 ## Processing rules
 ##################################
-
-
 rule decompress_cobs:
     """Decompress cobs indexes
     """
@@ -126,7 +155,7 @@ rule decompress_cobs:
         xz="cobs/{batch}.cobs_classic.xz",
     resources:
         decomp_thr=1,
-    threads: 2  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+    threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     shell:
         """
         xzcat "{input.xz}" > "{output.cobs}"
@@ -147,7 +176,9 @@ rule fix_query:
         base_to_replace="A"
     shell:
         """
-        seqtk seq -A -U {input.original_query} | sed '2~2 s/[^ACGT]/{params.base_to_replace}/g' > {output.fixed_query}
+        seqtk seq -A -U {input.original_query} | \
+        awk '{{if(NR%2==1){{print $0;}}else{{gsub(/[^ACGT]/, \"{params.base_to_replace}\"); print;}}}}' \
+        > {output.fixed_query}
         """
 
 
@@ -157,20 +188,19 @@ rule run_cobs:
     output:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
-        cobs="intermediate/00_cobs/{batch}.cobs_classic",
+        cobs_executable = rules.install_cobs.output,
+        cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
         fa=rules.fix_query.output.fixed_query,
-    threads: 2  # Small number in order to guarantee Snakemake parallelization
-    # threads: workflow.cores - 1
-    # threads: min(6, workflow.cores)
+    threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
     priority: 999
     shell:
         """
-        cobs query \\
+        {input.cobs_executable} query \\
             -t {params.kmer_thres} \\
             -T {threads} \\
-            -i {input.cobs} \\
+            -i {input.cobs_index} \\
             -f {input.fa} \\
         | xz -v \\
         > {output.match}
@@ -192,6 +222,7 @@ rule translate_matches:
         ],
     conda:
         "envs/minimap2.yaml"
+    threads: 1
     shell:
         """
         ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \\
@@ -211,6 +242,7 @@ rule batch_align_minimap2:
         minimap_preset=config["minimap_preset"],
     conda:
         "envs/minimap2.yaml"
+    threads: 1
     shell:
         """
         ((
@@ -228,6 +260,7 @@ rule aggregate_sams:
         pseudosam="output/{qfile}.sam_summary.xz",
     input:
         sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
+    threads: 1
     shell:
         """
         head -n 9999999 {input.sam} \\
