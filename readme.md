@@ -26,7 +26,6 @@ Others are non-standard (which you might need to install) and stardard (which yo
 * `make`
 * `curl`
 * `xz`
-* `sed`
 * `head`
 * `grep`
 * `awk`
