@@ -20,10 +20,10 @@ Others are non-standard (which you might need to install) and stardard (which yo
 * `python3`
 * `snakemake`
 * `mamba`
-* `make`
 
 ### Standard
 * `bash`
+* `make`
 * `curl`
 * `xz`
 * `sed`
