@@ -7,12 +7,16 @@ from snakemake.utils import min_version
 ##################################
 ## checks that gcc-11 is available for darwin
 ##################################
-if sys.platform=="darwin":
+
+if sys.platform == "darwin":
     try:
         subprocess.check_call(["gcc-11", "--version"])
         subprocess.check_call(["g++-11", "--version"])
     except subprocess.CalledProcessError:
-        print("Error: you are running on Mac OS X and gcc-11 or g++-11 were not detected. Try installing with brew install gcc@11")
+        print(
+            "Error: you are running on Mac OS X and gcc-11 or g++-11 were not detected. Try installing with brew install gcc@11.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
 
@@ -41,7 +45,9 @@ wildcard_constraints:
 ##################################
 ## Download params
 ##################################
-def cobs_url(wildcards):
+
+
+def cobs_url_fct(wildcards):
     x = wildcards.batch
     if x >= "eubacterium":
         return f"https://zenodo.org/record/6849657/files/{x}.cobs_classic.xz"
@@ -113,7 +119,7 @@ rule download_cobs_batch:
     output:
         xz="cobs/{batch}.cobs_classic.xz",
     params:
-        url=cobs_url,
+        url=cobs_url_fct,
     resources:
         download_thr=1,
     threads: 1
@@ -133,14 +139,16 @@ rule install_cobs:
     threads: 1
     conda:
         f"envs/compile_cobs_{sys.platform}.yaml"
-    shadow: "shallow"
+    shadow:
+        "shallow"
     params:
-        cobs_version = "0.2.0"
+        cobs_version="0.2.0",
     log:
-        "logs/install_cobs.log"
-    shell: """
+        "logs/install_cobs.log",
+    shell:
+        """
         ./scripts/install_cobs.sh {params.cobs_version} {output} >{log} 2>&1
-    """
+        """
 
 
 ##################################
@@ -173,12 +181,12 @@ rule fix_query:
     conda:
         "envs/seqtk.yaml"
     params:
-        base_to_replace="A"
+        base_to_replace="A",
     shell:
         """
-        seqtk seq -A -U {input.original_query} | \
-        awk '{{if(NR%2==1){{print $0;}}else{{gsub(/[^ACGT]/, \"{params.base_to_replace}\"); print;}}}}' \
-        > {output.fixed_query}
+        seqtk seq -A -U {input.original_query} \\
+            | awk '{{if(NR%2==1){{print $0;}}else{{gsub(/[^ACGT]/, \"{params.base_to_replace}\"); print;}}}}' \\
+            > {output.fixed_query}
         """
 
 
@@ -188,7 +196,7 @@ rule run_cobs:
     output:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
-        cobs_executable = rules.install_cobs.output,
+        cobs_executable=rules.install_cobs.output,
         cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
         fa=rules.fix_query.output.fixed_query,
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
