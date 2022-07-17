@@ -44,7 +44,7 @@ wildcard_constraints:
 def cobs_url(wildcards):
     x = wildcards.batch
     if x >= "eubacterium":
-        return f"https://zenodo.org/record/6845422/files/{x}.cobs_classic.xz"
+        return f"https://zenodo.org/record/6849657/files/{x}.cobs_classic.xz"
     else:
         return f"https://zenodo.org/record/6845083/files/{x}.cobs_classic.xz"
 
