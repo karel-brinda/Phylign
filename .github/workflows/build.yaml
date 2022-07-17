@@ -30,6 +30,7 @@ jobs:
 
     - name: Test
       run: |
+        rm queries/backbone19Kbp.fa
         make test
 
   mac_build:
@@ -54,4 +55,5 @@ jobs:
 
     - name: Test
       run: |
+        rm queries/backbone19Kbp.fa
         make test
