@@ -5,8 +5,4 @@ minimap_preset: "sr" # map-pb, map-ont, map-hifi
 
 # performance configuration
 thr: all  # overall number of threads of the pipeline, int or all
-decomp_thr: 1  # number of threads to use to decompress COBS indexes (note: the max number here is 1, as it was xz-compressed with 1 block/thread. We can put 2 so that COBS is ran right after decompression)
 cobs_thr: 1  # number of threads when running COBS
-
-
-

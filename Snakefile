@@ -149,7 +149,7 @@ rule decompress_cobs:
         cobs=temp("intermediate/00_cobs/{batch}.cobs_classic"),
     input:
         xz="cobs/{batch}.cobs_classic.xz",
-    threads: config["decomp_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+    threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     shell:
         """
         xzcat "{input.xz}" > "{output.cobs}"
