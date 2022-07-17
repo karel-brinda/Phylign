@@ -147,7 +147,8 @@ rule install_cobs:
         "logs/install_cobs.log",
     shell:
         """
-        ./scripts/install_cobs.sh {params.cobs_version} {output} >{log} 2>&1
+        ./scripts/install_cobs.sh {params.cobs_version} {output} 2>&1 \\
+            | tee {log}
         """
 
 
