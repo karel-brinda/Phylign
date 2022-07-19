@@ -2,6 +2,25 @@ import glob
 from pathlib import Path
 from snakemake.utils import min_version
 
+##################################
+## Helper functions
+##################################
+
+
+def multiglob(patterns):
+    files = []
+    for pattern in patterns:
+        files.extend(glob.glob(pattern))
+    return files
+
+def get_all_query_filepaths():
+    return multiglob(["queries/*.fa", "queries/*.fq", "queries/*.fasta", "queries/*.fastq"])
+
+def get_all_query_filenames():
+    return (Path(file).with_suffix("").name for file in get_all_query_filepaths())
+
+def get_filename_for_all_queries():
+    return '___'.join(get_all_query_filenames())
 
 ##################################
 ## Initialization
@@ -17,7 +36,7 @@ shell.prefix("set -euo pipefail")
 batches = [x.strip() for x in open(config["batches"])]
 print(f"Batches: {batches}")
 
-qfiles = [x.with_suffix("").name for x in Path("queries").glob("*.fa")]
+qfiles = get_all_query_filepaths()
 print(f"Query files: {qfiles}")
 
 
@@ -49,12 +68,6 @@ asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
 ##################################
 ## Top-level rules
 ##################################
-def get_all_query_filepaths():
-    return glob.glob("queries/*.fa")
-def get_all_query_filenames():
-    return (Path(file).with_suffix("").name for file in get_all_query_filepaths())
-def get_filename_for_all_queries():
-    return '___'.join(get_all_query_filenames())
 
 
 rule all:
