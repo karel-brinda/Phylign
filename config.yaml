@@ -1,13 +1,32 @@
+###################################################################################################
 # search configuration
+
 batches: "batches_full.txt"  # batches to consider
-cobs_kmer_thres: 0.33
-minimap_preset: "sr" # map-pb, map-ont, map-hifi
+cobs_kmer_thres: 0.33  # COBS threshold in percentage of terms in query matching
+minimap_preset: "sr" # minimap preset. Can be: map-pb, map-ont, map-hifi
+###################################################################################################
 
-# disk configuration
-keep_cobs_ind: False  # keep or not decompressed COBS index. If kept, can speed up subsequent searches but uses lots more disk
+###################################################################################################
+# filesystem configuration
 
+# keep or not decompressed COBS index. If kept, can speed up subsequent searches but will take much more disk
+# space, as the decompressed indexes won't be cleaned up.
+keep_cobs_ind: False
+
+# directory to store the COBS decompressed indexes. Can be used to put the decompressed indexes in an external
+# or large filesystem capable of holding them. If not defined, defaults to "intermediate/00_cobs"
+# decompression_dir: cobs_decompressed_indexes
+
+# directory to store all downloaded files. This is where an "asms" folder with all assemblies and a "cobs" folder
+# with all COBS indexes will be created. This is a heavy directory, put it in a filesystem that has at least
+# 100 GB free
+download_dir: "."
+###################################################################################################
+
+###################################################################################################
 # performance configuration
-thr: all  # overall number of threads of the pipeline, int or all
+thr: all  # overall number of threads of the pipeline, an integer number (e.g. 8 for 8 threads) or "all" (to use all threads)
 cobs_thr: 1  # number of threads when running COBS
 decomp_thr: 5  # maximum number of xz-decompression at a time
 download_thr: 8  # maximum number of downloads at a time
+###################################################################################################
