@@ -306,3 +306,4 @@ rule aggregate_sams:
             | xz \\
             > {output.pseudosam}
         """
+
