@@ -4,7 +4,7 @@ cobs_kmer_thres: 0.33
 minimap_preset: "sr" # map-pb, map-ont, map-hifi
 
 # disk configuration
-keep_decompressed_COBS_indexes: False  # keep or not decompressed COBS index. If kept, can speed up subsequent searches but uses lots more disk
+keep_cobs_ind: False  # keep or not decompressed COBS index. If kept, can speed up subsequent searches but uses lots more disk
 
 # performance configuration
 thr: all  # overall number of threads of the pipeline, int or all

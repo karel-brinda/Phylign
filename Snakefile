@@ -156,7 +156,7 @@ rule concatenate_queries:
         """
 
 
-if config["keep_decompressed_COBS_indexes"]:
+if config["keep_cobs_ind"]:
     rule decompress_cobs:
         """Decompress cobs indexes
         """
