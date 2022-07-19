@@ -1,23 +1,5 @@
-import subprocess
-import sys
 from pathlib import Path
 from snakemake.utils import min_version
-
-
-##################################
-## checks that gcc-11 is available for darwin
-##################################
-
-if sys.platform == "darwin":
-    try:
-        subprocess.check_call(["gcc-11", "--version"])
-        subprocess.check_call(["g++-11", "--version"])
-    except subprocess.CalledProcessError:
-        print(
-            "Error: you are running on Mac OS X and gcc-11 or g++-11 were not detected. Try installing with brew install gcc@11.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
 
 ##################################
@@ -131,28 +113,6 @@ rule download_cobs_batch:
 
 
 ##################################
-## Installation rules
-##################################
-rule install_cobs:
-    output:
-        "tools/cobs",
-    threads: 1
-    conda:
-        f"envs/compile_cobs_{sys.platform}.yaml"
-    shadow:
-        "shallow"
-    params:
-        cobs_version="0.2.0",
-    log:
-        "logs/install_cobs.log",
-    shell:
-        """
-        ./scripts/install_cobs.sh {params.cobs_version} {output} 2>&1 \\
-            | tee {log}
-        """
-
-
-##################################
 ## Processing rules
 ##################################
 rule decompress_cobs:
@@ -197,7 +157,6 @@ rule run_cobs:
     output:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
-        cobs_executable=rules.install_cobs.output,
         cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
         fa=rules.fix_query.output.fixed_query,
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
@@ -206,7 +165,7 @@ rule run_cobs:
     priority: 999
     shell:
         """
-        {input.cobs_executable} query \\
+        cobs query \\
             -t {params.kmer_thres} \\
             -T {threads} \\
             -i {input.cobs_index} \\
