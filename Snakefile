@@ -122,22 +122,6 @@ rule download_cobs_batch:
 ##################################
 ## Processing rules
 ##################################
-rule decompress_cobs:
-    """Decompress cobs indexes
-    """
-    output:
-        cobs=temp("intermediate/00_cobs/{batch}.cobs_classic"),
-    input:
-        xz="cobs/{batch}.cobs_classic.xz",
-    resources:
-        decomp_thr=1,
-    threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
-    shell:
-        """
-        xzcat "{input.xz}" > "{output.cobs}"
-        """
-
-
 rule fix_query:
     """Fix query to expected COBS format: single line fastas composed of ACGT bases only
     """
@@ -172,29 +156,69 @@ rule concatenate_queries:
         """
 
 
-rule run_cobs:
-    """Cobs matching
-    """
-    output:
-        match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
-    input:
-        cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
-        fa="intermediate/fixed_queries/{qfile}.fa",
-    threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
-    params:
-        kmer_thres=config["cobs_kmer_thres"],
-    priority: 999
-    shell:
+if config["keep_decompressed_COBS_indexes"]:
+    rule decompress_cobs:
+        """Decompress cobs indexes
         """
-        cobs query \\
-            -t {params.kmer_thres} \\
-            -T {threads} \\
-            -i {input.cobs_index} \\
-            -f {input.fa} \\
-        | xz -v \\
-        > {output.match}
-        """
+        output:
+            cobs="intermediate/00_cobs/{batch}.cobs_classic",
+        input:
+            xz="cobs/{batch}.cobs_classic.xz",
+        resources:
+            decomp_thr=1,
+        threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+        shell:
+            """
+            xzcat "{input.xz}" > "{output.cobs}"
+            """
 
+    rule run_cobs:
+        """Cobs matching
+        """
+        output:
+            match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
+        input:
+            cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
+            fa="intermediate/fixed_queries/{qfile}.fa",
+        threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
+        params:
+            kmer_thres=config["cobs_kmer_thres"],
+        priority: 999
+        shell:
+            """
+            cobs query \\
+                -t {params.kmer_thres} \\
+                -T {threads} \\
+                -i {input.cobs_index} \\
+                -f {input.fa} \\
+            | xz -v \\
+            > {output.match}
+            """
+else:
+    rule run_cobs:
+        """Decompress Cobs index and run Cobs matching
+        """
+        output:
+            match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
+        input:
+            compressed_cobs_index="cobs/{batch}.cobs_classic.xz",
+            fa="intermediate/fixed_queries/{qfile}.fa",
+        threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
+        params:
+            kmer_thres=config["cobs_kmer_thres"],
+        shell:
+            """
+            cobs_index="intermediate/00_cobs/{wildcards.batch}.cobs_classic"
+            xzcat "{input.compressed_cobs_index}" > "${{cobs_index}}"
+            cobs query \\
+                -t {params.kmer_thres} \\
+                -T {threads} \\
+                -i "${{cobs_index}}" \\
+                -f {input.fa} \\
+            | xz -v \\
+            > {output.match}
+            rm -v "${{cobs_index}}"
+            """
 
 rule translate_matches:
     """Translate cobs matches.
@@ -212,10 +236,11 @@ rule translate_matches:
     conda:
         "envs/minimap2.yaml"
     threads: 1
+    log: "logs/translate_matches/{qfile}.log"
     shell:
         """
         ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \\
-            > {output.fa}
+            > {output.fa} 2>{log}
         """
 
 
