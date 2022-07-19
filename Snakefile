@@ -25,6 +25,10 @@ wildcard_constraints:
     batch=".+__\d\d",
 
 
+if config["keep_cobs_ind"]:
+    ruleorder: decompress_cobs > run_cobs > decompress_and_run_cobs
+else:
+    ruleorder: decompress_and_run_cobs > decompress_cobs > run_cobs
 ##################################
 ## Download params
 ##################################
@@ -156,69 +160,69 @@ rule concatenate_queries:
         """
 
 
-if config["keep_cobs_ind"]:
-    rule decompress_cobs:
-        """Decompress cobs indexes
+rule decompress_cobs:
+    """Decompress cobs indexes
+    """
+    output:
+        cobs="intermediate/00_cobs/{batch}.cobs_classic",
+    input:
+        xz="cobs/{batch}.cobs_classic.xz",
+    resources:
+        decomp_thr=1,
+    threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+    shell:
         """
-        output:
-            cobs="intermediate/00_cobs/{batch}.cobs_classic",
-        input:
-            xz="cobs/{batch}.cobs_classic.xz",
-        resources:
-            decomp_thr=1,
-        threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
-        shell:
-            """
-            xzcat "{input.xz}" > "{output.cobs}"
-            """
+        xzcat "{input.xz}" > "{output.cobs}"
+        """
 
-    rule run_cobs:
-        """Cobs matching
+rule run_cobs:
+    """Cobs matching
+    """
+    output:
+        match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
+    input:
+        cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
+        fa="intermediate/fixed_queries/{qfile}.fa",
+    threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
+    params:
+        kmer_thres=config["cobs_kmer_thres"],
+    priority: 999
+    shell:
         """
-        output:
-            match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
-        input:
-            cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
-            fa="intermediate/fixed_queries/{qfile}.fa",
-        threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
-        params:
-            kmer_thres=config["cobs_kmer_thres"],
-        priority: 999
-        shell:
-            """
-            cobs query \\
-                -t {params.kmer_thres} \\
-                -T {threads} \\
-                -i {input.cobs_index} \\
-                -f {input.fa} \\
-            | xz -v \\
-            > {output.match}
-            """
-else:
-    rule run_cobs:
-        """Decompress Cobs index and run Cobs matching
+        cobs query \\
+            -t {params.kmer_thres} \\
+            -T {threads} \\
+            -i {input.cobs_index} \\
+            -f {input.fa} \\
+        | xz -v \\
+        > {output.match}
         """
-        output:
-            match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
-        input:
-            compressed_cobs_index="cobs/{batch}.cobs_classic.xz",
-            fa="intermediate/fixed_queries/{qfile}.fa",
-        threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
-        params:
-            kmer_thres=config["cobs_kmer_thres"],
-        shell:
-            """
-            cobs_index="intermediate/00_cobs/{wildcards.batch}.cobs_classic"
-            xzcat "{input.compressed_cobs_index}" > "${{cobs_index}}"
-            cobs query \\
-                -t {params.kmer_thres} \\
-                -T {threads} \\
-                -i "${{cobs_index}}" \\
-                -f {input.fa} \\
-            | xz -v \\
-            > {output.match}
-            rm -v "${{cobs_index}}"
-            """
+
+rule decompress_and_run_cobs:
+    """Decompress Cobs index and run Cobs matching
+    """
+    output:
+        match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
+    input:
+        compressed_cobs_index="cobs/{batch}.cobs_classic.xz",
+        fa="intermediate/fixed_queries/{qfile}.fa",
+    threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
+    params:
+        kmer_thres=config["cobs_kmer_thres"],
+    shell:
+        """
+        cobs_index="intermediate/00_cobs/{wildcards.batch}.cobs_classic"
+        xzcat "{input.compressed_cobs_index}" > "${{cobs_index}}"
+        cobs query \\
+            -t {params.kmer_thres} \\
+            -T {threads} \\
+            -i "${{cobs_index}}" \\
+            -f {input.fa} \\
+        | xz -v \\
+        > {output.match}
+        rm -v "${{cobs_index}}"
+        """
+
 
 rule translate_matches:
     """Translate cobs matches.
