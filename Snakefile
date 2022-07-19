@@ -1,3 +1,4 @@
+import glob
 from pathlib import Path
 from snakemake.utils import min_version
 
@@ -44,13 +45,19 @@ asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
 ##################################
 ## Top-level rules
 ##################################
+def get_all_query_filepaths():
+    return glob.glob("queries/*.fa")
+def get_all_query_filenames():
+    return (Path(file).with_suffix("").name for file in get_all_query_filepaths())
+def get_filename_for_all_queries():
+    return '___'.join(get_all_query_filenames())
 
 
 rule all:
     """Run all
     """
     input:
-        [f"output/{qfile}.sam_summary.xz" for qfile in qfiles],
+        f"output/{get_filename_for_all_queries()}.sam_summary.xz"
 
 
 rule download:
@@ -151,6 +158,20 @@ rule fix_query:
         """
 
 
+rule concatenate_queries:
+    """Concatenate all queries into a single file, so we just need to run COBS/minimap2 just once per batch
+    """
+    output:
+        concatenated_query=f"intermediate/fixed_queries/{get_filename_for_all_queries()}.fa"
+    input:
+        all_queries = expand("intermediate/fixed_queries/{qfile}.fa", qfile=get_all_query_filenames())
+    threads: 1
+    shell:
+        """
+        cat {input} > {output}
+        """
+
+
 rule run_cobs:
     """Cobs matching
     """
@@ -158,7 +179,7 @@ rule run_cobs:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
         cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
-        fa=rules.fix_query.output.fixed_query,
+        fa="intermediate/fixed_queries/{qfile}.fa",
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
@@ -184,7 +205,7 @@ rule translate_matches:
     output:
         fa="intermediate/02_filter/{qfile}.fa",
     input:
-        fa=rules.fix_query.output.fixed_query,
+        fa="intermediate/fixed_queries/{qfile}.fa",
         all_matches=[
             f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches
         ],
@@ -231,7 +252,7 @@ rule aggregate_sams:
     threads: 1
     shell:
         """
-        head -n 9999999 {input.sam} \\
+        cat {input.sam} \\
             | grep -v "@" \\
             | xz \\
             > {output.pseudosam}
