@@ -13,13 +13,13 @@ brew install gcc@11
 
 
 Some dependencies are packaged into `conda` environments that `snakemake` will automatically create.
-Others are non-standard (which you might need to install) and stardard (which you probably have).
+Others are non-standard (which you might need to install) and standard (which you probably have).
 
 
 ### Non-standard
-* `python3`
-* `snakemake`
-* `mamba`
+* `python >= 3.7`
+* `snakemake >= 6.2.0`
+* `mamba >= 0.20.0`
 
 ### Standard
 * `bash`
@@ -39,6 +39,8 @@ This is our recommended steps to run `mof-search`:
 3. Run `make clean` to clean the intermediate files from the previous run;
 4. Add your desired queries to the `queries` directory and remove the sample ones;
 5. Run `make` to run align your queries to the 661k.
+
+
 
 ## Commands
 
@@ -64,3 +66,20 @@ This is our recommended steps to run `mof-search`:
    * `03_map` Minimap2 alignments
    * `fixed_queries` Sanitized queries
 * `output/` Results
+
+
+
+## Notes
+
+### Non-`ACGT` bases
+
+All non-`ACGT` bases in your queries are transformed into `A`.
+
+### Query files
+
+Try to keep the number of query files low or their name short.
+If you have tens or hundreds or more query files, concatenate them all into one before running `mof-search.
+
+### Query headers
+
+For now, all query headers have to be unique among all query files.
