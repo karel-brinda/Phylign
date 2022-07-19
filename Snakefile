@@ -39,6 +39,9 @@ print(f"Batches: {batches}")
 qfiles = get_all_query_filepaths()
 print(f"Query files: {qfiles}")
 
+assemblies_dir = f"{config['download_dir']}/asms"
+cobs_dir = f"{config['download_dir']}/cobs"
+decompression_dir = config.get("decompression_dir", "intermediate/00_cobs")
 
 wildcard_constraints:
     batch=".+__\d\d",
@@ -81,8 +84,8 @@ rule download:
     """Download assemblies and COBS indexes.
     """
     input:
-        [f"asms/{x}.tar.xz" for x in batches],
-        [f"cobs/{x}.cobs_classic.xz" for x in batches],
+        [f"{assemblies_dir}/{x}.tar.xz" for x in batches],
+        [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
 
 
 rule match:
@@ -106,7 +109,7 @@ rule download_asm_batch:
     """Download compressed assemblies
     """
     output:
-        xz="asms/{batch}.tar.xz",
+        xz=f"{assemblies_dir}/{{batch}}.tar.xz",
     params:
         url=asms_url,
     resources:
@@ -123,7 +126,7 @@ rule download_cobs_batch:
     """Download compressed cobs indexes
     """
     output:
-        xz="cobs/{batch}.cobs_classic.xz",
+        xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     params:
         url=cobs_url_fct,
     resources:
@@ -177,9 +180,9 @@ rule decompress_cobs:
     """Decompress cobs indexes
     """
     output:
-        cobs="intermediate/00_cobs/{batch}.cobs_classic",
+        cobs= f"{decompression_dir}/{{batch}}.cobs_classic"
     input:
-        xz="cobs/{batch}.cobs_classic.xz",
+        xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
         decomp_thr=1,
     threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
@@ -194,7 +197,7 @@ rule run_cobs:
     output:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
-        cobs_index="intermediate/00_cobs/{batch}.cobs_classic",
+        cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/fixed_queries/{qfile}.fa",
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
@@ -217,14 +220,16 @@ rule decompress_and_run_cobs:
     output:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
-        compressed_cobs_index="cobs/{batch}.cobs_classic.xz",
+        compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/fixed_queries/{qfile}.fa",
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
+        decompression_dir=decompression_dir
     shell:
         """
-        cobs_index="intermediate/00_cobs/{wildcards.batch}.cobs_classic"
+        mkdir -p {params.decompression_dir}
+        cobs_index="{params.decompression_dir}/{wildcards.batch}.cobs_classic"
         xzcat "{input.compressed_cobs_index}" > "${{cobs_index}}"
         cobs query \\
             -t {params.kmer_thres} \\
@@ -266,7 +271,7 @@ rule batch_align_minimap2:
         sam="intermediate/03_map/{batch}____{qfile}.sam",
     input:
         qfa="intermediate/02_filter/{qfile}.fa",
-        asm="asms/{batch}.tar.xz",
+        asm=f"{assemblies_dir}/{{batch}}.tar.xz",
     log:
         log="logs/03_map/{batch}____{qfile}.log",
     params:
