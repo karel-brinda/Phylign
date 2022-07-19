@@ -277,7 +277,7 @@ rule aggregate_sams:
     threads: 1
     shell:
         """
-        cat {input.sam} \\
+        head -n 9999999 {input.sam} \\
             | grep -v "@" \\
             | xz \\
             > {output.pseudosam}
