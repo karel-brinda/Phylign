@@ -64,3 +64,20 @@ This is our recommended steps to run `mof-search`:
    * `03_map` Minimap2 alignments
    * `fixed_queries` Sanitized queries
 * `output/` Results
+
+
+
+## Notes
+
+### Non-`ACGT` bases
+
+All non-`ACGT` bases in your queries are transformed into `A`.
+
+### Query files
+
+Try to keep the number of query files low or their name short.
+If you have tens or hundreds or more query files, concatenate them all into one before running `mof-search.
+
+### Query headers
+
+For now, all query headers have to be unique among all query files.
