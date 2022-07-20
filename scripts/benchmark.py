@@ -32,7 +32,6 @@ def main():
         print(" ".join(header), file=log_fh)
 
     time_command = get_time_command()
-    print(args.command)
     subprocess.check_call(f'{time_command} -a -o {log_file} -f "%e %S %U %P %M %I %O" {args.command}', shell=True)
 
 
