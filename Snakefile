@@ -91,15 +91,13 @@ rule download:
 rule match:
     """Match reads to the COBS indexes.
     """
-    input:
-        [f"intermediate/02_filter/{qfile}.fa" for qfile in qfiles],
+    input: f"intermediate/02_filter/{get_filename_for_all_queries()}.fa",
 
 
 rule map:
     """Map reads to the assemblies.
     """
-    input:
-        [f"output/{qfile}.sam_summary.xz" for qfile in qfiles],
+    input: f"output/{get_filename_for_all_queries()}.sam_summary.xz",
 
 
 ##################################
@@ -186,6 +184,8 @@ rule decompress_cobs:
     resources:
         decomp_thr=1,
     threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+    benchmark:
+        "logs/benchmarks/decompress_cobs/{batch}.txt"
     shell:
         """
         xzcat "{input.xz}" > "{output.cobs}"
@@ -203,6 +203,8 @@ rule run_cobs:
     params:
         kmer_thres=config["cobs_kmer_thres"],
     priority: 999
+    benchmark:
+        "logs/benchmarks/run_cobs/{batch}____{qfile}.txt"
     shell:
         """
         cobs query \\
@@ -226,6 +228,8 @@ rule decompress_and_run_cobs:
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir
+    benchmark:
+        "logs/benchmarks/decompress_and_run_cobs/{batch}____{qfile}.txt"
     shell:
         """
         mkdir -p {params.decompression_dir}
@@ -278,6 +282,8 @@ rule batch_align_minimap2:
         minimap_preset=config["minimap_preset"],
     conda:
         "envs/minimap2.yaml"
+    benchmark:
+        "logs/benchmarks/batch_align_minimap2/{batch}____{qfile}.txt"
     threads: 1
     shell:
         """

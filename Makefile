@@ -17,6 +17,11 @@ all: ## Run everything
 test: ## Run everything but just with 3 batches to test full pipeline
 	snakemake $(SMK_PARAMS) --config batches=batches_small.txt
 
+test_benchmark: ## benchmark the test pipeline
+	snakemake $(SMK_PARAMS) --config batches=batches_small.txt -- download  # download is not benchmarked
+	scripts/benchmark.py --log logs/benchmarks/test_match.txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt -- match"
+	scripts/benchmark.py --log logs/benchmarks/test_map.txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt -- map"
+
 download: ## Download the 661k assemblies and COBS indexes
 	snakemake $(SMK_PARAMS) -- download
 
@@ -25,6 +30,11 @@ match: ## Match queries using COBS (queries -> candidates)
 
 map: ## Map candidates to assemblies (candidates -> alignments)
 	snakemake $(SMK_PARAMS) -- map
+
+benchmark: ## benchmark this pipeline
+	make download  # download is not benchmarked
+	scripts/benchmark.py --log logs/benchmarks/match.txt "make match"
+	scripts/benchmark.py --log logs/benchmarks/map.txt "make map"
 
 report: ## Generate Snakemake report
 	snakemake --report
@@ -38,6 +48,7 @@ help: ## Print help message
 
 clean: ## Clean intermediate search files
 	rm -fv intermediate/*/*
+	rm -rfv logs
 
 cleanall: clean ## Clean all generated and downloaded files
 	rm -f {asms,cobs}/*.xz
