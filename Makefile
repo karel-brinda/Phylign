@@ -1,4 +1,4 @@
-.PHONY: all test help clean cleanall cluster download match map format report
+.PHONY: all test help clean cleanall cluster download match map benchmark format report
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -17,7 +17,7 @@ all: ## Run everything
 test: ## Run everything but just with 3 batches to test full pipeline
 	snakemake $(SMK_PARAMS) --config batches=batches_small.txt
 
-test_benchmark: ## benchmark the test pipeline
+test_benchmark: ## benchmark the test pipeline. Benchmark logs are stored in logs/benchmarks
 	snakemake $(SMK_PARAMS) --config batches=batches_small.txt -- download  # download is not benchmarked
 	scripts/benchmark.py --log logs/benchmarks/test_match.txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt -- match"
 	scripts/benchmark.py --log logs/benchmarks/test_map.txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt -- map"
@@ -31,7 +31,7 @@ match: ## Match queries using COBS (queries -> candidates)
 map: ## Map candidates to assemblies (candidates -> alignments)
 	snakemake $(SMK_PARAMS) -- map
 
-benchmark: ## benchmark this pipeline
+benchmark: ## benchmark this pipeline. Benchmark logs are stored in logs/benchmarks
 	make download  # download is not benchmarked
 	scripts/benchmark.py --log logs/benchmarks/match.txt "make match"
 	scripts/benchmark.py --log logs/benchmarks/map.txt "make map"
