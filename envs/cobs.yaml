@@ -1,4 +1,5 @@
 channels:
  - bioconda
+ - conda-forge
 dependencies:
  - cobs=0.2.0
