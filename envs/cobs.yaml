@@ -1,0 +1,4 @@
+channels:
+ - bioconda
+dependencies:
+ - cobs=0.2.0
