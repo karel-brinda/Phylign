@@ -139,13 +139,31 @@ def _write_to_pipe(pipe_path, data):
                 time.sleep(0.1)  # waits minimap2 to get the stream
 
 
+def remove_unmapped_reads(output):
+    def filter_SAM_line(line):
+        is_header = line.startswith("@")
+        if is_header:
+            return True
+        line_split = line.split("\t")
+        if len(line_split) < 2:
+            return True
+        flag = int(line_split[1])
+        unmapped_read_bit = 0b100
+        read_is_mapped = (flag & unmapped_read_bit) == 0
+        return read_is_mapped
+
+    output_as_list = output.split("\n")
+    filtered_output_as_list = filter(filter_SAM_line, output_as_list)
+    return "\n".join(filtered_output_as_list)
+
+
 def run_minimap2(command, qfa):
     logging.info(f"Running command: {command}")
     output = subprocess.check_output(command,
                                      input=qfa,
                                      universal_newlines=True,
                                      stderr=subprocess.DEVNULL)
-    return output
+    return remove_unmapped_reads(output)
 
 
 def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
