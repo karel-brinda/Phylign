@@ -203,6 +203,7 @@ rule run_cobs:
     params:
         kmer_thres=config["cobs_kmer_thres"],
     priority: 999
+    conda: "envs/cobs.yaml"
     shell:
         """
         cobs query \\
@@ -226,6 +227,7 @@ rule decompress_and_run_cobs:
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir
+    conda: "envs/cobs.yaml"
     shell:
         """
         mkdir -p {params.decompression_dir}
