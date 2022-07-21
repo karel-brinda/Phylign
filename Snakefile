@@ -11,6 +11,7 @@ def multiglob(patterns):
     files = []
     for pattern in patterns:
         files.extend(glob.glob(pattern))
+    files = list(map(Path, files))
     return files
 
 
@@ -21,7 +22,7 @@ def get_all_query_filepaths():
 
 
 def get_all_query_filenames():
-    return (Path(file).with_suffix("").name for file in get_all_query_filepaths())
+    return (file.with_suffix("").name for file in get_all_query_filepaths())
 
 
 def get_filename_for_all_queries():
@@ -43,11 +44,11 @@ batches = [x.strip() for x in open(config["batches"])]
 print(f"Batches: {batches}")
 
 qfiles = get_all_query_filepaths()
-print(f"Query files: {qfiles}")
+print(f"Query files: {list(map(str, qfiles))}")
 
-assemblies_dir = f"{config['download_dir']}/asms"
-cobs_dir = f"{config['download_dir']}/cobs"
-decompression_dir = config.get("decompression_dir", "intermediate/00_cobs")
+assemblies_dir = Path(f"{config['download_dir']}/asms")
+cobs_dir = Path(f"{config['download_dir']}/cobs")
+decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs"))
 
 
 wildcard_constraints:
