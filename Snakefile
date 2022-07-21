@@ -111,7 +111,7 @@ rule download_asm_batch:
     params:
         url=asms_url,
     resources:
-        download_thr=1,
+        max_download_jobs=1,
     threads: 1
     shell:
         """
@@ -128,7 +128,7 @@ rule download_cobs_batch:
     params:
         url=cobs_url_fct,
     resources:
-        download_thr=1,
+        max_download_jobs=1,
     threads: 1
     shell:
         """
@@ -182,7 +182,7 @@ rule decompress_cobs:
     input:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
-        decomp_thr=1,
+        max_decomp_jobs=1,
     threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     benchmark:
         "logs/benchmarks/decompress_cobs/{batch}.txt"
@@ -282,16 +282,20 @@ rule batch_align_minimap2:
         log="logs/03_map/{batch}____{qfile}.log",
     params:
         minimap_preset=config["minimap_preset"],
+        minimap_threads=config["minimap_thr"],
+        minimap_extra_params=config["minimap_extra_params"],
     conda:
         "envs/minimap2.yaml"
     benchmark:
         "logs/benchmarks/batch_align_minimap2/{batch}____{qfile}.txt"
-    threads: 1
+    threads: config["minimap_thr"]
     shell:
         """
         ((
         ./scripts/batch_align.py \\
             --minimap-preset {params.minimap_preset} \\
+            --threads {params.minimap_threads} \\
+            --extra-params=\"{params.minimap_extra_params}\" \\
             {input.asm} \\
             {input.qfa} \\
             > {output.sam}

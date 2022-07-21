@@ -24,6 +24,7 @@ from subprocess import Popen
 from timeit import default_timer as timer
 from xopen import xopen
 import time
+import shlex
 
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
@@ -147,13 +148,15 @@ def run_minimap2(command, qfa):
     return output
 
 
-def minimap2_4(rfa, qfa, minimap_preset):
+def minimap2_4(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params):
     logging.debug(f"Going to run minimap with the following sequences:")
     logging.debug(f"   rfa: {rfa}")
     logging.debug(f"   qfa: {qfa}")
 
     with named_pipe() as rfn:
-        command = ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfn, '-']
+        command = ["minimap2", "-a", "-x", minimap_preset, "-t", str(minimap_threads),
+                   *(shlex.split(minimap_extra_params)),
+                   rfn, '-']
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # we first try to run minimap2 to get the read stream ready, and then try to write the stream
             # this should be slightly more efficient at most
@@ -278,7 +281,7 @@ def count_alignments(sam):
     return j
 
 
-def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
+def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, minimap_extra_params):
     sstart = timer()
     logging.info(
         f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset"
@@ -305,7 +308,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset):
             qfas.append(qfa)
         logging.info(f"Mapping {qnames} to {rname}")
 
-        result = minimap2_4(rfa, "\n".join(qfas), minimap_preset)
+        result = minimap2_4(rfa, "\n".join(qfas), minimap_preset, minimap_threads, minimap_extra_params)
 
         assert result and result[
             0] == "@", f"Output of Minimap2 is empty ('{result}')"
@@ -340,6 +343,19 @@ def main():
     )
 
     parser.add_argument(
+        '--threads',
+        type=int,
+        default=1,
+        help='minimap threads',
+    )
+
+    parser.add_argument(
+        '--extra-params',
+        type=str,
+        help='minimap extra parameters',
+    )
+
+    parser.add_argument(
         'batch_fn',
         metavar='batch.tar.xz',
         help='',
@@ -354,7 +370,9 @@ def main():
     args = parser.parse_args()
     map_queries_to_batch(args.batch_fn,
                          args.query_fn,
-                         minimap_preset=args.minimap_preset)
+                         minimap_preset=args.minimap_preset,
+                         minimap_threads=args.threads,
+                         minimap_extra_params=args.extra_params)
 
 
 if __name__ == "__main__":
