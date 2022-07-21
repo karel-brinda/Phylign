@@ -7,6 +7,8 @@ from snakemake.utils import min_version
 ##################################
 
 
+extensions=["fa", "fasta", "fq", "fastq"]
+
 def multiglob(patterns):
     files = []
     for pattern in patterns:
@@ -16,9 +18,7 @@ def multiglob(patterns):
 
 
 def get_all_query_filepaths():
-    return multiglob(
-        ["queries/*.fa", "queries/*.fq", "queries/*.fasta", "queries/*.fastq"]
-    )
+    return multiglob(expand("queries/*.{ext}", ext=extensions))
 
 
 def get_all_query_filenames():
@@ -156,13 +156,18 @@ rule download_cobs_batch:
 ##################################
 ## Processing rules
 ##################################
+def get_query_file(wildcards):
+    query_file = multiglob(expand(f"queries/{wildcards.qfile}.{{ext}}", ext=extensions))
+    assert len(query_file) == 1
+    return query_file[0]
+
 rule fix_query:
     """Fix query to expected COBS format: single line fastas composed of ACGT bases only
     """
     output:
         fixed_query="intermediate/fixed_queries/{qfile}.fa",
     input:
-        original_query="queries/{qfile}.fa",
+        original_query=get_query_file,
     threads: 1
     conda:
         "envs/seqtk.yaml"
@@ -180,7 +185,7 @@ rule concatenate_queries:
     """Concatenate all queries into a single file, so we just need to run COBS/minimap2 just once per batch
     """
     output:
-        concatenated_query=f"intermediate/fixed_queries/{get_filename_for_all_queries()}.fa",
+        concatenated_query=f"intermediate/concatenated_query/{get_filename_for_all_queries()}.fa",
     input:
         all_queries=expand(
             "intermediate/fixed_queries/{qfile}.fa", qfile=get_all_query_filenames()
@@ -217,7 +222,7 @@ rule run_cobs:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
-        fa="intermediate/fixed_queries/{qfile}.fa",
+        fa="intermediate/concatenated_query/{qfile}.fa",
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
@@ -245,7 +250,7 @@ rule decompress_and_run_cobs:
         match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
-        fa="intermediate/fixed_queries/{qfile}.fa",
+        fa="intermediate/concatenated_query/{qfile}.fa",
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
@@ -279,7 +284,7 @@ rule translate_matches:
     output:
         fa="intermediate/02_filter/{qfile}.fa",
     input:
-        fa="intermediate/fixed_queries/{qfile}.fa",
+        fa="intermediate/concatenated_query/{qfile}.fa",
         all_matches=[
             f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches
         ],
