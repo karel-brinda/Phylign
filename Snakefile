@@ -205,6 +205,7 @@ rule run_cobs:
     priority: 999
     benchmark:
         "logs/benchmarks/run_cobs/{batch}____{qfile}.txt"
+    conda: "envs/cobs.yaml"
     shell:
         """
         cobs query \\
@@ -230,6 +231,7 @@ rule decompress_and_run_cobs:
         decompression_dir=decompression_dir
     benchmark:
         "logs/benchmarks/decompress_and_run_cobs/{batch}____{qfile}.txt"
+    conda: "envs/cobs.yaml"
     shell:
         """
         mkdir -p {params.decompression_dir}
