@@ -148,15 +148,18 @@ def run_minimap2(command, qfa):
     return output
 
 
-def minimap2_4(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params):
+def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
+               minimap_extra_params):
     logging.debug(f"Going to run minimap with the following sequences:")
     logging.debug(f"   rfa: {rfa}")
     logging.debug(f"   qfa: {qfa}")
 
     with named_pipe() as rfn:
-        command = ["minimap2", "-a", "-x", minimap_preset, "-t", str(minimap_threads),
-                   *(shlex.split(minimap_extra_params)),
-                   rfn, '-']
+        command = [
+            "minimap2", "-a", "-x", minimap_preset, "-t",
+            str(minimap_threads), *(shlex.split(minimap_extra_params)), rfn,
+            '-'
+        ]
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # we first try to run minimap2 to get the read stream ready, and then try to write the stream
             # this should be slightly more efficient at most
@@ -281,7 +284,8 @@ def count_alignments(sam):
     return j
 
 
-def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, minimap_extra_params):
+def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
+                         minimap_extra_params):
     sstart = timer()
     logging.info(
         f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset"
@@ -308,7 +312,8 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
             qfas.append(qfa)
         logging.info(f"Mapping {qnames} to {rname}")
 
-        result = minimap2_4(rfa, "\n".join(qfas), minimap_preset, minimap_threads, minimap_extra_params)
+        result = minimap2_4(rfa, "\n".join(qfas), minimap_preset,
+                            minimap_threads, minimap_extra_params)
 
         assert result and result[
             0] == "@", f"Output of Minimap2 is empty ('{result}')"

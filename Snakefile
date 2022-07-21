@@ -13,14 +13,20 @@ def multiglob(patterns):
         files.extend(glob.glob(pattern))
     return files
 
+
 def get_all_query_filepaths():
-    return multiglob(["queries/*.fa", "queries/*.fq", "queries/*.fasta", "queries/*.fastq"])
+    return multiglob(
+        ["queries/*.fa", "queries/*.fq", "queries/*.fasta", "queries/*.fastq"]
+    )
+
 
 def get_all_query_filenames():
     return (Path(file).with_suffix("").name for file in get_all_query_filepaths())
 
+
 def get_filename_for_all_queries():
-    return '___'.join(get_all_query_filenames())
+    return "___".join(get_all_query_filenames())
+
 
 ##################################
 ## Initialization
@@ -43,14 +49,21 @@ assemblies_dir = f"{config['download_dir']}/asms"
 cobs_dir = f"{config['download_dir']}/cobs"
 decompression_dir = config.get("decompression_dir", "intermediate/00_cobs")
 
+
 wildcard_constraints:
     batch=".+__\d\d",
 
 
 if config["keep_cobs_ind"]:
+
     ruleorder: decompress_cobs > run_cobs > decompress_and_run_cobs
+
+
 else:
+
     ruleorder: decompress_and_run_cobs > decompress_cobs > run_cobs
+
+
 ##################################
 ## Download params
 ##################################
@@ -77,7 +90,7 @@ rule all:
     """Run all
     """
     input:
-        f"output/{get_filename_for_all_queries()}.sam_summary.xz"
+        f"output/{get_filename_for_all_queries()}.sam_summary.xz",
 
 
 rule download:
@@ -91,13 +104,15 @@ rule download:
 rule match:
     """Match reads to the COBS indexes.
     """
-    input: f"intermediate/02_filter/{get_filename_for_all_queries()}.fa",
+    input:
+        f"intermediate/02_filter/{get_filename_for_all_queries()}.fa",
 
 
 rule map:
     """Map reads to the assemblies.
     """
-    input: f"output/{get_filename_for_all_queries()}.sam_summary.xz",
+    input:
+        f"output/{get_filename_for_all_queries()}.sam_summary.xz",
 
 
 ##################################
@@ -164,9 +179,11 @@ rule concatenate_queries:
     """Concatenate all queries into a single file, so we just need to run COBS/minimap2 just once per batch
     """
     output:
-        concatenated_query=f"intermediate/fixed_queries/{get_filename_for_all_queries()}.fa"
+        concatenated_query=f"intermediate/fixed_queries/{get_filename_for_all_queries()}.fa",
     input:
-        all_queries = expand("intermediate/fixed_queries/{qfile}.fa", qfile=get_all_query_filenames())
+        all_queries=expand(
+            "intermediate/fixed_queries/{qfile}.fa", qfile=get_all_query_filenames()
+        ),
     threads: 1
     shell:
         """
@@ -178,7 +195,7 @@ rule decompress_cobs:
     """Decompress cobs indexes
     """
     output:
-        cobs= f"{decompression_dir}/{{batch}}.cobs_classic"
+        cobs=f"{decompression_dir}/{{batch}}.cobs_classic",
     input:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
@@ -190,6 +207,7 @@ rule decompress_cobs:
         """
         xzcat "{input.xz}" > "{output.cobs}"
         """
+
 
 rule run_cobs:
     """Cobs matching
@@ -205,7 +223,8 @@ rule run_cobs:
     priority: 999
     benchmark:
         "logs/benchmarks/run_cobs/{batch}____{qfile}.txt"
-    conda: "envs/cobs.yaml"
+    conda:
+        "envs/cobs.yaml"
     shell:
         """
         cobs query \\
@@ -216,6 +235,7 @@ rule run_cobs:
         | xz -v \\
         > {output.match}
         """
+
 
 rule decompress_and_run_cobs:
     """Decompress Cobs index and run Cobs matching
@@ -228,10 +248,11 @@ rule decompress_and_run_cobs:
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
-        decompression_dir=decompression_dir
+        decompression_dir=decompression_dir,
     benchmark:
         "logs/benchmarks/decompress_and_run_cobs/{batch}____{qfile}.txt"
-    conda: "envs/cobs.yaml"
+    conda:
+        "envs/cobs.yaml"
     shell:
         """
         mkdir -p {params.decompression_dir}
@@ -264,7 +285,8 @@ rule translate_matches:
     conda:
         "envs/minimap2.yaml"
     threads: 1
-    log: "logs/translate_matches/{qfile}.log"
+    log:
+        "logs/translate_matches/{qfile}.log",
     shell:
         """
         ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \\
