@@ -49,7 +49,7 @@ print(f"Query files: {list(map(str, qfiles))}")
 assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
 decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs"))
-
+benchmark_flag = "--benchmark" if config["benchmark"] else ""
 
 wildcard_constraints:
     batch=".+__\d\d",
@@ -207,11 +207,13 @@ rule decompress_cobs:
     resources:
         max_decomp_jobs=1,
     threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
-    benchmark:
-        "logs/benchmarks/decompress_cobs/{batch}.txt"
+    params:
+        benchmark_flag = benchmark_flag,
     shell:
         """
-        xzcat "{input.xz}" > "{output.cobs}"
+        ./scripts/benchmark.py {params.benchmark_flag} \
+            --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \
+            'xzcat "{input.xz}" > "{output.cobs}"'
         """
 
 
@@ -226,20 +228,21 @@ rule run_cobs:
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
+        benchmark_flag= benchmark_flag,
     priority: 999
-    benchmark:
-        "logs/benchmarks/run_cobs/{batch}____{qfile}.txt"
     conda:
         "envs/cobs.yaml"
     shell:
         """
-        cobs query \\
-            -t {params.kmer_thres} \\
-            -T {threads} \\
-            -i {input.cobs_index} \\
-            -f {input.fa} \\
-        | xz -v \\
-        > {output.match}
+        ./scripts/benchmark.py {params.benchmark_flag} \
+            --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \
+            'cobs query \\
+                -t {params.kmer_thres} \\
+                -T {threads} \\
+                -i {input.cobs_index} \\
+                -f {input.fa} \\
+            | xz -v \\
+            > {output.match}'
         """
 
 
@@ -255,23 +258,24 @@ rule decompress_and_run_cobs:
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
-    benchmark:
-        "logs/benchmarks/decompress_and_run_cobs/{batch}____{qfile}.txt"
+        cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
+        benchmark_flag = benchmark_flag,
     conda:
         "envs/cobs.yaml"
     shell:
         """
         mkdir -p {params.decompression_dir}
-        cobs_index="{params.decompression_dir}/{wildcards.batch}.cobs_classic"
-        xzcat "{input.compressed_cobs_index}" > "${{cobs_index}}"
-        cobs query \\
-            -t {params.kmer_thres} \\
-            -T {threads} \\
-            -i "${{cobs_index}}" \\
-            -f {input.fa} \\
-        | xz -v \\
-        > {output.match}
-        rm -v "${{cobs_index}}"
+        ./scripts/benchmark.py {params.benchmark_flag} \
+            --log logs/benchmarks/decompress_and_run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \
+            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index}" && \
+            cobs query \\
+                -t {params.kmer_thres} \\
+                -T {threads} \\
+                -i "{params.cobs_index}" \\
+                -f {input.fa} \\
+            | xz -v \\
+            > {output.match}'
+        rm -v "{params.cobs_index}"
         """
 
 
@@ -312,22 +316,21 @@ rule batch_align_minimap2:
         minimap_preset=config["minimap_preset"],
         minimap_threads=config["minimap_thr"],
         minimap_extra_params=config["minimap_extra_params"],
+        benchmark_flag = benchmark_flag,
     conda:
         "envs/minimap2.yaml"
-    benchmark:
-        "logs/benchmarks/batch_align_minimap2/{batch}____{qfile}.txt"
     threads: config["minimap_thr"]
     shell:
         """
-        ((
-        ./scripts/batch_align.py \\
-            --minimap-preset {params.minimap_preset} \\
-            --threads {params.minimap_threads} \\
-            --extra-params=\"{params.minimap_extra_params}\" \\
-            {input.asm} \\
-            {input.qfa} \\
-            > {output.sam}
-        ) 2>&1 ) > {log}
+        ./scripts/benchmark.py {params.benchmark_flag} \
+            --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \
+            './scripts/batch_align.py \\
+                --minimap-preset {params.minimap_preset} \\
+                --threads {params.minimap_threads} \\
+                --extra-params=\"{params.minimap_extra_params}\" \\
+                {input.asm} \\
+                {input.qfa} \\
+                > {output.sam} 2>{log}'
         """
 
 
