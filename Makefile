@@ -23,7 +23,7 @@ test_benchmark: ## benchmark the test pipeline. Benchmark logs are stored in log
 	scripts/benchmark.py --benchmark --log logs/benchmarks/test_map.txt   "snakemake $(SMK_PARAMS) --config batches=batches_small.txt benchmark=True -- map"
 
 download: ## Download the 661k assemblies and COBS indexes
-	snakemake $(SMK_PARAMS) -- download
+	snakemake $(SMK_PARAMS) -j 99999 -- download
 
 match: ## Match queries using COBS (queries -> candidates)
 	snakemake $(SMK_PARAMS) -- match
