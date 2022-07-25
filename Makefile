@@ -62,8 +62,8 @@ cluster: ## Submit to a SLURM cluster
         --wrap="snakemake --rerun-incomplete -p -j all -k"
 
 viewconf: ## View configuration without comments
-	cat config.yaml \\
-		| perl -pe 's/ *#.*//g' \\
+	@cat config.yaml \
+		| perl -pe 's/ *#.*//g' \
 		| grep -Ev ^$
 
 
