@@ -221,7 +221,7 @@ rule run_cobs:
     """Cobs matching
     """
     output:
-        match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
+        match="intermediate/01_match/{batch}____{qfile}.xz",
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/concatenated_query/{qfile}.fa",
@@ -250,7 +250,7 @@ rule decompress_and_run_cobs:
     """Decompress Cobs index and run Cobs matching
     """
     output:
-        match=protected("intermediate/01_match/{batch}____{qfile}.xz"),
+        match="intermediate/01_match/{batch}____{qfile}.xz",
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
