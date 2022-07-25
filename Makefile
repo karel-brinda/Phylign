@@ -1,4 +1,4 @@
-.PHONY: all test help clean cleanall cluster download match map benchmark format report
+.PHONY: all test help clean cleanall cluster download match map benchmark format report viewconf
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -60,4 +60,10 @@ cluster: ## Submit to a SLURM cluster
         --mem=80GB \
         -t 0-08:00:00 \
         --wrap="snakemake --rerun-incomplete -p -j all -k"
+
+viewconf: ## View configuration without comments
+	cat config.yaml \\
+		| perl -pe 's/ *#.*//g' \\
+		| grep -Ev ^$
+
 
