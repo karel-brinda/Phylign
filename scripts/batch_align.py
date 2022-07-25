@@ -25,6 +25,13 @@ from timeit import default_timer as timer
 from xopen import xopen
 import time
 import shlex
+from fcntl import fcntl
+try:
+    from fcntl import F_SETPIPE_SZ
+except ImportError:
+    # ref: linux uapi/linux/fcntl.h
+    F_SETPIPE_SZ = 1024 + 7
+
 
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
@@ -127,8 +134,14 @@ def named_pipe():
 
 def _write_to_pipe(pipe_path, data):
     byte_start = 0
-    buffer_size = 2**14  # 2**14 as it is the max pipe buffer size for linux and darwin
+    buffer_size = 2**16  # 64k - max pipe buffer capacity of darwin is 64k, for linux is 1 MB
     with open(pipe_path, 'wb', buffering=buffer_size) as outstream:
+        try:
+            fd = outstream.fileno()
+            fcntl(fd, F_SETPIPE_SZ, 2**16)  # sets pipe buffer to 64k
+        except OSError as error:
+            logging.error("Failed to set pipe buffer size: " + str(error))
+            sys.exit(1)
         while byte_start < len(data):
             try:
                 # this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
@@ -136,7 +149,7 @@ def _write_to_pipe(pipe_path, data):
                 bytes_written = outstream.write(chunk_to_write)
                 byte_start += bytes_written
             except BrokenPipeError:
-                time.sleep(0.1)  # waits minimap2 to get the stream
+                time.sleep(0.01)  # waits minimap2 to get the stream
 
 
 def run_minimap2(command, qfa):
