@@ -6,10 +6,10 @@ SHELL=/usr/bin/env bash -eo pipefail
 
 .SUFFIXES:
 
-MAX_DECOMP_JOBS=$(shell grep "^max_decomp_jobs" config.yaml | awk '{print $$2}')
+MAX_DECOMP_MB=$(shell grep "^max_decomp_MB" config.yaml | awk '{print $$2}')
 MAX_DOWNLOAD_JOBS=$(shell grep "^max_download_jobs" config.yaml | awk '{print $$2}')
 THR=$(shell grep "^thr" config.yaml | awk '{print $$2}')
-SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_decomp_jobs=$(MAX_DECOMP_JOBS) max_download_jobs=$(MAX_DOWNLOAD_JOBS)
+SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_decomp_MB=$(MAX_DECOMP_MB) max_download_jobs=$(MAX_DOWNLOAD_JOBS)
 
 all: ## Run everything
 	snakemake $(SMK_PARAMS)
