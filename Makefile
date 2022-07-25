@@ -1,4 +1,4 @@
-.PHONY: all test help clean cleanall cluster download match map benchmark format report viewconf
+.PHONY: all test help clean cleanall cluster download match map benchmark format report viewconf conda
 
 SHELL=/usr/bin/env bash -eo pipefail
 
@@ -66,4 +66,5 @@ viewconf: ## View configuration without comments
 		| perl -pe 's/ *#.*//g' \
 		| grep -Ev ^$
 
-
+conda: ## Create the conda environments
+	snakemake $(SMK_PARAMS) --conda-create-envs-only

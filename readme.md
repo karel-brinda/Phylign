@@ -50,6 +50,7 @@ This is our recommended steps to run `mof-search`:
 * `make benchmark`  Benchmarks the pipeline. Benchmark logs are stored in `logs/benchmarks`
 * `make report`     Generate Snakemake report
 * `make viewconf`   View configuration without comments
+* `make conda`      Just create the required `conda` environments
 * `make clean`      Clean intermediate search files
 * `make cleanall`   Clean all generated and downloaded file
 
