@@ -205,7 +205,7 @@ rule decompress_cobs:
     input:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
-        max_decomp_jobs=1,
+        max_decomp_MB=lambda wildcards, input: input.xz.size//1_000_000 + 1
     threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     params:
         benchmark_flag = benchmark_flag,
@@ -255,7 +255,7 @@ rule decompress_and_run_cobs:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
     resources:
-        max_decomp_jobs=1,
+        max_decomp_MB=lambda wildcards, input: input.compressed_cobs_index.size//1_000_000 + 1
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
