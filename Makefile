@@ -1,6 +1,7 @@
 .PHONY: all test help clean cleanall cluster download match map benchmark format report viewconf conda
 
 SHELL=/usr/bin/env bash -eo pipefail
+DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
 
 .SECONDARY:
 
@@ -19,8 +20,8 @@ test: ## Run everything but just with 3 batches to test full pipeline
 
 test_benchmark: ## benchmark the test pipeline. Benchmark logs are stored in logs/benchmarks
 	snakemake $(SMK_PARAMS) --config batches=batches_small.txt -- download  # download is not benchmarked
-	scripts/benchmark.py --benchmark --log logs/benchmarks/test_match.txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt benchmark=True -- match"
-	scripts/benchmark.py --benchmark --log logs/benchmarks/test_map.txt   "snakemake $(SMK_PARAMS) --config batches=batches_small.txt benchmark=True -- map"
+	scripts/benchmark.py --benchmark --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt benchmark=True -- match"
+	scripts/benchmark.py --benchmark --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config batches=batches_small.txt benchmark=True -- map"
 
 download: ## Download the 661k assemblies and COBS indexes
 	snakemake $(SMK_PARAMS) -j 99999 -- download
@@ -33,8 +34,8 @@ map: ## Map candidates to assemblies (candidates -> alignments)
 
 benchmark: ## benchmark this pipeline. Benchmark logs are stored in logs/benchmarks
 	make download  # download is not benchmarked
-	scripts/benchmark.py --benchmark --log logs/benchmarks/match.txt "snakemake $(SMK_PARAMS) --config benchmark=True -- match"
-	scripts/benchmark.py --benchmark --log logs/benchmarks/map.txt   "snakemake $(SMK_PARAMS) --config benchmark=True -- map"
+	scripts/benchmark.py --benchmark --log logs/benchmarks/match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config benchmark=True -- match"
+	scripts/benchmark.py --benchmark --log logs/benchmarks/map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config benchmark=True -- map"
 
 report: ## Generate Snakemake report
 	snakemake --report
