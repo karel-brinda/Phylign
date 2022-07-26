@@ -1,7 +1,7 @@
 .PHONY: all test help clean cleanall cluster download match map benchmark format report viewconf
 
 SHELL=/usr/bin/env bash -eo pipefail
-DATETIME=$(shell date --iso=seconds)
+DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
 
 .SECONDARY:
 
