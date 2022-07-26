@@ -143,8 +143,8 @@ def get_pipe_buffer_size():
 
 def _write_to_pipe(pipe_path, data):
     byte_start = 0
-    buffer_size = get_pipe_buffer_size() / 2  # TODO: remove this, /2 is to be safe to test
-    with open(pipe_path, 'wb', buffering=buffer_size) as outstream:
+    buffer_size = get_pipe_buffer_size()
+    with open(pipe_path, 'wb', buffering=0) as outstream:
         try:
             fd = outstream.fileno()
 
@@ -156,7 +156,7 @@ def _write_to_pipe(pipe_path, data):
         while byte_start < len(data):
             try:
                 # this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
-                chunk_to_write = data[byte_start:byte_start + buffer_size]
+                chunk_to_write = data[byte_start:byte_start + buffer_size//2]  # TODO: we are just writing half of the buffer size here for testing. Remove later
                 bytes_written = outstream.write(chunk_to_write)
                 byte_start += bytes_written
             except BrokenPipeError:
