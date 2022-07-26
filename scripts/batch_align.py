@@ -132,13 +132,24 @@ def named_pipe():
         shutil.rmtree(dirname)
 
 
+def get_pipe_buffer_size():
+    if sys.platform == "linux":
+        return 2**20  # 1 MB is OK on linux
+    elif sys.platform == "darwin":
+        return 2**12  # 4kb is OK on darwin
+    else:
+        raise OSError("Unsupported platform")
+
+
 def _write_to_pipe(pipe_path, data):
     byte_start = 0
-    buffer_size = 2**16  # 64k - max pipe buffer capacity of darwin is 64k, for linux is 1 MB
+    buffer_size = get_pipe_buffer_size() / 2  # TODO: remove this, /2 is to be safe to test
     with open(pipe_path, 'wb', buffering=buffer_size) as outstream:
         try:
             fd = outstream.fileno()
-            fcntl(fd, F_SETPIPE_SZ, 2**16)  # sets pipe buffer to 64k
+
+            # set pipe buffer size
+            fcntl(fd, F_SETPIPE_SZ, buffer_size)
         except OSError as error:
             logging.error("Failed to set pipe buffer size: " + str(error))
             sys.exit(1)
