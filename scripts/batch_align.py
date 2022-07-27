@@ -156,11 +156,21 @@ def _write_to_pipe(pipe_path, data):
         while byte_start < len(data):
             try:
                 # this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
-                chunk_to_write = data[byte_start:byte_start + buffer_size//2]  # TODO: we are just writing half of the buffer size here for testing. Remove later
+                chunk_to_write = data[byte_start:byte_start + buffer_size]
                 bytes_written = outstream.write(chunk_to_write)
+                logging.info(f"[PIPE] Wrote {bytes_written} bytes successfully")
+
                 byte_start += bytes_written
+
+                pipe_buffer_full = bytes_written == 0
+                if pipe_buffer_full:
+                    buffer_size = buffer_size // 2  # maybe the OS reduced the pipe buffer size, let's reduce the amount we write too
+                    buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
+                    logging.info(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
+                    time.sleep(0.2)  # a little wait to try again, and hope minimap2 reads the pipe
+
             except BrokenPipeError:
-                time.sleep(0.01)  # waits minimap2 to get the stream
+                time.sleep(0.1)  # waits minimap2 to get the stream
 
 
 def run_minimap2(command, qfa):
