@@ -8,9 +8,10 @@ DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
 .SUFFIXES:
 
 MAX_DECOMP_MB=$(shell grep "^max_decomp_MB" config.yaml | awk '{print $$2}')
+MAX_HEAVY_IO_JOBS=$(shell grep "^max_heavy_IO_jobs" config.yaml | awk '{print $$2}')
 MAX_DOWNLOAD_JOBS=$(shell grep "^max_download_jobs" config.yaml | awk '{print $$2}')
 THR=$(shell grep "^thr" config.yaml | awk '{print $$2}')
-SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_decomp_MB=$(MAX_DECOMP_MB) max_download_jobs=$(MAX_DOWNLOAD_JOBS)
+SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_decomp_MB=$(MAX_DECOMP_MB) max_download_jobs=$(MAX_DOWNLOAD_JOBS) max_heavy_IO_jobs=$(MAX_HEAVY_IO_JOBS)
 
 all: ## Run everything
 	snakemake $(SMK_PARAMS)
