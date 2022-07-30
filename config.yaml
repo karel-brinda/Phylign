@@ -36,10 +36,14 @@ minimap_extra_params: "--eqx"
 # filesystem configuration
 
 # maximum number of xz-compressed MB to process simultaneously. This is used to balance the xz-decompression when
-# running the pipeline. For the 661k data, the heaviest xz-compressed COBS index has 1434MB, while the lightest have
+# running the pipeline. For the 661k data, the heaviest xz-compressed COBS index has 1434MB, while the lightests have
 # on the order of few MBs. Setting this value to 2000 for the 661k allows us to run heaviest decompressions mixed
 # with light ones in order to improve performance (note: setting this value too high might slow down the filesystem)
 max_decomp_MB: 2000
+
+# maximum number of heavy I/O jobs (for xz decompression and COBS). This is used in conjunction with max_decomp_MB to
+# not overflow the filesystem I/O
+max_heavy_IO_jobs: 4
 
 # keep or not decompressed COBS index. If kept, can speed up subsequent searches but will take much more disk
 # space, as the decompressed indexes won't be cleaned up.
