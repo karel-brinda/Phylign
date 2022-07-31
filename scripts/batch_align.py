@@ -146,20 +146,19 @@ def _write_to_pipe(pipe_path, data):
     buffer_size = get_pipe_buffer_size()
     with open(pipe_path, 'wb', buffering=0) as outstream:
         try:
-            fd = outstream.fileno()
-
             # set pipe buffer size
+            fd = outstream.fileno()
             fcntl(fd, F_SETPIPE_SZ, buffer_size)
         except OSError as error:
             logging.error("Failed to set pipe buffer size: " + str(error))
             sys.exit(1)
+
         while byte_start < len(data):
             try:
-                # this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
                 chunk_to_write = data[byte_start:byte_start + buffer_size]
-                bytes_written = outstream.write(chunk_to_write)
-                logging.info(f"[PIPE] Wrote {bytes_written} bytes successfully")
 
+                # Note: this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
+                bytes_written = outstream.write(chunk_to_write)
                 byte_start += bytes_written
 
                 pipe_buffer_full = bytes_written == 0
