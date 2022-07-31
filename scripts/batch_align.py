@@ -167,9 +167,9 @@ def _write_to_pipe(pipe_path, data):
                 bytes_written = outstream.write(chunk_to_write)
                 byte_start += bytes_written
 
-                pipe_buffer_full = bytes_written == 0
-                if pipe_buffer_full:
-                    buffer_size = buffer_size // 2  # maybe the OS reduced the pipe buffer size, let's reduce the amount we write too
+                pipe_buffer_shrinked = bytes_written == 0
+                if pipe_buffer_shrinked:
+                    buffer_size = buffer_size // 2  # let's reduce the amount we write
                     buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
                     logging.info(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
 
