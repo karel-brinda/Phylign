@@ -135,10 +135,11 @@ def named_pipe():
 
 
 def get_pipe_buffer_size():
+    # see https://unix.stackexchange.com/a/11954 for the pipe buffer capacities returned here
     if sys.platform == "linux":
-        return 2**20  # 1 MB is OK on linux
+        return 2**20  # 1MB is the max on linux
     elif sys.platform == "darwin":
-        return 2**12  # 4kb is OK on darwin
+        return 2**14  # 64KB is the max on darwin
     else:
         raise OSError("Unsupported platform")
 
