@@ -160,6 +160,9 @@ def _write_to_pipe(pipe_path, data):
             try:
                 chunk_to_write = data[byte_start:byte_start + buffer_size]
 
+                # wait for the pipe to be ready to be written to
+                select([], [outstream], [])
+
                 # Note: this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
                 bytes_written = outstream.write(chunk_to_write)
                 byte_start += bytes_written
@@ -169,7 +172,6 @@ def _write_to_pipe(pipe_path, data):
                     buffer_size = buffer_size // 2  # maybe the OS reduced the pipe buffer size, let's reduce the amount we write too
                     buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
                     logging.info(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
-                    select([], [outstream], [])  # wait for the pipe to be ready to be written to again
 
             except BrokenPipeError:
                 time.sleep(0.1)  # waits minimap2 to get the stream
