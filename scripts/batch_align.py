@@ -31,6 +31,8 @@ try:
 except ImportError:
     # ref: linux uapi/linux/fcntl.h
     F_SETPIPE_SZ = 1024 + 7
+from select import select
+
 
 
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
@@ -166,7 +168,7 @@ def _write_to_pipe(pipe_path, data):
                     buffer_size = buffer_size // 2  # maybe the OS reduced the pipe buffer size, let's reduce the amount we write too
                     buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
                     logging.info(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
-                    time.sleep(0.2)  # a little wait to try again, and hope minimap2 reads the pipe
+                    select([], [outstream], [])  # wait for the pipe to be ready to be written to again
 
             except BrokenPipeError:
                 time.sleep(0.1)  # waits minimap2 to get the stream
