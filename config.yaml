@@ -1,13 +1,49 @@
 ###################################################################################################
 # search configuration
 
-batches: "batches_full.txt"  # batches to consider
-cobs_kmer_thres: 0.33  # COBS threshold in percentage of terms in query matching
-minimap_preset: "sr" # minimap preset. Can be: map-pb, map-ont, map-hifi
+##################################################
+# general
+# overall number of threads to use in the pipeline, an integer number (e.g. 8 for 8 threads) or "all" (to use all threads)
+thr: all
+# batches to consider during search
+batches: "batches_full.txt"
+# maximum number of download jobs at a time (note: too many might slow down download speed)
+max_download_jobs: 8
+##################################################
+
+##################################################
+# COBS
+# number of threads when running COBS (note: too many might limit the pipeline parallelism)
+cobs_thr: 1
+# COBS threshold in percentage of terms in query matching
+cobs_kmer_thres: 0.33
+##################################################
+
+##################################################
+# minimap2
+# minimap preset. Can be: map-pb, map-ont, map-hifi, etc
+minimap_preset: "sr"
+# number of threads when running mimimap2 (note: too many might limit the pipeline parallelism)
+minimap_thr: 1
+# other minimap2 params
+minimap_extra_params: "--eqx"
+##################################################
+
 ###################################################################################################
+
 
 ###################################################################################################
 # filesystem configuration
+
+# maximum number of xz-compressed MB to process simultaneously. This is used to balance the xz-decompression when
+# running the pipeline. For the 661k data, the heaviest xz-compressed COBS index has 1434MB, while the lightests have
+# on the order of few MBs. Setting this value to 2000 for the 661k allows us to run heaviest decompressions mixed
+# with light ones in order to improve performance (note: setting this value too high might slow down the filesystem)
+max_decomp_MB: 2000
+
+# maximum number of heavy I/O jobs (for xz decompression and COBS). This is used in conjunction with max_decomp_MB to
+# not overflow the filesystem I/O
+max_heavy_IO_jobs: 4
 
 # keep or not decompressed COBS index. If kept, can speed up subsequent searches but will take much more disk
 # space, as the decompressed indexes won't be cleaned up.
@@ -23,10 +59,10 @@ keep_cobs_ind: False
 download_dir: "."
 ###################################################################################################
 
+
 ###################################################################################################
-# performance configuration
-thr: all  # overall number of threads of the pipeline, an integer number (e.g. 8 for 8 threads) or "all" (to use all threads)
-cobs_thr: 1  # number of threads when running COBS
-decomp_thr: 5  # maximum number of xz-decompression at a time
-download_thr: 8  # maximum number of downloads at a time
+# misc configuration
+
+# whether to benchmark or not the pipeline
+benchmark: False
 ###################################################################################################

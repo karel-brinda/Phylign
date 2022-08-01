@@ -5,13 +5,6 @@ This is the pipeline for BLAST-like search within the 661k collection.
 
 ## Dependencies
 
-:warning: **`Mac OS X` users have to necessarily install `gcc-11` to run `mof-search`. The easiest way is through `brew`:**
-```
-brew install gcc@11
-```
-
-
-
 Some dependencies are packaged into `conda` environments that `snakemake` will automatically create.
 Others are non-standard (which you might need to install) and standard (which you probably have).
 
@@ -20,6 +13,11 @@ Others are non-standard (which you might need to install) and standard (which yo
 * `python >= 3.7`
 * `snakemake >= 6.2.0`
 * `mamba >= 0.20.0`
+
+If you want to benchmark the pipeline and is on `Mac OS X`, you need to install `gnu-time`:
+```
+brew install gnu-time
+```
 
 ### Standard
 * `bash`
@@ -44,14 +42,17 @@ This is our recommended steps to run `mof-search`:
 
 ## Commands
 
-* `make`          Run everything
-* `make test`     Run the queries on 3 batches, to test the pipeline completely
-* `make download` Download the 661k assemblies and COBS indexes
-* `make match`    Match queries using COBS (queries -> candidates)
-* `make map`      Map candidates to the assemblies (candidates -> alignments)
-* `make report`   Generate Snakemake report
-* `make clean`    Clean intermediate search files
-* `make cleanall` Clean all generated and downloaded file
+* `make`            Run everything
+* `make test`       Run the queries on 3 batches, to test the pipeline completely
+* `make download`   Download the 661k assemblies and COBS indexes
+* `make match`      Match queries using COBS (queries -> candidates)
+* `make map`        Map candidates to the assemblies (candidates -> alignments)
+* `make benchmark`  Benchmarks the pipeline. Benchmark logs are stored in `logs/benchmarks`
+* `make report`     Generate Snakemake report
+* `make viewconf`   View configuration without comments
+* `make conda`      Just create the required `conda` environments
+* `make clean`      Clean intermediate search files
+* `make cleanall`   Clean all generated and downloaded file
 
 
 

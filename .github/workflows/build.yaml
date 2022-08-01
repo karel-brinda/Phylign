@@ -48,7 +48,6 @@ jobs:
       run: |
         conda install -c conda-forge mamba=0.20.0
         /usr/bin/env python3 -m pip install snakemake==6.2.0
-        brew install gcc@11
 
     - name: Check out code for the build
       uses: actions/checkout@v2
