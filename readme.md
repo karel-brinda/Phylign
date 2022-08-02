@@ -84,3 +84,17 @@ If you have tens or hundreds or more query files, concatenate them all into one 
 ### Query headers
 
 For now, all query headers have to be unique among all query files.
+
+### Benchmarking
+
+Please consider clearing the filesystem cache before running benchmarks.
+
+On `Linux`: `sync; sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'`
+
+On `Mac OS X`: `sync && sudo purge`
+
+### Encrypted filesystems
+
+Encrypted filesystems incurs (substantial) slowdowns due to `mof-search` being heavy on I/O.
+Avoid using encrypted filesystems when benchmarking.
+
