@@ -144,6 +144,25 @@ def get_pipe_buffer_size():
         raise OSError("Unsupported platform")
 
 
+def _wait_for_pipe_to_be_ready_to_be_written_to(pipe):
+    if sys.platform == "linux":
+        select([], [pipe], [])
+    elif sys.platform == "darwin":
+        pass  # on darwin, it seems select() might cause deadlocks so we don't do anything here
+    else:
+        raise OSError("Unsupported platform")
+
+
+def _post_wait_after_shrunk_pipe():
+    if sys.platform == "linux":
+        pass  # on linux this is not needed: we always wait for the pipe to be ready to be written to with select()
+    elif sys.platform == "darwin":
+        # on darwin, it seems select() might cause deadlocks, so we do a busy wait
+        time.sleep(0.1)
+    else:
+        raise OSError("Unsupported platform")
+
+
 def _write_to_pipe(pipe_path, data):
     byte_start = 0
     buffer_size = get_pipe_buffer_size()
@@ -160,8 +179,7 @@ def _write_to_pipe(pipe_path, data):
             try:
                 chunk_to_write = data[byte_start:byte_start + buffer_size]
 
-                # wait for the pipe to be ready to be written to
-                select([], [outstream], [])
+                _wait_for_pipe_to_be_ready_to_be_written_to(outstream)
 
                 # Note: this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
                 bytes_written = outstream.write(chunk_to_write)
@@ -172,6 +190,7 @@ def _write_to_pipe(pipe_path, data):
                     buffer_size = buffer_size // 2  # let's reduce the amount we write
                     buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
                     logging.info(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
+                    _post_wait_after_shrunk_pipe()
 
             except BrokenPipeError:
                 time.sleep(0.1)  # waits minimap2 to get the stream
