@@ -167,7 +167,7 @@ def _write_to_pipe(pipe_path, data):
                     buffer_size = buffer_size // 2  # maybe the OS reduced the pipe buffer size, let's reduce the amount we write too
                     buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
                     logging.info(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
-                    time.sleep(0.2)  # a little wait to try again, and hope minimap2 reads the pipe
+                    time.sleep(0.1)  # a little wait to try again, and hope minimap2 reads the pipe
 
             except BrokenPipeError:
                 time.sleep(0.1)  # waits minimap2 to get the stream
