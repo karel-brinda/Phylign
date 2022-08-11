@@ -195,10 +195,14 @@ def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
             '-'
         ]
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            # we first try to run minimap2 to get the read stream ready, and then try to write the stream
-            # this should be slightly more efficient at most
+            # we first get minimap2 up and reading from the pipe
             minimap_2_output = executor.submit(run_minimap2, command, qfa)
+            while not minimap_2_output.running():
+                time.sleep(0.1)
+
+            # and now we write to the pipe
             _write_to_pipe(rfn, rfa)
+
             return minimap_2_output.result()
 
 
