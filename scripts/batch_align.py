@@ -142,34 +142,35 @@ def get_pipe_buffer_size():
         raise OSError("Unsupported platform")
 
 
-def _write_to_pipe(pipe_fh, data):
+def _write_to_pipe(pipe_path, data):
     byte_start = 0
     buffer_size = get_pipe_buffer_size()
-    try:
-        # set pipe buffer size
-        fd = pipe_fh.fileno()
-        fcntl(fd, F_SETPIPE_SZ, buffer_size)
-    except OSError as error:
-        logging.error("Failed to set pipe buffer size: " + str(error))
-        sys.exit(1)
-
-    while byte_start < len(data):
+    with open(pipe_path, 'wb', buffering=0) as outstream:
         try:
-            chunk_to_write = data[byte_start:byte_start + buffer_size]
+            # set pipe buffer size
+            fd = outstream.fileno()
+            fcntl(fd, F_SETPIPE_SZ, buffer_size)
+        except OSError as error:
+            logging.error("Failed to set pipe buffer size: " + str(error))
+            sys.exit(1)
 
-            # Note: this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
-            bytes_written = pipe_fh.write(chunk_to_write)
-            byte_start += bytes_written
+        while byte_start < len(data):
+            try:
+                chunk_to_write = data[byte_start:byte_start + buffer_size]
 
-            pipe_buffer_full = bytes_written == 0
-            if pipe_buffer_full:
-                buffer_size = buffer_size // 2  # maybe the OS reduced the pipe buffer size, let's reduce the amount we write too
-                buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
-                logging.info(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
-                time.sleep(0.1)  # a little wait to try again, and hope minimap2 reads the pipe
+                # Note: this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
+                bytes_written = outstream.write(chunk_to_write)
+                byte_start += bytes_written
 
-        except BrokenPipeError:
-            time.sleep(0.1)  # waits minimap2 to get the stream
+                pipe_buffer_full = bytes_written == 0
+                if pipe_buffer_full:
+                    buffer_size = buffer_size // 2  # maybe the OS reduced the pipe buffer size, let's reduce the amount we write too
+                    buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
+                    logging.info(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
+                    time.sleep(0.1)  # a little wait to try again, and hope minimap2 reads the pipe
+
+            except BrokenPipeError:
+                time.sleep(0.1)  # waits minimap2 to get the stream
 
 
 def run_minimap2(command, qfa):
@@ -193,12 +194,11 @@ def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
             str(minimap_threads), *(shlex.split(minimap_extra_params)), rfn,
             '-'
         ]
-        with concurrent.futures.ThreadPoolExecutor() as executor, open(rfn, 'wb', buffering=0) as ref_fh:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
             # we first try to run minimap2 to get the read stream ready, and then try to write the stream
             # this should be slightly more efficient at most
             minimap_2_output = executor.submit(run_minimap2, command, qfa)
-
-            _write_to_pipe(ref_fh, rfa)
+            _write_to_pipe(rfn, rfa)
             return minimap_2_output.result()
 
 
