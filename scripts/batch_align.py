@@ -137,7 +137,7 @@ def get_pipe_buffer_size():
     if sys.platform == "linux":
         return 2**20  # 1MB is the max on linux
     elif sys.platform == "darwin":
-        return 2**14  # 64KB is the max on darwin
+        return 2**16  # 64KB is the max on darwin
     else:
         raise OSError("Unsupported platform")
 
