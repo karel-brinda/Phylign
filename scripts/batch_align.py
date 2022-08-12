@@ -36,7 +36,7 @@ except ImportError:
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
 logging.basicConfig(stream=sys.stderr,
-                    level=logging.INFO,
+                    level=logging.DEBUG,
                     format='[%(asctime)s] (%(levelname)s) %(message)s')
 
 
@@ -125,11 +125,15 @@ def load_qdicts(query_fn):
 def named_pipe():
     dirname = tempfile.mkdtemp()
     try:
+        logging.debug("Creating named pipe...")
         path = os.path.join(dirname, 'named_pipe')
         os.mkfifo(path)
+        logging.debug("Named pipe created!")
         yield path
     finally:
+        logging.debug("Deleting named pipe...")
         shutil.rmtree(dirname)
+        logging.debug("Named pipe deleted!...")
 
 
 def get_pipe_buffer_size():
@@ -145,15 +149,21 @@ def get_pipe_buffer_size():
 def _write_to_pipe(pipe_path, data):
     byte_start = 0
     buffer_size = get_pipe_buffer_size()
+
+    logging.debug("Opening pipe for writing...")
     with open(pipe_path, 'wb', buffering=0) as outstream:
+        logging.debug("Pipe open for writing!")
         try:
             # set pipe buffer size
+            logging.debug("Setting pipe buffer size...")
             fd = outstream.fileno()
             fcntl(fd, F_SETPIPE_SZ, buffer_size)
+            logging.debug("Pipe buffer size increased!")
         except OSError as error:
             logging.error("Failed to set pipe buffer size: " + str(error))
             sys.exit(1)
 
+        logging.debug("Starting to send data to pipe...")
         while byte_start < len(data):
             try:
                 chunk_to_write = data[byte_start:byte_start + buffer_size]
@@ -161,32 +171,33 @@ def _write_to_pipe(pipe_path, data):
                 # Note: this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
                 bytes_written = outstream.write(chunk_to_write)
                 byte_start += bytes_written
+                logging.debug(f"Wrote {bytes_written} bytes to pipe!")
 
                 pipe_buffer_full = bytes_written == 0
                 if pipe_buffer_full:
                     buffer_size = buffer_size // 2  # maybe the OS reduced the pipe buffer size, let's reduce the amount we write too
                     buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
-                    logging.info(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
+                    logging.debug(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
                     time.sleep(0.1)  # a little wait to try again, and hope minimap2 reads the pipe
 
             except BrokenPipeError:
+                logging.debug(f"Pipe is broken, waiting for minimap2...")
                 time.sleep(0.1)  # waits minimap2 to get the stream
 
 
 def run_minimap2(command, qfa):
-    logging.info(f"Running command: {command}")
+    logging.debug(f"Running command: {command}")
     output = subprocess.check_output(command,
                                      input=qfa,
                                      universal_newlines=True,
                                      stderr=subprocess.DEVNULL)
+    logging.debug(f"Finished command: {command}")
     return output
 
 
 def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
                minimap_extra_params):
-    logging.debug(f"Going to run minimap with the following sequences:")
-    logging.debug(f"   rfa: {rfa}")
-    logging.debug(f"   qfa: {qfa}")
+    logging.debug(f"Running minimap2...")
 
     with named_pipe() as rfn:
         command = [
@@ -197,11 +208,17 @@ def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # we first get minimap2 up and reading from the pipe
             minimap_2_output = executor.submit(run_minimap2, command, qfa)
+
+            logging.debug("Checking if minimap2 started...")
             while not minimap_2_output.running():
+                logging.debug("minimap2 did not start yet, waiting...")
                 time.sleep(0.1)
+            logging.debug("minimap2 started!")
 
             # and now we write to the pipe
+            logging.debug("Going to write to pipe...")
             _write_to_pipe(rfn, rfa)
+            logging.debug("All data written to pipe!")
 
             return minimap_2_output.result()
 
@@ -350,8 +367,10 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
             qfas.append(qfa)
         logging.info(f"Mapping {qnames} to {rname}")
 
+        logging.debug("Starting minimap2 process...")
         result = minimap2_4(rfa, "\n".join(qfas), minimap_preset,
                             minimap_threads, minimap_extra_params)
+        logging.debug("minimap2 finished successfully!")
 
         assert result and result[
             0] == "@", f"Output of Minimap2 is empty ('{result}')"
