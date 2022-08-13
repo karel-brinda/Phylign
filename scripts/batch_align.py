@@ -180,16 +180,16 @@ def _write_to_pipe(pipe_path, data):
                 _wait_for_pipe_to_be_ready_to_be_written_to(outstream)
 
                 # Note: this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
+                logging.debug(f"Writing to pipe...")
                 bytes_written = outstream.write(chunk_to_write)
                 byte_start += bytes_written
                 logging.debug(f"Wrote {bytes_written} bytes to pipe!")
 
-                pipe_buffer_full = bytes_written == 0
-                if pipe_buffer_full:
-                    buffer_size = buffer_size // 2  # maybe the OS reduced the pipe buffer size, let's reduce the amount we write too
+                pipe_buffer_shrunk = bytes_written == 0
+                if pipe_buffer_shrunk:
+                    buffer_size = buffer_size // 2  # let's reduce the amount we write
                     buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
-                    logging.debug(f"[PIPE] Reduced pipe buffer size to {buffer_size}")
-                    time.sleep(0.1)  # a little wait to try again, and hope minimap2 reads the pipe
+                    logging.debug(f"Reduced pipe buffer size to {buffer_size}")
 
             except BrokenPipeError:
                 logging.debug(f"Pipe is broken, waiting for minimap2...")
