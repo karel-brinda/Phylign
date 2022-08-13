@@ -152,6 +152,13 @@ def _wait_for_pipe_to_be_ready_to_be_written_to(pipe):
     select([], [pipe], [])
     logging.debug("Ready to write to the pipe!")
 
+
+def increase_pipe_buffer_size(outstream, buffer_size):
+    logging.debug("Setting pipe buffer size...")
+    fd = outstream.fileno()
+    fcntl(fd, F_SETPIPE_SZ, buffer_size)
+    logging.debug("Pipe buffer size increased!")
+
 def _write_to_pipe(pipe_path, data):
     byte_start = 0
     buffer_size = get_pipe_buffer_size()
@@ -160,11 +167,7 @@ def _write_to_pipe(pipe_path, data):
     with open(pipe_path, 'wb', buffering=0) as outstream:
         logging.debug("Pipe open for writing!")
         try:
-            # set pipe buffer size
-            logging.debug("Setting pipe buffer size...")
-            fd = outstream.fileno()
-            fcntl(fd, F_SETPIPE_SZ, buffer_size)
-            logging.debug("Pipe buffer size increased!")
+            increase_pipe_buffer_size(outstream, buffer_size)
         except OSError as error:
             logging.error("Failed to set pipe buffer size: " + str(error))
             sys.exit(1)
