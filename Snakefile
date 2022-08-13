@@ -56,12 +56,8 @@ wildcard_constraints:
 
 
 if config["keep_cobs_ind"]:
-
     ruleorder: decompress_cobs > run_cobs > decompress_and_run_cobs
-
-
 else:
-
     ruleorder: decompress_and_run_cobs > decompress_cobs > run_cobs
 
 
@@ -323,6 +319,7 @@ rule batch_align_minimap2:
         minimap_threads=config["minimap_thr"],
         minimap_extra_params=config["minimap_extra_params"],
         benchmark_flag = benchmark_flag,
+        pipe = "--pipe" if config["prefer_pipe"] else ""
     conda:
         "envs/minimap2.yaml"
     threads: config["minimap_thr"]
@@ -334,6 +331,7 @@ rule batch_align_minimap2:
                 --minimap-preset {params.minimap_preset} \\
                 --threads {params.minimap_threads} \\
                 --extra-params=\"{params.minimap_extra_params}\" \\
+                {params.pipe} \\
                 {input.asm} \\
                 {input.qfa} \\
                 > {output.sam} 2>{log}'
