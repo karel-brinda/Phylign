@@ -25,6 +25,7 @@ from timeit import default_timer as timer
 from xopen import xopen
 import time
 import shlex
+from select import select
 from fcntl import fcntl
 try:
     from fcntl import F_SETPIPE_SZ
@@ -146,6 +147,11 @@ def get_pipe_buffer_size():
         raise OSError("Unsupported platform")
 
 
+def _wait_for_pipe_to_be_ready_to_be_written_to(pipe):
+    logging.debug("Waiting for the pipe to be ready to be written to...")
+    select([], [pipe], [])
+    logging.debug("Ready to write to the pipe!")
+
 def _write_to_pipe(pipe_path, data):
     byte_start = 0
     buffer_size = get_pipe_buffer_size()
@@ -167,6 +173,8 @@ def _write_to_pipe(pipe_path, data):
         while byte_start < len(data):
             try:
                 chunk_to_write = data[byte_start:byte_start + buffer_size]
+
+                _wait_for_pipe_to_be_ready_to_be_written_to(outstream)
 
                 # Note: this can throw BrokenPipeError if there is no process (i.e. minimap2) reading from the pipe
                 bytes_written = outstream.write(chunk_to_write)
