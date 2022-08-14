@@ -33,7 +33,6 @@ except ImportError:
     # ref: linux uapi/linux/fcntl.h
     F_SETPIPE_SZ = 1024 + 7
 
-
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
 logging.basicConfig(stream=sys.stderr,
@@ -159,6 +158,7 @@ def increase_pipe_buffer_size(outstream, buffer_size):
     fcntl(fd, F_SETPIPE_SZ, buffer_size)
     logging.debug("Pipe buffer size increased!")
 
+
 def _write_to_pipe(pipe_path, data):
     byte_start = 0
     buffer_size = get_pipe_buffer_size()
@@ -188,7 +188,9 @@ def _write_to_pipe(pipe_path, data):
                 pipe_buffer_shrunk = bytes_written == 0
                 if pipe_buffer_shrunk:
                     buffer_size = buffer_size // 2  # let's reduce the amount we write
-                    buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
+                    buffer_size = max(
+                        buffer_size,
+                        8)  # we should be able to write at least 8 bytes
                     logging.debug(f"Reduced pipe buffer size to {buffer_size}")
 
             except BrokenPipeError:
@@ -234,31 +236,40 @@ def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
             return minimap_2_output.result(timeout=5)
 
 
-def minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params):
+def minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads,
+                        minimap_extra_params):
     logging.debug(f"Running minimap2 with disk...")
-    with tempfile.NamedTemporaryFile(mode='w', suffix=".fa", prefix="mof", delete=True) as ref_fh:
+    with tempfile.NamedTemporaryFile(mode='w',
+                                     suffix=".fa",
+                                     prefix="mof",
+                                     delete=True) as ref_fh:
         logging.debug(f"Writing data to temp file...")
         print(rfa, file=ref_fh)
-        ref_fh.flush()  # ensure data is written to the file before is read by minimap2
+        ref_fh.flush(
+        )  # ensure data is written to the file before is read by minimap2
 
         ref_filepath = ref_fh.name
         command = [
             "minimap2", "-a", "-x", minimap_preset, "-t",
-            str(minimap_threads), *(shlex.split(minimap_extra_params)), ref_filepath,
-            '-'
+            str(minimap_threads), *(shlex.split(minimap_extra_params)),
+            ref_filepath, '-'
         ]
         return run_minimap2(command, qfa)
 
 
-def minimap_wrapper(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params, prefer_pipe):
+def minimap_wrapper(rfa, qfa, minimap_preset, minimap_threads,
+                    minimap_extra_params, prefer_pipe):
     if prefer_pipe:
         try:
-            return minimap2_4(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params)
+            return minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
+                              minimap_extra_params)
         except TimeoutError:
             logging.warning("Minimap2 timed out, using disk")
-            return minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params)
+            return minimap2_using_disk(rfa, qfa, minimap_preset,
+                                       minimap_threads, minimap_extra_params)
     else:
-        return minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params)
+        return minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads,
+                                   minimap_extra_params)
 
 
 def minimap2_3(rfa, qfa, minimap_preset):
@@ -406,7 +417,8 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
         logging.info(f"Mapping {qnames} to {rname}")
 
         logging.debug("Starting minimap2 process...")
-        result = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset, minimap_threads, minimap_extra_params,
+        result = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset,
+                                 minimap_threads, minimap_extra_params,
                                  prefer_pipe)
         logging.debug("minimap2 finished successfully!")
 
@@ -459,7 +471,8 @@ def main():
         '--pipe',
         action="store_true",
         default=False,
-        help='Prefer using pipe instead of disk when communicating with minimap2',
+        help=
+        'Prefer using pipe instead of disk when communicating with minimap2',
     )
 
     parser.add_argument(
