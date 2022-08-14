@@ -66,7 +66,7 @@ cluster: ## Submit to a SLURM cluster
 viewconf: ## View configuration without comments
 	@cat config.yaml \
 		| perl -pe 's/ *#.*//g' \
-		| grep -Ev ^$
+		| grep -Ev ^$$
 
 conda: ## Create the conda environments
 	snakemake $(SMK_PARAMS) --conda-create-envs-only
