@@ -198,12 +198,13 @@ def _write_to_pipe(pipe_path, data):
                 time.sleep(0.1)  # waits minimap2 to get the stream
 
 
-def run_minimap2(command, qfa):
+def run_minimap2(command, qfa, timeout=None):
     logging.debug(f"Running command: {command}")
     output = subprocess.check_output(command,
                                      input=qfa,
                                      universal_newlines=True,
-                                     stderr=subprocess.DEVNULL)
+                                     stderr=subprocess.DEVNULL,
+                                     timeout=timeout)
     logging.debug(f"Finished command: {command}")
     return output
 
@@ -220,7 +221,7 @@ def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
         ]
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # we first get minimap2 up and reading from the pipe
-            minimap_2_output = executor.submit(run_minimap2, command, qfa)
+            minimap_2_output = executor.submit(run_minimap2, command, qfa, 5)
 
             logging.debug("Checking if minimap2 started...")
             while not minimap_2_output.running():
@@ -259,7 +260,7 @@ def minimap_wrapper(rfa, qfa, minimap_preset, minimap_threads,
         try:
             return minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
                               minimap_extra_params)
-        except TimeoutError:
+        except concurrent.futures.TimeoutError:
             logging.warning("Minimap2 timed out, using disk")
             return minimap2_using_disk(rfa, qfa, minimap_preset,
                                        minimap_threads, minimap_extra_params)
