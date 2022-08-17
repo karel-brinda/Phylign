@@ -239,14 +239,10 @@ def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
 def minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads,
                         minimap_extra_params):
     logging.debug(f"Running minimap2 with disk...")
-    with tempfile.NamedTemporaryFile(mode='w',
-                                     suffix=".fa",
-                                     prefix="mof",
-                                     delete=True) as ref_fh:
+    with tempfile.NamedTemporaryFile(mode='wb', suffix=".fa", prefix="mof", delete=True) as ref_fh:
         logging.debug(f"Writing data to temp file...")
-        print(rfa, file=ref_fh)
-        ref_fh.flush(
-        )  # ensure data is written to the file before is read by minimap2
+        ref_fh.write(rfa)
+        ref_fh.flush()  # ensure data is written to the file before is read by minimap2
 
         ref_filepath = ref_fh.name
         command = [
