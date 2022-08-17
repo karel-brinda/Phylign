@@ -27,6 +27,7 @@ brew install gnu-time
 * `head`
 * `grep`
 * `awk`
+* `diff`
 
 ## Walkthrough
 
