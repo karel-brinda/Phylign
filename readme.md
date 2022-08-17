@@ -33,6 +33,16 @@ brew install gnu-time
 This is our recommended steps to run `mof-search`:
 
 1. Run `make test` to ensure the pipeline works for the sample queries and just 3 batches. This will also setup `COBS`;
+    * Note: `make test` should return 0 (success) and you should have the following message at the end of the execution,
+    to ensure the test produced the expected output:
+    ```
+    Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
+    ```
+    If the test did not produce the expected output, you should get this error message:
+    ```
+    Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ
+    make: *** [Makefile:21: test] Error 1
+    ```
 2. Run `make download` to download all the assemblies and batches for the 661k;
 3. Run `make clean` to clean the intermediate files from the previous run;
 4. Add your desired queries to the `queries` directory and remove the sample ones;

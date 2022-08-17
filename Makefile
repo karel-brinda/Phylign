@@ -18,11 +18,13 @@ all: ## Run everything
 
 test: ## Run everything but just with 3 batches to test full pipeline
 	snakemake $(SMK_PARAMS) --config batches=batches_small.txt
+	diff -qs output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz
 
 test_benchmark: ## benchmark the test pipeline. Benchmark logs are stored in logs/benchmarks
 	snakemake $(SMK_PARAMS) --config batches=batches_small.txt -- download  # download is not benchmarked
 	scripts/benchmark.py --benchmark --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt benchmark=True -- match"
 	scripts/benchmark.py --benchmark --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config batches=batches_small.txt benchmark=True -- map"
+	diff -qs output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz
 
 download: ## Download the 661k assemblies and COBS indexes
 	snakemake $(SMK_PARAMS) -j 99999 -- download
