@@ -23,7 +23,11 @@ def get_all_query_filepaths():
 
 
 def get_all_query_filenames():
-    return (file.with_suffix("").name for file in get_all_query_filepaths())
+    return sorted([file.with_suffix("").name for file in get_all_query_filepaths()])
+
+
+def get_batches():
+    return sorted([x.strip() for x in open(config["batches"])])
 
 
 def get_filename_for_all_queries():
@@ -41,7 +45,7 @@ configfile: "config.yaml"
 min_version("6.2.0")
 shell.prefix("set -euo pipefail")
 
-batches = [x.strip() for x in open(config["batches"])]
+batches = get_batches()
 print(f"Batches: {batches}")
 
 qfiles = get_all_query_filepaths()
