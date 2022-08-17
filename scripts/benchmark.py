@@ -10,10 +10,12 @@ def get_args():
     parser.add_argument('command',
                         type=str,
                         help='The command to be benchmarked')
-    parser.add_argument('--benchmark',
-                        action="store_true",
-                        default=False,
-                        help='Whether to benchmark or just run the command (easier to configure the Snakefile with this).'
+    parser.add_argument(
+        '--benchmark',
+        action="store_true",
+        default=False,
+        help=
+        'Whether to benchmark or just run the command (easier to configure the Snakefile with this).'
     )
     parser.add_argument('--log',
                         type=str,
@@ -51,9 +53,7 @@ def main():
     else:
         benchmark_command = ""
 
-    subprocess.check_call(
-        f'{benchmark_command} {args.command}',
-        shell=True)
+    subprocess.check_call(f'{benchmark_command} {args.command}', shell=True)
 
 
 if __name__ == "__main__":

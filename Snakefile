@@ -7,7 +7,8 @@ from snakemake.utils import min_version
 ##################################
 
 
-extensions=["fa", "fasta", "fq", "fastq"]
+extensions = ["fa", "fasta", "fq", "fastq"]
+
 
 def multiglob(patterns):
     files = []
@@ -22,7 +23,11 @@ def get_all_query_filepaths():
 
 
 def get_all_query_filenames():
-    return (file.with_suffix("").name for file in get_all_query_filepaths())
+    return sorted([file.with_suffix("").name for file in get_all_query_filepaths()])
+
+
+def get_batches():
+    return sorted([x.strip() for x in open(config["batches"])])
 
 
 def get_filename_for_all_queries():
@@ -40,7 +45,7 @@ configfile: "config.yaml"
 min_version("6.2.0")
 shell.prefix("set -euo pipefail")
 
-batches = [x.strip() for x in open(config["batches"])]
+batches = get_batches()
 print(f"Batches: {batches}")
 
 qfiles = get_all_query_filepaths()
@@ -50,6 +55,7 @@ assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
 decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs"))
 benchmark_flag = "--benchmark" if config["benchmark"] else ""
+
 
 wildcard_constraints:
     batch=".+__\d\d",
@@ -161,6 +167,7 @@ def get_query_file(wildcards):
     assert len(query_file) == 1
     return query_file[0]
 
+
 rule fix_query:
     """Fix query to expected COBS format: single line fastas composed of ACGT bases only
     """
@@ -205,15 +212,15 @@ rule decompress_cobs:
     input:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
-        max_decomp_MB=lambda wildcards, input: input.xz.size//1_000_000 + 1,
+        max_decomp_MB=lambda wildcards, input: input.xz.size // 1_000_000 + 1,
         max_heavy_IO_jobs=1,
     threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     params:
-        benchmark_flag = benchmark_flag,
+        benchmark_flag=benchmark_flag,
     shell:
         """
-        ./scripts/benchmark.py {params.benchmark_flag} \
-            --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \
+        ./scripts/benchmark.py {params.benchmark_flag} \\
+            --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
             'xzcat "{input.xz}" > "{output.cobs}"'
         """
 
@@ -231,14 +238,14 @@ rule run_cobs:
         max_heavy_IO_jobs=1,
     params:
         kmer_thres=config["cobs_kmer_thres"],
-        benchmark_flag= benchmark_flag,
+        benchmark_flag=benchmark_flag,
     priority: 999
     conda:
         "envs/cobs.yaml"
     shell:
         """
-        ./scripts/benchmark.py {params.benchmark_flag} \
-            --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \
+        ./scripts/benchmark.py {params.benchmark_flag} \\
+            --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
                 -t {params.kmer_thres} \\
                 -T {threads} \\
@@ -258,22 +265,24 @@ rule decompress_and_run_cobs:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
     resources:
-        max_decomp_MB=lambda wildcards, input: input.compressed_cobs_index.size//1_000_000 + 1,
+        max_decomp_MB=lambda wildcards, input: input.compressed_cobs_index.size
+        // 1_000_000
+        + 1,
         max_heavy_IO_jobs=1,
     threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
         cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
-        benchmark_flag = benchmark_flag,
+        benchmark_flag=benchmark_flag,
     conda:
         "envs/cobs.yaml"
     shell:
         """
         mkdir -p {params.decompression_dir}
-        ./scripts/benchmark.py {params.benchmark_flag} \
-            --log logs/benchmarks/decompress_and_run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \
-            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index}" && \
+        ./scripts/benchmark.py {params.benchmark_flag} \\
+            --log logs/benchmarks/decompress_and_run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
+            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index}" && \\
             cobs query \\
                 -t {params.kmer_thres} \\
                 -T {threads} \\
@@ -322,18 +331,20 @@ rule batch_align_minimap2:
         minimap_preset=config["minimap_preset"],
         minimap_threads=config["minimap_thr"],
         minimap_extra_params=config["minimap_extra_params"],
-        benchmark_flag = benchmark_flag,
+        benchmark_flag=benchmark_flag,
+        pipe="--pipe" if config["prefer_pipe"] else "",
     conda:
         "envs/minimap2.yaml"
     threads: config["minimap_thr"]
     shell:
         """
-        ./scripts/benchmark.py {params.benchmark_flag} \
-            --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \
+        ./scripts/benchmark.py {params.benchmark_flag} \\
+            --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/batch_align.py \\
                 --minimap-preset {params.minimap_preset} \\
                 --threads {params.minimap_threads} \\
                 --extra-params=\"{params.minimap_extra_params}\" \\
+                {params.pipe} \\
                 {input.asm} \\
                 {input.qfa} \\
                 > {output.sam} 2>{log}'

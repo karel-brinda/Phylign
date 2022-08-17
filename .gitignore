@@ -1,7 +1,7 @@
 .snakemake/
-*.fa
 *.log
 .idea
 tools/cobs
 report.html
 logs/
+intermediate/*/*.fa
