@@ -17,6 +17,8 @@ max_download_jobs: 8
 cobs_thr: 1
 # COBS threshold in percentage of terms in query matching
 cobs_kmer_thres: 0.33
+# number of best COBS hits to keep for each query record
+nb_best_hits: 100
 ##################################################
 
 ##################################################
