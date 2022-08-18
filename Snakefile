@@ -312,9 +312,11 @@ rule translate_matches:
     threads: 1
     log:
         "logs/translate_matches/{qfile}.log",
+    params:
+        nb_best_hits=config["nb_best_hits"]
     shell:
         """
-        ./scripts/filter_queries.py -q {input.fa} {input.all_matches} \\
+        ./scripts/filter_queries.py -n {params.nb_best_hits} -q {input.fa} {input.all_matches} \\
             > {output.fa} 2>{log}
         """
 
@@ -364,3 +366,4 @@ rule aggregate_sams:
             | xz \\
             > {output.pseudosam}
         """
+
