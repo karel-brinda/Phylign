@@ -260,7 +260,7 @@ def minimap_wrapper(rfa, qfa, minimap_preset, minimap_threads,
         try:
             return minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
                               minimap_extra_params)
-        except concurrent.futures.TimeoutError:
+        except (concurrent.futures.TimeoutError, subprocess.TimeoutExpired):
             logging.warning("Minimap2 timed out, using disk")
             return minimap2_using_disk(rfa, qfa, minimap_preset,
                                        minimap_threads, minimap_extra_params)
