@@ -208,7 +208,7 @@ rule decompress_cobs:
     """Decompress cobs indexes
     """
     output:
-        cobs=f"{decompression_dir}/{{batch}}.cobs_classic",
+        cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
     input:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
@@ -217,11 +217,13 @@ rule decompress_cobs:
     threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     params:
         benchmark_flag=benchmark_flag,
+        cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     shell:
         """
         ./scripts/benchmark.py {params.benchmark_flag} \\
             --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
-            'xzcat "{input.xz}" > "{output.cobs}"'
+            'xzcat "{input.xz}" > "{params.cobs_index_tmp}" && \\
+            mv "{params.cobs_index_tmp}" "{output.cobs_index}"'
         """
 
 
@@ -274,6 +276,7 @@ rule decompress_and_run_cobs:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
         cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
+        cobs_index_tmp=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
         benchmark_flag=benchmark_flag,
     conda:
         "envs/cobs.yaml"
@@ -282,7 +285,8 @@ rule decompress_and_run_cobs:
         mkdir -p {params.decompression_dir}
         ./scripts/benchmark.py {params.benchmark_flag} \\
             --log logs/benchmarks/decompress_and_run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
-            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index}" && \\
+            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index_tmp}" && \\
+            mv "{params.cobs_index_tmp}" "{params.cobs_index}" && \\
             cobs query \\
                 -t {params.kmer_thres} \\
                 -T {threads} \\
