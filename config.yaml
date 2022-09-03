@@ -29,8 +29,8 @@ minimap_preset: "sr"
 minimap_thr: 1
 # other minimap2 params
 minimap_extra_params: "--eqx"
-# prefer use pipe or not when running minimap (note: keep this False unless you have a slow filesystem)
-prefer_pipe: False
+# prefer use pipe when running minimap (note: switch this to False only if you are on *Linux* and you have a very fast filesystem)
+prefer_pipe: True
 ##################################################
 
 ###################################################################################################
