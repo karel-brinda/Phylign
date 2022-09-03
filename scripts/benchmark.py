@@ -3,6 +3,7 @@ import sys
 import argparse
 from pathlib import Path
 import subprocess
+import datetime
 
 
 def get_args():
@@ -50,10 +51,17 @@ def main():
 
         time_command = get_time_command()
         benchmark_command = f'{time_command} -a -o {log_file} -f "%e %S %U %P %M %I %O"'
-    else:
-        benchmark_command = ""
 
-    subprocess.check_call(f'{benchmark_command} {args.command}', shell=True)
+        start_time = datetime.datetime.now()
+        subprocess.check_call(f'{benchmark_command} {args.command}', shell=True)
+        end_time = datetime.datetime.now()
+        elapsed_seconds = (end_time-start_time).total_seconds()
+        with open(log_file, "a") as log_fh:
+            print(f"Elapsed time: {elapsed_seconds} seconds", file=log_fh)
+
+    else:
+        subprocess.check_call(args.command, shell=True)
+
 
 
 if __name__ == "__main__":
