@@ -103,7 +103,4 @@ keep_cobs_ind: False
 # with all COBS indexes will be created. This is a heavy directory, put it in a filesystem that has at least
 # 100 GB free
 download_dir: "."
-
-# whether to benchmark or not the pipeline
-benchmark: False
 ###################################################################################################
