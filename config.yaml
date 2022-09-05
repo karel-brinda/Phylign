@@ -1,5 +1,5 @@
 ###################################################################################################
-# search configuration
+# search configuration - the parameters in this section affect results
 
 ##################################################
 # general
@@ -41,7 +41,7 @@ minimap_extra_params: "--eqx"
 
 
 ###################################################################################################
-# performance configuration
+# performance configuration - the parameters in this section does NOT affect results, just performance
 
 ##################################################
 # general
