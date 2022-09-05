@@ -322,11 +322,14 @@ rule translate_matches:
     log:
         "logs/translate_matches/{qfile}.log",
     params:
-        nb_best_hits=config["nb_best_hits"]
+        nb_best_hits=config["nb_best_hits"],
+        benchmark_flag=benchmark_flag,
     shell:
         """
-        ./scripts/filter_queries.py -n {params.nb_best_hits} -q {input.fa} {input.all_matches} \\
-            > {output.fa} 2>{log}
+        ./scripts/benchmark.py {params.benchmark_flag} \\
+            --log logs/benchmarks/translate_matches/translate_matches___{wildcards.qfile}.txt \\
+        './scripts/filter_queries.py -n {params.nb_best_hits} -q {input.fa} {input.all_matches} \\
+            > {output.fa} 2>{log}'
         """
 
 
@@ -368,11 +371,15 @@ rule aggregate_sams:
     input:
         sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
     threads: 1
+    params:
+        benchmark_flag=benchmark_flag,
     shell:
         """
-        head -n 9999999 {input.sam} \\
+        ./scripts/benchmark.py {params.benchmark_flag} \\
+            --log logs/benchmarks/aggregate_sams/aggregate_sams___{wildcards.qfile}.txt \\
+        'head -n 9999999 {input.sam} \\
             | grep -v "@" \\
             | xz \\
-            > {output.pseudosam}
+            > {output.pseudosam}'
         """
 
