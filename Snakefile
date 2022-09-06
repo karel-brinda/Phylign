@@ -182,7 +182,7 @@ rule fix_query:
     shell:
         """
         seqtk seq -A -U {input.original_query} \\
-            | awk '{{if(NR%2==1){{print $0;}}else{{gsub(/[^ACGT]/, \"{params.base_to_replace}\"); print;}}}}' \\
+                | awk '{{if(NR%2==1){{print $0;}}else{{gsub(/[^ACGT]/, \"{params.base_to_replace}\"); print;}}}}' \\
             > {output.fixed_query}
         """
 
@@ -219,8 +219,8 @@ rule decompress_cobs:
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
-            'xzcat "{input.xz}" > "{params.cobs_index_tmp}" && \\
-            mv "{params.cobs_index_tmp}" "{output.cobs_index}"'
+            'xzcat "{input.xz}" > "{params.cobs_index_tmp}" \\
+            && mv "{params.cobs_index_tmp}" "{output.cobs_index}"'
         """
 
 
@@ -244,12 +244,12 @@ rule run_cobs:
         """
         ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
-                -t {params.kmer_thres} \\
-                -T {threads} \\
-                -i {input.cobs_index} \\
-                -f {input.fa} \\
-            | xz -v \\
-            > {output.match}'
+                    -t {params.kmer_thres} \\
+                    -T {threads} \\
+                    -i {input.cobs_index} \\
+                    -f {input.fa} \\
+                | xz -v -T {threads} \\
+                > {output.match}'
         """
 
 
@@ -279,17 +279,17 @@ rule decompress_and_run_cobs:
         mkdir -p {params.decompression_dir}
 
         ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
-            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index_tmp}" && \\
-            mv "{params.cobs_index_tmp}" "{params.cobs_index}"'
+            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index_tmp}" \\
+            && mv "{params.cobs_index_tmp}" "{params.cobs_index}"'
 
         ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
-                -t {params.kmer_thres} \\
-                -T {threads} \\
-                -i "{params.cobs_index}" \\
-                -f {input.fa} \\
-            | xz -v \\
-            > {output.match}'
+                    -t {params.kmer_thres} \\
+                    -T {threads} \\
+                    -i "{params.cobs_index}" \\
+                    -f {input.fa} \\
+                | xz -v -T {threads} \\
+                > {output.match}'
 
         rm -v "{params.cobs_index}"
         """
@@ -318,8 +318,8 @@ rule translate_matches:
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/translate_matches/translate_matches___{wildcards.qfile}.txt \\
-        './scripts/filter_queries.py -n {params.nb_best_hits} -q {input.fa} {input.all_matches} \\
-            > {output.fa} 2>{log}'
+            './scripts/filter_queries.py -n {params.nb_best_hits} -q {input.fa} {input.all_matches} \\
+                > {output.fa} 2>{log}'
         """
 
 
@@ -343,12 +343,12 @@ rule batch_align_minimap2:
         """
         ./scripts/benchmark.py --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/batch_align.py \\
-                --minimap-preset {params.minimap_preset} \\
-                --threads {params.minimap_threads} \\
-                --extra-params=\"{params.minimap_extra_params}\" \\
-                {params.pipe} \\
-                {input.asm} \\
-                {input.qfa} \\
+                    --minimap-preset {params.minimap_preset} \\
+                    --threads {params.minimap_threads} \\
+                    --extra-params=\"{params.minimap_extra_params}\" \\
+                    {params.pipe} \\
+                    {input.asm} \\
+                    {input.qfa} \\
                 > {output.sam} 2>{log}'
         """
 
@@ -358,13 +358,12 @@ rule aggregate_sams:
         pseudosam="output/{qfile}.sam_summary.xz",
     input:
         sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
-    threads: 1
+    threads: workflow.cores
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/aggregate_sams___{wildcards.qfile}.txt \\
-        'head -n 9999999 {input.sam} \\
-            | grep -v "@" \\
-            | xz \\
-            > {output.pseudosam}'
+            'head -n 9999999 {input.sam} \\
+                | grep -v "@" \\
+                | xz -v -T {threads} \\
+                > {output.pseudosam}'
         """
-
