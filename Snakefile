@@ -248,7 +248,7 @@ rule run_cobs:
                     -T {threads} \\
                     -i {input.cobs_index} \\
                     -f {input.fa} \\
-                | xz -v \\
+                | xz -v -T {threads} \\
                 > {output.match}'
         """
 
@@ -288,7 +288,7 @@ rule decompress_and_run_cobs:
                     -T {threads} \\
                     -i "{params.cobs_index}" \\
                     -f {input.fa} \\
-                | xz -v \\
+                | xz -v -T {threads} \\
                 > {output.match}'
 
         rm -v "{params.cobs_index}"
