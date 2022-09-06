@@ -14,9 +14,9 @@ batches: "batches_full.txt"
 # E.g.: if this value is 0.7, then at least 70% of the query kmers must be present in a reference to match it.
 # Lower values mean more matches and being able to recover partial hits, but also incurs into more spurious matches.
 #     Spurious matches just affect performance and not results - they are filtered out in the alignment phase.
-#     E.g. for plasmid search we recommend cobs_kmer_thres: 0.33
+#     E.g. for plasmid search we recommend kmer_thres: 0.33
 # Higher values mean less but more accurate matches and faster pipeline execution.
-#     E.g. for gene search we recommend cobs_kmer_thres: 0.7
+#     E.g. for gene search we recommend kmer_thres: 0.7
 kmer_thres: 0.7
 
 # number of best kmer matching hits to keep for each query record (in case of tie, all equivalent hits are included too)
