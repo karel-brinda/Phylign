@@ -55,8 +55,8 @@ def cobs_iterator(cobs_matches_fn):
                     yield qname, batch, matches_buffer
                     matches_buffer = []
                 # parse header
-                parts = x[1:].split("\t")
-                qname = parts[0].split(" ")[0]  # remove fasta comments
+                parts = x[1:].split()
+                qname = parts[0]
                 nmatches = int(parts[1])
             else:
                 ## MATCH

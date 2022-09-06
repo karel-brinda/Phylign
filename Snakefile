@@ -248,6 +248,7 @@ rule run_cobs:
                 -T {threads} \\
                 -i {input.cobs_index} \\
                 -f {input.fa} \\
+            | awk \\'{if(substr($1,1,1)=="*"){ if($NF>0){ print $1, $NF } } else{ print $0 } }\\' \\
             | xz -v \\
             > {output.match}'
         """
@@ -288,6 +289,7 @@ rule decompress_and_run_cobs:
                 -T {threads} \\
                 -i "{params.cobs_index}" \\
                 -f {input.fa} \\
+            | awk '"'"'{{if(substr($1,1,1)=="*"){{ if($NF>0){{ print $1, $NF }} }} else{{ print $0 }} }}'"'"' \\
             | xz -v \\
             > {output.match}'
 
