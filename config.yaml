@@ -47,7 +47,7 @@ minimap_extra_params: "--eqx"
 # general
 
 # overall number of threads to use in the pipeline, an integer number (e.g. 8 for 8 threads) or "all" (to use all threads)
-thr: all
+threads: all
 
 # maximum RAM to use in GB - this should be at most 80% of your max RAM
 # note: if you use more than your available RAM, constant page swapping will happen and the pipeline will severely
@@ -79,7 +79,7 @@ load_complete: False
 ##################################################
 # alignment
 # number of threads when running minimap2 (note: too many might limit the pipeline parallelism)
-minimap_thr: 1
+minimap_threads: 1
 
 # prefer use pipe when running minimap (note: switch this to False only if you are on *Linux* and you have a very fast filesystem)
 prefer_pipe: True
