@@ -64,13 +64,13 @@ max_download_jobs: 8
 ##################################################
 # kmer matching
 # number of threads when running kmer matching (note: too many might limit the pipeline parallelism)
-cobs_thr: 1
+matching_threads: 1
 
 # loads the complete kmer index to RAM
 # note: this can speed up the pipeline a lot if:
 #           1. you have no SSD filesystem, or your filesystem is encrypted or slow for another reason;
 #           2. your queries are long (e.g. plasmids) or you have a huge query file;
-# We recommend to increase cobs_thr to the max if you set this to True.
+# We recommend to increase matching_threads to the max if you set this to True.
 # If you get huge slowdowns with this option, the pipeline might be suffering thrashing. Control the RAM usage with the
 # max_ram_gb parameter so that you don't get constant page swapping.
 load_complete: False
