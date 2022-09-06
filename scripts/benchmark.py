@@ -35,7 +35,8 @@ def main():
     log_file.parent.mkdir(parents=True, exist_ok=True)
     tmp_log_file = Path(f"{log_file}.tmp")
     with open(log_file, "w") as log_fh:
-        formatted_command = " ".join(args.command.replace("\\\n", " ").strip().split())
+        formatted_command = " ".join(
+            args.command.replace("\\\n", " ").strip().split())
         print(f"# Benchmarking command: {formatted_command}", file=log_fh)
         header = [
             "real(s)", "sys(s)", "user(s)", "percent_CPU", "max_RAM(kb)",
@@ -49,7 +50,7 @@ def main():
     start_time = datetime.datetime.now()
     subprocess.check_call(f'{benchmark_command} {args.command}', shell=True)
     end_time = datetime.datetime.now()
-    elapsed_seconds = (end_time-start_time).total_seconds()
+    elapsed_seconds = (end_time - start_time).total_seconds()
     with open(tmp_log_file) as log_fh_tmp, open(log_file, "a") as log_fh:
         log_line = log_fh_tmp.readline().strip()
         log_line += f"\t{elapsed_seconds}"
