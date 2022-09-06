@@ -55,7 +55,7 @@ thr: all
 max_ram_gb: 12
 
 # maximum number of heavy I/O jobs. Use this to not overflow the filesystem I/O
-max_heavy_IO_jobs: 4
+max_heavy_io_jobs: 4
 
 # maximum number of download jobs at a time (note: too many might slow down download speed)
 max_download_jobs: 8
