@@ -181,7 +181,7 @@ rule fix_query:
         base_to_replace="A",
     shell:
         """
-        seqtk seq -A -U {input.original_query} \\
+        seqtk seq -A -U -C {input.original_query} \\
                 | awk '{{if(NR%2==1){{print $0;}}else{{gsub(/[^ACGT]/, \"{params.base_to_replace}\"); print;}}}}' \\
             > {output.fixed_query}
         """
