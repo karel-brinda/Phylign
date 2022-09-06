@@ -248,6 +248,7 @@ rule run_cobs:
                     -T {threads} \\
                     -i {input.cobs_index} \\
                     -f {input.fa} \\
+                | perl -pe 's/^(?!\*).*_/_/g' \\
                 | xz -v -T {threads} \\
                 > {output.match}'
         """
@@ -288,6 +289,7 @@ rule decompress_and_run_cobs:
                     -T {threads} \\
                     -i "{params.cobs_index}" \\
                     -f {input.fa} \\
+                | perl -pe 's/^(?!\*).*_/_/g' \\
                 | xz -v -T {threads} \\
                 > {output.match}'
 
