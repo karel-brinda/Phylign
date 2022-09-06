@@ -358,12 +358,12 @@ rule aggregate_sams:
         pseudosam="output/{qfile}.sam_summary.xz",
     input:
         sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
-    threads: 1
+    threads: workflow.cores
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/aggregate_sams___{wildcards.qfile}.txt \\
             'head -n 9999999 {input.sam} \\
                 | grep -v "@" \\
-                | xz \\
+                | xz -v -T {threads} \\
                 > {output.pseudosam}'
         """
