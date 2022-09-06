@@ -52,7 +52,7 @@ thr: all
 # maximum RAM to use in GB - this should be at most 80% of your max RAM
 # note: if you use more than your available RAM, constant page swapping will happen and the pipeline will severely
 # slow down.
-max_RAM: 12
+max_ram_gb: 12
 
 # maximum number of heavy I/O jobs. Use this to not overflow the filesystem I/O
 max_heavy_IO_jobs: 4
@@ -72,7 +72,7 @@ cobs_thr: 1
 #           2. your queries are long (e.g. plasmids) or you have a huge query file;
 # We recommend to increase cobs_thr to the max if you set this to True.
 # If you get huge slowdowns with this option, the pipeline might be suffering thrashing. Control the RAM usage with the
-# max_RAM parameter so that you don't get constant page swapping.
+# max_ram_gb parameter so that you don't get constant page swapping.
 load_complete: False
 ##################################################
 
