@@ -97,6 +97,7 @@ rule all:
     """
     input:
         f"output/{get_filename_for_all_queries()}.sam_summary.xz",
+        f"output/{get_filename_for_all_queries()}.sam_summary.stats",
 
 
 rule download:
@@ -119,6 +120,7 @@ rule map:
     """
     input:
         f"output/{get_filename_for_all_queries()}.sam_summary.xz",
+        f"output/{get_filename_for_all_queries()}.sam_summary.stats",
 
 
 ##################################
@@ -370,4 +372,18 @@ rule aggregate_sams:
                 | grep -v "@" \\
                 | xz -v -T {threads} \\
                 > {output.pseudosam}'
+        """
+
+
+rule final_stats:
+    output:
+        stats="output/{qfile}.sam_summary.stats",
+    input:
+        pseudosam="output/{qfile}.sam_summary.xz",
+        concatenated_query=f"intermediate/concatenated_query/{get_filename_for_all_queries()}.fa",
+    shell:
+        """
+        ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/final_stats___{wildcards.qfile}.txt \\
+            './scripts/final_stats.py {input.concatenated_query} {input.pseudosam} \\
+                > {output.stats}'
         """
