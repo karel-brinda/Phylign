@@ -48,7 +48,7 @@ clean: ## Clean intermediate search files
 	rm -rfv logs
 
 cleanall: clean ## Clean all generated and downloaded files
-	rm -f {asms,cobs}/*.xz
+	rm -f {asms,cobs}/*.xz{,.tmp}
 
 cluster: ## Submit to a SLURM cluster
 	sbatch \
