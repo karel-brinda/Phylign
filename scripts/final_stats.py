@@ -110,17 +110,21 @@ def compute_stats(results_fn, queries_fn):
                 else:  # b) unaligned
                     nb_nonalignments += 1
     print(file=sys.stderr)
+    #
     if queries is not None:
         print("queries", len(queries), sep="\t")
-        print("queries_bps", queries_bps, sep="\t")
-        assert queries_matched.issubset(queries), f"queries_matched not a subset of queries"
-        assert queries_aligned.issubset(queries), f"queries_aligned not a subset of queries"
-    print("queries_matched", len(queries_matched), sep="\t")
-    print("queries_aligned", len(queries_aligned), sep="\t")
-    print("refs_aligned", len(refs), sep="\t")
-    print("segments_aligned", nb_alignments, sep="\t")
+        print("cumul_length_bps", queries_bps, sep="\t")
+        assert queries_matched.issubset(
+            queries), f"queries_matched not a subset of queries"
+        assert queries_aligned.issubset(
+            queries), f"queries_aligned not a subset of queries"
+    print("matched_queries", len(queries_matched), sep="\t")
+    print("aligned_queries", len(queries_aligned), sep="\t")
+    print("aligned_segments", nb_alignments, sep="\t")
+    print("distinct_genome_query_pairs", len(query_ref_pairs), sep="\t")
+    print("target_genomes", len(refs), sep="\t")
+    print("target_batches", len(batches))
     print("nonalignments", nb_nonalignments, sep="\t")
-    print("queryref_pairs", len(query_ref_pairs), sep="\t")
 
 
 def main():
