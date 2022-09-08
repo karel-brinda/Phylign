@@ -14,10 +14,10 @@ batches: "batches_full.txt"
 # E.g.: if this value is 0.7, then at least 70% of the query kmers must be present in a reference to match it.
 # Lower values mean more matches and being able to recover partial hits, but also incurs into more spurious matches.
 #     Spurious matches just affect performance and not results - they are filtered out in the alignment phase.
-#     E.g. for plasmid search we recommend kmer_thres: 0.33
+#     E.g. for plasmid search we recommend cobs_kmer_thres: 0.33
 # Higher values mean less but more accurate matches and faster pipeline execution.
-#     E.g. for gene search we recommend kmer_thres: 0.7
-kmer_thres: 0.7
+#     E.g. for gene search we recommend cobs_kmer_thres: 0.7
+cobs_kmer_thres: 0.7
 
 # number of best kmer matching hits to keep for each query record (in case of tie, all equivalent hits are included too)
 nb_best_hits: 100
@@ -54,26 +54,30 @@ threads: all
 # slow down.
 max_ram_gb: 12
 
-# maximum number of heavy I/O jobs. Use this to not overflow the filesystem I/O
-max_heavy_io_jobs: 4
-
 # maximum number of download jobs at a time (note: too many might slow down download speed)
 max_download_jobs: 8
 ##################################################
 
 ##################################################
 # kmer matching
-# number of threads when running kmer matching (note: too many might limit the pipeline parallelism)
-matching_threads: 1
+# number of threads when running COBS kmer matching (note: too many might limit the pipeline parallelism)
+cobs_threads: 1
 
 # loads the complete kmer index to RAM
 # note: this can speed up the pipeline a lot if:
 #           1. you have no SSD filesystem, or your filesystem is encrypted or slow for another reason;
 #           2. your queries are long (e.g. plasmids) or you have a huge query file;
-# We recommend to increase matching_threads to the max if you set this to True.
+# We recommend to increase cobs_threads to the max if you set this to True.
 # If you get huge slowdowns with this option, the pipeline might be suffering thrashing. Control the RAM usage with the
 # max_ram_gb parameter so that you don't get constant page swapping.
 load_complete: False
+
+# maximum number of I/O-heavy threads. Use this to control the amount of filesystem I/O to not overflow the filesystem.
+# in more details, this parameter controls how many I/O-heavy threads can run simultaneously.
+# I/O-heavy threads include:
+#     * 1 thread for xz-decompression of COBS kmer indexes;
+#     * cobs_threads threads for each COBS process if load_complete==False or 1 thread for each COBS process if load_complete==True
+max_io_heavy_threads: 6
 ##################################################
 
 ##################################################
@@ -91,11 +95,11 @@ prefer_pipe: True
 ###################################################################################################
 # misc configuration
 
-# keep or not decompressed kmer index. If kept, can speed up subsequent searches but will take much more disk
+# keep or not decompressed COBS index. If kept, can speed up subsequent searches but will take much more disk
 # space, as the decompressed indexes won't be cleaned up.
-keep_cobs_ind: False
+keep_cobs_indexes: False
 
-# directory to store the kmer decompressed indexes. Can be used to put the decompressed indexes in an external
+# directory to store the COBS decompressed indexes. Can be used to put the decompressed indexes in an external
 # or large filesystem capable of holding them. If not defined, defaults to "intermediate/00_cobs"
 # decompression_dir: cobs_decompressed_indexes
 
