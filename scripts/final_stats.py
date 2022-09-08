@@ -12,6 +12,40 @@ from xopen import xopen
 from pprint import pprint
 
 
+def readfq(fp):
+    """From https://github.com/lh3/readfq/blob/master/readfq.py
+    """
+    last = None
+    while True:
+        if not last:
+            for l in fp:
+                if l[0] in '>@':
+                    last = l[:-1]
+                    break
+        if not last: break
+        name, seqs, last = last[1:].partition(" ")[0], [], None
+        for l in fp:
+            if l[0] in '@+>':
+                last = l[:-1]
+                break
+            seqs.append(l[:-1])
+        if not last or last[0] != '+':
+            yield name, ''.join(seqs), None
+            if not last: break
+        else:
+            seq, leng, seqs = ''.join(seqs), 0, []
+            for l in fp:
+                seqs.append(l[:-1])
+                leng += len(l) - 1
+                if leng >= len(seq):
+                    last = None
+                    yield name, seq, ''.join(seqs)
+                    break
+            if last:
+                yield name, seq, None
+                break
+
+
 def _get_batch_name(st):
     assert st[:2] == "=="
     assert st[-2:] == "=="
@@ -32,15 +66,14 @@ def get_match(st):
         return qname, accession, contig
 
 
-def load_query_names(queries_fn):
+def load_query_names_and_bps(queries_fn):
     qnames = set()
+    bps = 0
     with open(queries_fn) as f:
-        for x in f:
-            if len(x) == 0 or (x[0] != "@" and x[0] != ">"):
-                continue
-            qname = x.strip().split(" ")[0]
+        for qname, seq, qual in readfq(f):
             qnames.add(qname)
-    return qnames
+            bps += len(seq)
+    return qnames, bps
 
 
 def compute_stats(results_fn, queries_fn):
@@ -51,7 +84,7 @@ def compute_stats(results_fn, queries_fn):
     query_ref_pairs = set()
 
     if queries_fn is not None:
-        queries = load_query_names(queries_fn)
+        queries, queries_bps = load_query_names_and_bps(queries_fn)
     else:
         queries = None
 
@@ -87,6 +120,7 @@ def compute_stats(results_fn, queries_fn):
     print("nonalignments", nb_nonalignments, sep="\t")
     if queries is not None:
         print("queries", len(queries), sep="\t")
+        print("queries_bps", queries_bps, sep="\t")
     print("queries_matched", len(queries_matched), sep="\t")
     print("queries_aligned", len(queries_aligned), sep="\t")
     print("refs", len(refs), sep="\t")
