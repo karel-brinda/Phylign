@@ -110,14 +110,14 @@ def compute_stats(results_fn, queries_fn):
                 else:  # b) unaligned
                     nb_nonalignments += 1
     print(file=sys.stderr)
-    print("alignments", nb_alignments, sep="\t")
-    print("nonalignments", nb_nonalignments, sep="\t")
     if queries is not None:
         print("queries", len(queries), sep="\t")
         print("queries_bps", queries_bps, sep="\t")
     print("queries_matched", len(queries_matched), sep="\t")
     print("queries_aligned", len(queries_aligned), sep="\t")
-    print("refs", len(refs), sep="\t")
+    print("refs_aligned", len(refs), sep="\t")
+    print("segments_aligned", nb_alignments, sep="\t")
+    print("nonalignments", nb_nonalignments, sep="\t")
     print("queryref_pairs", len(query_ref_pairs), sep="\t")
 
 
