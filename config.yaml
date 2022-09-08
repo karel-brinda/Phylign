@@ -54,8 +54,8 @@ threads: all
 # slow down.
 max_ram_gb: 12
 
-# maximum number of download jobs at a time (note: too many might slow down download speed)
-max_download_jobs: 8
+# maximum number of download threads at a time (note: too many might slow down download speed)
+max_download_threads: 8
 ##################################################
 
 ##################################################
