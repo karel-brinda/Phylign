@@ -95,8 +95,8 @@ def compute_stats(results_fn, queries_fn):
                 continue
             # 2) header
             if x[:2] == "==":
-                b = _get_batch_name(x)
-                print(b, "", file=sys.stderr)
+                batch = _get_batch_name(x)
+                print(batch, "", file=sys.stderr)
             # 3) content line
             else:
                 qname, accession, contig = get_match(x)
