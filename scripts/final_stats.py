@@ -1,15 +1,9 @@
 #! /usr/bin/env python3
 
 import argparse
-import collections
 import lzma
 import os
-import re
 import sys
-
-from pathlib import Path
-from xopen import xopen
-from pprint import pprint
 
 
 def readfq(fp):
