@@ -95,7 +95,7 @@ prefer_pipe: True
 ###################################################################################################
 # misc configuration
 
-# keep or not decompressed COBS index. If kept, can speed up subsequent searches but will take much more disk
+# keep or not the decompressed COBS indexes. If kept, can speed up subsequent searches but will take much more disk
 # space, as the decompressed indexes won't be cleaned up.
 keep_cobs_indexes: False
 
