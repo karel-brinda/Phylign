@@ -19,9 +19,9 @@ all: ## Run everything
 	make map
 
 test: ## Run everything but just with 3 batches to test full pipeline
-	snakemake $(SMK_PARAMS) -j 99999 --config batches=batches_small.txt -- download  # download is not benchmarked
-	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt nb_best_hits=1 -- match"
-	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config batches=batches_small.txt nb_best_hits=1 -- map"
+	snakemake $(SMK_PARAMS) -j 99999 --config batches=data/batches_small.txt -- download  # download is not benchmarked
+	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1 -- match"
+	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1 -- map"
 	diff -qs <(xzcat output/reads_1___reads_2___reads_3___reads_4.sam_summary.xz) <(xzcat data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz)
 
 download: ## Download the 661k assemblies and COBS indexes, not benchmarked
