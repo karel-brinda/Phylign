@@ -1,34 +1,90 @@
 ###################################################################################################
-# search configuration
+# search configuration - the parameters in this section affect results
 
 ##################################################
 # general
-# overall number of threads to use in the pipeline, an integer number (e.g. 8 for 8 threads) or "all" (to use all threads)
-thr: all
 # batches to consider during search
-batches: "batches_full.txt"
-# maximum number of download jobs at a time (note: too many might slow down download speed)
-max_download_jobs: 8
+batches: "data/batches_full.txt"
 ##################################################
 
 ##################################################
-# COBS
-# number of threads when running COBS (note: too many might limit the pipeline parallelism)
-cobs_thr: 1
-# COBS threshold in percentage of terms in query matching
+# kmer matching
+
+# proportion of kmer presence between the query and the reference for matching, value between 0.00 and 1.00.
+# E.g.: if this value is 0.7, then at least 70% of the query kmers must be present in a reference to match it.
+# Lower values mean more matches and being able to recover partial hits, but also incurs into more spurious matches.
+#     Spurious matches just affect performance and not results - they are filtered out in the alignment phase.
+#     E.g. for plasmid search we recommend cobs_kmer_thres: 0.33
+# Higher values mean less but more accurate matches and faster pipeline execution, but can incur into missing matches.
+#     E.g. for gene search we recommend cobs_kmer_thres: 0.7
 cobs_kmer_thres: 0.7
-# number of best COBS hits to keep for each query record (in case of tie, all equivalent hits are included too)
+
+# number of best kmer matching hits to keep for each query record (in case of tie, all equivalent hits are included too)
 nb_best_hits: 100
 ##################################################
 
 ##################################################
-# minimap2
-# minimap preset. Can be: map-pb, map-ont, map-hifi, etc
+# alignment
+
+# minimap2 preset. Can be:
+# map-pb/map-ont: PacBio/Nanopore vs reference mapping
+# ava-pb/ava-ont: PacBio/Nanopore read overlap
+# asm5/asm10/asm20: asm-to-ref mapping, for ~0.1/1/5% sequence divergence
+# splice: long-read spliced alignment
+# sr: genomic short-read mapping
 minimap_preset: "sr"
-# number of threads when running mimimap2 (note: too many might limit the pipeline parallelism)
-minimap_thr: 1
+
 # other minimap2 params
 minimap_extra_params: "--eqx"
+##################################################
+###################################################################################################
+
+
+###################################################################################################
+# performance configuration - the parameters in this section does NOT affect results, just performance
+
+##################################################
+# general
+
+# overall number of threads to use in the pipeline, an integer number (e.g. 8 for 8 threads) or "all" (to use all threads)
+threads: all
+
+# maximum RAM to use in GB - this should be at most 80% of your max RAM
+# note: if you use more than your available RAM, constant page swapping will happen and the pipeline will severely
+# slow down.
+max_ram_gb: 12
+
+# maximum number of download threads at a time (note: too many might slow down download speed)
+max_download_threads: 8
+##################################################
+
+##################################################
+# kmer matching
+# number of threads when running COBS kmer matching (note: too many might limit the pipeline parallelism)
+cobs_threads: 1
+
+# loads the complete kmer index to RAM
+# note: this can speed up the pipeline a lot if:
+#           1. you have no SSD filesystem, or your filesystem is encrypted or slow for another reason;
+#           2. your queries are long (e.g. plasmids) or you have a huge query file;
+# We recommend to increase cobs_threads to the max if you set this to True.
+# If you get huge slowdowns with this option, the pipeline might be suffering thrashing. Control the RAM usage with the
+# max_ram_gb parameter so that you don't get constant page swapping.
+load_complete: False
+
+# maximum number of I/O-heavy threads. Use this to control the amount of filesystem I/O to not overflow the filesystem.
+# in more details, this parameter controls how many I/O-heavy threads can run simultaneously.
+# I/O-heavy threads include:
+#     * 1 thread for xz-decompression of COBS kmer indexes;
+#     * cobs_threads threads for each COBS process if load_complete==False or 1 thread for each COBS process if load_complete==True
+max_io_heavy_threads: 6
+##################################################
+
+##################################################
+# alignment
+# number of threads when running minimap2 (note: too many might limit the pipeline parallelism)
+minimap_threads: 1
+
 # prefer use pipe when running minimap (note: switch this to False only if you are on *Linux* and you have a very fast filesystem)
 prefer_pipe: True
 ##################################################
@@ -37,21 +93,11 @@ prefer_pipe: True
 
 
 ###################################################################################################
-# filesystem configuration
+# misc configuration
 
-# maximum number of xz-compressed MB to process simultaneously. This is used to balance the xz-decompression when
-# running the pipeline. For the 661k data, the heaviest xz-compressed COBS index has 1434MB, while the lightests have
-# on the order of few MBs. Setting this value to 2000 for the 661k allows us to run heaviest decompressions mixed
-# with light ones in order to improve performance (note: setting this value too high might slow down the filesystem)
-max_decomp_MB: 2000
-
-# maximum number of heavy I/O jobs (for xz decompression and COBS). This is used in conjunction with max_decomp_MB to
-# not overflow the filesystem I/O
-max_heavy_IO_jobs: 4
-
-# keep or not decompressed COBS index. If kept, can speed up subsequent searches but will take much more disk
+# keep or not the decompressed COBS indexes. If kept, can speed up subsequent searches but will take much more disk
 # space, as the decompressed indexes won't be cleaned up.
-keep_cobs_ind: False
+keep_cobs_indexes: False
 
 # directory to store the COBS decompressed indexes. Can be used to put the decompressed indexes in an external
 # or large filesystem capable of holding them. If not defined, defaults to "intermediate/00_cobs"
