@@ -15,7 +15,7 @@ batches: "batches_full.txt"
 # Lower values mean more matches and being able to recover partial hits, but also incurs into more spurious matches.
 #     Spurious matches just affect performance and not results - they are filtered out in the alignment phase.
 #     E.g. for plasmid search we recommend cobs_kmer_thres: 0.33
-# Higher values mean less but more accurate matches and faster pipeline execution.
+# Higher values mean less but more accurate matches and faster pipeline execution, but can incur into missing matches.
 #     E.g. for gene search we recommend cobs_kmer_thres: 0.7
 cobs_kmer_thres: 0.7
 
