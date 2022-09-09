@@ -54,7 +54,6 @@ print(f"Query files: {list(map(str, qfiles))}")
 assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
 decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs"))
-benchmark_flag = "--benchmark" if config["benchmark"] else ""
 
 
 wildcard_constraints:
@@ -98,6 +97,7 @@ rule all:
     """
     input:
         f"output/{get_filename_for_all_queries()}.sam_summary.xz",
+        f"output/{get_filename_for_all_queries()}.sam_summary.stats",
 
 
 rule download:
@@ -120,6 +120,7 @@ rule map:
     """
     input:
         f"output/{get_filename_for_all_queries()}.sam_summary.xz",
+        f"output/{get_filename_for_all_queries()}.sam_summary.stats",
 
 
 ##################################
@@ -182,8 +183,8 @@ rule fix_query:
         base_to_replace="A",
     shell:
         """
-        seqtk seq -A -U {input.original_query} \\
-            | awk '{{if(NR%2==1){{print $0;}}else{{gsub(/[^ACGT]/, \"{params.base_to_replace}\"); print;}}}}' \\
+        seqtk seq -A -U -C {input.original_query} \\
+                | awk '{{if(NR%2==1){{print $0;}}else{{gsub(/[^ACGT]/, \"{params.base_to_replace}\"); print;}}}}' \\
             > {output.fixed_query}
         """
 
@@ -216,14 +217,12 @@ rule decompress_cobs:
         max_heavy_IO_jobs=1,
     threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     params:
-        benchmark_flag=benchmark_flag,
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     shell:
         """
-        ./scripts/benchmark.py {params.benchmark_flag} \\
-            --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
-            'xzcat "{input.xz}" > "{params.cobs_index_tmp}" && \\
-            mv "{params.cobs_index_tmp}" "{output.cobs_index}"'
+        ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
+            'xzcat "{input.xz}" > "{params.cobs_index_tmp}" \\
+            && mv "{params.cobs_index_tmp}" "{output.cobs_index}"'
         """
 
 
@@ -240,21 +239,20 @@ rule run_cobs:
         max_heavy_IO_jobs=1,
     params:
         kmer_thres=config["cobs_kmer_thres"],
-        benchmark_flag=benchmark_flag,
     priority: 999
     conda:
         "envs/cobs.yaml"
     shell:
         """
-        ./scripts/benchmark.py {params.benchmark_flag} \\
-            --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
-                -t {params.kmer_thres} \\
-                -T {threads} \\
-                -i {input.cobs_index} \\
-                -f {input.fa} \\
-            | xz -v \\
-            > {output.match}'
+                    -t {params.kmer_thres} \\
+                    -T {threads} \\
+                    -i {input.cobs_index} \\
+                    -f {input.fa} \\
+                | perl -pe "s/^(?!\*).*_/_/g" \\
+                | xz -v -T {threads} \\
+                > {output.match}'
         """
 
 
@@ -277,27 +275,25 @@ rule decompress_and_run_cobs:
         decompression_dir=decompression_dir,
         cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
         cobs_index_tmp=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
-        benchmark_flag=benchmark_flag,
     conda:
         "envs/cobs.yaml"
     shell:
         """
         mkdir -p {params.decompression_dir}
 
-        ./scripts/benchmark.py {params.benchmark_flag} \\
-            --log logs/benchmarks/decompress_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
-            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index_tmp}" && \\
-            mv "{params.cobs_index_tmp}" "{params.cobs_index}"'
+        ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
+            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index_tmp}" \\
+            && mv "{params.cobs_index_tmp}" "{params.cobs_index}"'
 
-        ./scripts/benchmark.py {params.benchmark_flag} \\
-            --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
-                -t {params.kmer_thres} \\
-                -T {threads} \\
-                -i "{params.cobs_index}" \\
-                -f {input.fa} \\
-            | xz -v \\
-            > {output.match}'
+                    -t {params.kmer_thres} \\
+                    -T {threads} \\
+                    -i "{params.cobs_index}" \\
+                    -f {input.fa} \\
+                | perl -pe "s/^(?!\*).*_/_/g" \\
+                | xz -v -T {threads} \\
+                > {output.match}'
 
         rm -v "{params.cobs_index}"
         """
@@ -322,11 +318,12 @@ rule translate_matches:
     log:
         "logs/translate_matches/{qfile}.log",
     params:
-        nb_best_hits=config["nb_best_hits"]
+        nb_best_hits=config["nb_best_hits"],
     shell:
         """
-        ./scripts/filter_queries.py -n {params.nb_best_hits} -q {input.fa} {input.all_matches} \\
-            > {output.fa} 2>{log}
+        ./scripts/benchmark.py --log logs/benchmarks/translate_matches/translate_matches___{wildcards.qfile}.txt \\
+            './scripts/filter_queries.py -n {params.nb_best_hits} -q {input.fa} {input.all_matches} \\
+                > {output.fa} 2>{log}'
         """
 
 
@@ -342,22 +339,20 @@ rule batch_align_minimap2:
         minimap_preset=config["minimap_preset"],
         minimap_threads=config["minimap_thr"],
         minimap_extra_params=config["minimap_extra_params"],
-        benchmark_flag=benchmark_flag,
         pipe="--pipe" if config["prefer_pipe"] else "",
     conda:
         "envs/minimap2.yaml"
     threads: config["minimap_thr"]
     shell:
         """
-        ./scripts/benchmark.py {params.benchmark_flag} \\
-            --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/batch_align.py \\
-                --minimap-preset {params.minimap_preset} \\
-                --threads {params.minimap_threads} \\
-                --extra-params=\"{params.minimap_extra_params}\" \\
-                {params.pipe} \\
-                {input.asm} \\
-                {input.qfa} \\
+                    --minimap-preset {params.minimap_preset} \\
+                    --threads {params.minimap_threads} \\
+                    --extra-params=\"{params.minimap_extra_params}\" \\
+                    {params.pipe} \\
+                    {input.asm} \\
+                    {input.qfa} \\
                 > {output.sam} 2>{log}'
         """
 
@@ -367,12 +362,28 @@ rule aggregate_sams:
         pseudosam="output/{qfile}.sam_summary.xz",
     input:
         sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
-    threads: 1
+    params:
+        nearly_inf=999_999_999,
+    threads: workflow.cores
     shell:
         """
-        head -n 9999999 {input.sam} \\
-            | grep -v "@" \\
-            | xz \\
-            > {output.pseudosam}
+        ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/aggregate_sams___{wildcards.qfile}.txt \\
+            'head -n {params.nearly_inf} {input.sam} \\
+                | grep -v "@" \\
+                | xz -v -T {threads} \\
+                > {output.pseudosam}'
         """
 
+
+rule final_stats:
+    output:
+        stats="output/{qfile}.sam_summary.stats",
+    input:
+        pseudosam="output/{qfile}.sam_summary.xz",
+        concatenated_query=f"intermediate/concatenated_query/{get_filename_for_all_queries()}.fa",
+    shell:
+        """
+        ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/final_stats___{wildcards.qfile}.txt \\
+            './scripts/final_stats.py {input.concatenated_query} {input.pseudosam} \\
+                > {output.stats}'
+        """

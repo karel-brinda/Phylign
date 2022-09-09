@@ -1,4 +1,4 @@
-.PHONY: all test help clean cleanall cluster download match map benchmark format report viewconf conda
+.PHONY: all test help clean cleanall cluster download match map format report viewconf conda
 
 SHELL=/usr/bin/env bash -eo pipefail
 DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
@@ -14,31 +14,24 @@ THR=$(shell grep "^thr" config.yaml | awk '{print $$2}')
 SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_decomp_MB=$(MAX_DECOMP_MB) max_download_jobs=$(MAX_DOWNLOAD_JOBS) max_heavy_IO_jobs=$(MAX_HEAVY_IO_JOBS)
 
 all: ## Run everything
-	snakemake $(SMK_PARAMS)
+	make download
+	make match
+	make map
 
 test: ## Run everything but just with 3 batches to test full pipeline
-	snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1
-	diff -qs output/reads_1___reads_2___reads_3___reads_4.sam_summary.xz data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz
+	snakemake $(SMK_PARAMS) -j 99999 --config batches=batches_small.txt -- download  # download is not benchmarked
+	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt nb_best_hits=1 -- match"
+	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config batches=batches_small.txt nb_best_hits=1 -- map"
+	diff -qs <(xzcat output/reads_1___reads_2___reads_3___reads_4.sam_summary.xz) <(xzcat data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz)
 
-test_benchmark: ## benchmark the test pipeline. Benchmark logs are stored in logs/benchmarks
-	snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt -- download  # download is not benchmarked
-	scripts/benchmark.py --benchmark --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1 benchmark=True -- match"
-	scripts/benchmark.py --benchmark --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1 benchmark=True -- map"
-	diff -qs output/reads_1___reads_2___reads_3___reads_4.sam_summary.xz data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz
-
-download: ## Download the 661k assemblies and COBS indexes
+download: ## Download the 661k assemblies and COBS indexes, not benchmarked
 	snakemake $(SMK_PARAMS) -j 99999 -- download
 
 match: ## Match queries using COBS (queries -> candidates)
-	snakemake $(SMK_PARAMS) -- match
+	scripts/benchmark.py --log logs/benchmarks/match_$(DATETIME).txt "snakemake $(SMK_PARAMS) -- match"
 
 map: ## Map candidates to assemblies (candidates -> alignments)
-	snakemake $(SMK_PARAMS) -- map
-
-benchmark: ## benchmark this pipeline. Benchmark logs are stored in logs/benchmarks
-	make download  # download is not benchmarked
-	scripts/benchmark.py --benchmark --log logs/benchmarks/match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config benchmark=True -- match"
-	scripts/benchmark.py --benchmark --log logs/benchmarks/map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config benchmark=True -- map"
+	scripts/benchmark.py --log logs/benchmarks/map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) -- map"
 
 report: ## Generate Snakemake report
 	snakemake --report
@@ -55,7 +48,7 @@ clean: ## Clean intermediate search files
 	rm -rfv logs
 
 cleanall: clean ## Clean all generated and downloaded files
-	rm -f {asms,cobs}/*.xz
+	rm -f {asms,cobs}/*.xz{,.tmp}
 
 cluster: ## Submit to a SLURM cluster
 	sbatch \
