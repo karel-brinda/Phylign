@@ -46,6 +46,7 @@ help: ## Print help message
 clean: ## Clean intermediate search files
 	rm -fv intermediate/*/*
 	rm -rfv logs
+	rm -fv output/*
 
 cleanall: clean ## Clean all generated and downloaded files
 	rm -f {asms,cobs}/*.xz{,.tmp}
