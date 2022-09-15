@@ -42,7 +42,7 @@ def get_uncompressed_batch_size(wildcards, input):
             cobs_index, size_in_bytes = line.strip().split()
             batch_for_cobs_index = cobs_index.split("/")[-1].replace(".cobs_classic.xz", "")
             size_in_bytes = int(size_in_bytes)
-            size_in_MB = size_in_bytes / 1024 / 1024
+            size_in_MB = int(size_in_bytes / 1024 / 1024) + 1
             if batch == batch_for_cobs_index:
                 return size_in_MB
 
