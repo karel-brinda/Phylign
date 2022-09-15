@@ -7,11 +7,10 @@ DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
 
 .SUFFIXES:
 
-MAX_DECOMP_MB=$(shell grep "^max_decomp_MB" config.yaml | awk '{print $$2}')
-MAX_HEAVY_IO_JOBS=$(shell grep "^max_heavy_IO_jobs" config.yaml | awk '{print $$2}')
-MAX_DOWNLOAD_JOBS=$(shell grep "^max_download_jobs" config.yaml | awk '{print $$2}')
-THR=$(shell grep "^thr" config.yaml | awk '{print $$2}')
-SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_decomp_MB=$(MAX_DECOMP_MB) max_download_jobs=$(MAX_DOWNLOAD_JOBS) max_heavy_IO_jobs=$(MAX_HEAVY_IO_JOBS)
+MAX_IO_HEAVY_THREADS=$(shell grep "^max_io_heavy_threads" config.yaml | awk '{print $$2}')
+MAX_DOWNLOAD_THREADS=$(shell grep "^max_download_threads" config.yaml | awk '{print $$2}')
+THREADS=$(shell grep "^threads:" config.yaml | awk '{print $$2}')
+SMK_PARAMS=--jobs ${THREADS} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_download_threads=$(MAX_DOWNLOAD_THREADS) max_io_heavy_threads=$(MAX_IO_HEAVY_THREADS)
 
 all: ## Run everything
 	make download

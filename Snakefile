@@ -60,7 +60,7 @@ wildcard_constraints:
     batch=".+__\d\d",
 
 
-if config["keep_cobs_ind"]:
+if config["keep_cobs_indexes"]:
 
     ruleorder: decompress_cobs > run_cobs > decompress_and_run_cobs
 
@@ -134,7 +134,7 @@ rule download_asm_batch:
     params:
         url=asms_url,
     resources:
-        max_download_jobs=1,
+        max_download_threads=1,
     threads: 1
     shell:
         """
@@ -151,7 +151,7 @@ rule download_cobs_batch:
     params:
         url=cobs_url_fct,
     resources:
-        max_download_jobs=1,
+        max_download_threads=1,
     threads: 1
     shell:
         """
@@ -213,9 +213,8 @@ rule decompress_cobs:
     input:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
-        max_decomp_MB=lambda wildcards, input: input.xz.size // 1_000_000 + 1,
-        max_heavy_IO_jobs=1,
-    threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+        max_io_heavy_threads=1,
+    threads: config["cobs_threads"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     params:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     shell:
@@ -234,9 +233,9 @@ rule run_cobs:
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/concatenated_query/{qfile}.fa",
-    threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
+    threads: config["cobs_threads"]
     resources:
-        max_heavy_IO_jobs=1,
+        max_io_heavy_threads=1,
     params:
         kmer_thres=config["cobs_kmer_thres"],
     priority: 999
@@ -265,11 +264,8 @@ rule decompress_and_run_cobs:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
     resources:
-        max_decomp_MB=lambda wildcards, input: input.compressed_cobs_index.size
-        // 1_000_000
-        + 1,
-        max_heavy_IO_jobs=1,
-    threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
+        max_io_heavy_threads=1,
+    threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
@@ -337,18 +333,17 @@ rule batch_align_minimap2:
         log="logs/03_map/{batch}____{qfile}.log",
     params:
         minimap_preset=config["minimap_preset"],
-        minimap_threads=config["minimap_thr"],
         minimap_extra_params=config["minimap_extra_params"],
         pipe="--pipe" if config["prefer_pipe"] else "",
     conda:
         "envs/minimap2.yaml"
-    threads: config["minimap_thr"]
+    threads: config["minimap_threads"]
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/batch_align.py \\
                     --minimap-preset {params.minimap_preset} \\
-                    --threads {params.minimap_threads} \\
+                    --threads {threads} \\
                     --extra-params=\"{params.minimap_extra_params}\" \\
                     {params.pipe} \\
                     {input.asm} \\
