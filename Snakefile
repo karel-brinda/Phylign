@@ -264,7 +264,7 @@ rule run_cobs:
         fa="intermediate/concatenated_query/{qfile}.fa",
         decompressed_indexes_sizes = rules.get_decompressed_indexes_sizes.output.decompressed_indexes_sizes,
     resources:
-        max_io_heavy_threads=1,
+        max_io_heavy_threads=1-int(config["load_complete"]),
         max_ram_mb=get_uncompressed_batch_size,
     threads: config["cobs_threads"]
     params:
