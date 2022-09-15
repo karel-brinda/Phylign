@@ -263,12 +263,13 @@ rule run_cobs:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/concatenated_query/{qfile}.fa",
         decompressed_indexes_sizes = rules.get_decompressed_indexes_sizes.output.decompressed_indexes_sizes,
-    threads: config["cobs_threads"]
     resources:
         max_io_heavy_threads=1,
         max_ram_mb=get_uncompressed_batch_size,
+    threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
+        load_complete="--load-complete" if config["load_complete"] else "",
     priority: 999
     conda:
         "envs/cobs.yaml"
@@ -276,6 +277,7 @@ rule run_cobs:
         """
         ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
+                    {params.load_complete} \\
                     -t {params.kmer_thres} \\
                     -T {threads} \\
                     -i {input.cobs_index} \\
@@ -304,6 +306,7 @@ rule decompress_and_run_cobs:
         decompression_dir=decompression_dir,
         cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
         cobs_index_tmp=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
+        load_complete="--load-complete" if config["load_complete"] else "",
     conda:
         "envs/cobs.yaml"
     shell:
@@ -316,6 +319,7 @@ rule decompress_and_run_cobs:
 
         ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
+                    {params.load_complete} \\
                     -t {params.kmer_thres} \\
                     -T {threads} \\
                     -i "{params.cobs_index}" \\
