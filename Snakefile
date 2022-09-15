@@ -34,6 +34,21 @@ def get_filename_for_all_queries():
     return "___".join(get_all_query_filenames())
 
 
+def get_uncompressed_batch_size(wildcards, input):
+    batch=wildcards.batch
+    decompressed_indexes_sizes_filepath=input.decompressed_indexes_sizes
+    with open(decompressed_indexes_sizes_filepath) as decompressed_indexes_sizes_fh:
+        for line in decompressed_indexes_sizes_fh:
+            cobs_index, size_in_bytes = line.strip().split()
+            batch_for_cobs_index = cobs_index.split("/")[-1].replace(".cobs_classic.xz", "")
+            size_in_bytes = int(size_in_bytes)
+            size_in_MB = size_in_bytes / 1024 / 1024
+            if batch == batch_for_cobs_index:
+                return size_in_MB
+
+    assert False, f"Error getting uncompressed batch size for batch {batch}: batch not found"
+
+
 ##################################
 ## Initialization
 ##################################
@@ -205,6 +220,20 @@ rule concatenate_queries:
         """
 
 
+rule get_decompressed_indexes_sizes:
+    output:
+        decompressed_indexes_sizes = f"intermediate/decompressed_indexes_sizes/decompressed_indexes_sizes.txt"
+    input:
+        all_cobs_indexes = [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
+    threads: 1
+    shell:
+        """
+        xz --robot --list {input.all_cobs_indexes} |
+        grep -v "^totals" |
+        awk 'BEGIN{{ORS=""}}{{if(NR%2==1){{print $2," "}}else{{print $5,"\\n"}}}}' \
+        > {output.decompressed_indexes_sizes}
+        """
+
 rule decompress_cobs:
     """Decompress cobs indexes
     """
@@ -233,9 +262,11 @@ rule run_cobs:
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/concatenated_query/{qfile}.fa",
+        decompressed_indexes_sizes = rules.get_decompressed_indexes_sizes.output.decompressed_indexes_sizes,
     threads: config["cobs_threads"]
     resources:
         max_io_heavy_threads=1,
+        max_ram_mb=get_uncompressed_batch_size,
     params:
         kmer_thres=config["cobs_kmer_thres"],
     priority: 999
@@ -263,8 +294,10 @@ rule decompress_and_run_cobs:
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
+        decompressed_indexes_sizes = rules.get_decompressed_indexes_sizes.output.decompressed_indexes_sizes,
     resources:
         max_io_heavy_threads=1,
+        max_ram_mb=get_uncompressed_batch_size,
     threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
