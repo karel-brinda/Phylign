@@ -1,0 +1,7 @@
+*
+!.gitignore
+!reads_1.fastq
+!reads_2.fq
+!reads_3.fasta
+!reads_4.fa
+

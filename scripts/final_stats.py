@@ -56,7 +56,7 @@ def get_match(st):
     if rname == "*":
         return qname, None, None
     else:
-        accession, contig = rname.split(".")
+        accession, _, contig = rname.partition(".")
         return qname, accession, contig
 
 

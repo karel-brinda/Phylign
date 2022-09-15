@@ -5,4 +5,5 @@ tools/cobs
 report.html
 logs/
 intermediate/*/*.fa
+intermediate/*/*.sam
 *.tmp
