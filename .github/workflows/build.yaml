@@ -48,6 +48,7 @@ jobs:
         /usr/bin/env python3 -m pip install cython
         conda install -c conda-forge mamba=0.20.0
         /usr/bin/env python3 -m pip install snakemake==6.2.0
+        brew install gnu-time
 
     - name: Check out code for the build
       uses: actions/checkout@v2
@@ -57,3 +58,4 @@ jobs:
     - name: Test
       run: |
         make test
+

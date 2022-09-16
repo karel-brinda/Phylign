@@ -34,6 +34,21 @@ def get_filename_for_all_queries():
     return "___".join(get_all_query_filenames())
 
 
+def get_uncompressed_batch_size(wildcards, input):
+    batch=wildcards.batch
+    decompressed_indexes_sizes_filepath=input.decompressed_indexes_sizes
+    with open(decompressed_indexes_sizes_filepath) as decompressed_indexes_sizes_fh:
+        for line in decompressed_indexes_sizes_fh:
+            cobs_index, size_in_bytes = line.strip().split()
+            batch_for_cobs_index = cobs_index.split("/")[-1].replace(".cobs_classic.xz", "")
+            size_in_bytes = int(size_in_bytes)
+            size_in_MB = int(size_in_bytes / 1024 / 1024) + 1
+            if batch == batch_for_cobs_index:
+                return size_in_MB
+
+    assert False, f"Error getting uncompressed batch size for batch {batch}: batch not found"
+
+
 ##################################
 ## Initialization
 ##################################
@@ -60,7 +75,7 @@ wildcard_constraints:
     batch=".+__\d\d",
 
 
-if config["keep_cobs_ind"]:
+if config["keep_cobs_indexes"]:
 
     ruleorder: decompress_cobs > run_cobs > decompress_and_run_cobs
 
@@ -134,7 +149,7 @@ rule download_asm_batch:
     params:
         url=asms_url,
     resources:
-        max_download_jobs=1,
+        max_download_threads=1,
     threads: 1
     shell:
         """
@@ -151,7 +166,7 @@ rule download_cobs_batch:
     params:
         url=cobs_url_fct,
     resources:
-        max_download_jobs=1,
+        max_download_threads=1,
     threads: 1
     shell:
         """
@@ -205,6 +220,20 @@ rule concatenate_queries:
         """
 
 
+rule get_decompressed_indexes_sizes:
+    output:
+        decompressed_indexes_sizes = f"intermediate/decompressed_indexes_sizes/decompressed_indexes_sizes.txt"
+    input:
+        all_cobs_indexes = [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
+    threads: 1
+    shell:
+        """
+        xz --robot --list {input.all_cobs_indexes} |
+        grep -v "^totals" |
+        awk 'BEGIN{{ORS=""}}{{if(NR%2==1){{print $2," "}}else{{print $5,"\\n"}}}}' \
+        > {output.decompressed_indexes_sizes}
+        """
+
 rule decompress_cobs:
     """Decompress cobs indexes
     """
@@ -213,9 +242,8 @@ rule decompress_cobs:
     input:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
-        max_decomp_MB=lambda wildcards, input: input.xz.size // 1_000_000 + 1,
-        max_heavy_IO_jobs=1,
-    threads: config["cobs_thr"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+        max_io_heavy_threads=1,
+    threads: config["cobs_threads"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     params:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     shell:
@@ -234,11 +262,14 @@ rule run_cobs:
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/concatenated_query/{qfile}.fa",
-    threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
+        decompressed_indexes_sizes = rules.get_decompressed_indexes_sizes.output.decompressed_indexes_sizes,
     resources:
-        max_heavy_IO_jobs=1,
+        max_io_heavy_threads=1-int(config["load_complete"]),
+        max_ram_mb=get_uncompressed_batch_size,
+    threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
+        load_complete="--load-complete" if config["load_complete"] else "",
     priority: 999
     conda:
         "envs/cobs.yaml"
@@ -246,6 +277,7 @@ rule run_cobs:
         """
         ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
+                    {params.load_complete} \\
                     -t {params.kmer_thres} \\
                     -T {threads} \\
                     -i {input.cobs_index} \\
@@ -264,17 +296,17 @@ rule decompress_and_run_cobs:
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
+        decompressed_indexes_sizes = rules.get_decompressed_indexes_sizes.output.decompressed_indexes_sizes,
     resources:
-        max_decomp_MB=lambda wildcards, input: input.compressed_cobs_index.size
-        // 1_000_000
-        + 1,
-        max_heavy_IO_jobs=1,
-    threads: config["cobs_thr"]  # Small number in order to guarantee Snakemake parallelization
+        max_io_heavy_threads=1,
+        max_ram_mb=get_uncompressed_batch_size,
+    threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
         cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
         cobs_index_tmp=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
+        load_complete="--load-complete" if config["load_complete"] else "",
     conda:
         "envs/cobs.yaml"
     shell:
@@ -287,6 +319,7 @@ rule decompress_and_run_cobs:
 
         ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
+                    {params.load_complete} \\
                     -t {params.kmer_thres} \\
                     -T {threads} \\
                     -i "{params.cobs_index}" \\
@@ -337,18 +370,17 @@ rule batch_align_minimap2:
         log="logs/03_map/{batch}____{qfile}.log",
     params:
         minimap_preset=config["minimap_preset"],
-        minimap_threads=config["minimap_thr"],
         minimap_extra_params=config["minimap_extra_params"],
         pipe="--pipe" if config["prefer_pipe"] else "",
     conda:
         "envs/minimap2.yaml"
-    threads: config["minimap_thr"]
+    threads: config["minimap_threads"]
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/batch_align.py \\
                     --minimap-preset {params.minimap_preset} \\
-                    --threads {params.minimap_threads} \\
+                    --threads {threads} \\
                     --extra-params=\"{params.minimap_extra_params}\" \\
                     {params.pipe} \\
                     {input.asm} \\

@@ -7,11 +7,11 @@ DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
 
 .SUFFIXES:
 
-MAX_DECOMP_MB=$(shell grep "^max_decomp_MB" config.yaml | awk '{print $$2}')
-MAX_HEAVY_IO_JOBS=$(shell grep "^max_heavy_IO_jobs" config.yaml | awk '{print $$2}')
-MAX_DOWNLOAD_JOBS=$(shell grep "^max_download_jobs" config.yaml | awk '{print $$2}')
-THR=$(shell grep "^thr" config.yaml | awk '{print $$2}')
-SMK_PARAMS=--jobs ${THR} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_decomp_MB=$(MAX_DECOMP_MB) max_download_jobs=$(MAX_DOWNLOAD_JOBS) max_heavy_IO_jobs=$(MAX_HEAVY_IO_JOBS)
+THREADS=$(shell grep "^threads:" config.yaml | awk '{print $$2}')
+MAX_DOWNLOAD_THREADS=$(shell grep "^max_download_threads" config.yaml | awk '{print $$2}')
+MAX_IO_HEAVY_THREADS=$(shell grep "^max_io_heavy_threads" config.yaml | awk '{print $$2}')
+MAX_RAM_MB=$(shell grep "^max_ram_gb:" config.yaml | awk '{print $$2*1024}')
+SMK_PARAMS=--jobs ${THREADS} --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_download_threads=$(MAX_DOWNLOAD_THREADS) max_io_heavy_threads=$(MAX_IO_HEAVY_THREADS) max_ram_mb=$(MAX_RAM_MB)
 
 all: ## Run everything
 	make download
@@ -19,9 +19,9 @@ all: ## Run everything
 	make map
 
 test: ## Run everything but just with 3 batches to test full pipeline
-	snakemake $(SMK_PARAMS) -j 99999 --config batches=batches_small.txt -- download  # download is not benchmarked
-	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config batches=batches_small.txt nb_best_hits=1 -- match"
-	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config batches=batches_small.txt nb_best_hits=1 -- map"
+	snakemake $(SMK_PARAMS) -j 99999 --config batches=data/batches_small.txt -- download  # download is not benchmarked
+	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1 -- match"
+	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1 -- map"
 	diff -qs <(xzcat output/reads_1___reads_2___reads_3___reads_4.sam_summary.xz) <(xzcat data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz)
 
 download: ## Download the 661k assemblies and COBS indexes, not benchmarked

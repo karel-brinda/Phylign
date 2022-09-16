@@ -6,4 +6,5 @@ report.html
 logs/
 intermediate/*/*.fa
 intermediate/*/*.sam
+intermediate/*/*.txt
 *.tmp
