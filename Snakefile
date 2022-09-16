@@ -220,20 +220,6 @@ rule concatenate_queries:
         """
 
 
-rule get_decompressed_indexes_sizes:
-    output:
-        decompressed_indexes_sizes = f"intermediate/decompressed_indexes_sizes/decompressed_indexes_sizes.txt"
-    input:
-        all_cobs_indexes = [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
-    threads: 1
-    shell:
-        """
-        xz --robot --list {input.all_cobs_indexes} |
-        grep -v "^totals" |
-        awk 'BEGIN{{ORS=""}}{{if(NR%2==1){{print $2," "}}else{{print $5,"\\n"}}}}' \
-        > {output.decompressed_indexes_sizes}
-        """
-
 rule decompress_cobs:
     """Decompress cobs indexes
     """
@@ -262,7 +248,7 @@ rule run_cobs:
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/concatenated_query/{qfile}.fa",
-        decompressed_indexes_sizes = rules.get_decompressed_indexes_sizes.output.decompressed_indexes_sizes,
+        decompressed_indexes_sizes = "data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=1-int(config["load_complete"]),
         max_ram_mb=get_uncompressed_batch_size,
@@ -296,7 +282,7 @@ rule decompress_and_run_cobs:
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
-        decompressed_indexes_sizes = rules.get_decompressed_indexes_sizes.output.decompressed_indexes_sizes,
+        decompressed_indexes_sizes = "data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=1,
         max_ram_mb=get_uncompressed_batch_size,
