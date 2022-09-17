@@ -123,7 +123,7 @@ def compute_stats(results_fn, queries_fn):
     print("aligned_segments", nb_alignments, sep="\t")
     print("distinct_genome_query_pairs", len(query_ref_pairs), sep="\t")
     print("target_genomes", len(refs), sep="\t")
-    print("target_batches", len(batches))
+    print("target_batches", len(batches), sep="\t")
     print("nonalignments", nb_nonalignments, sep="\t")
 
 
