@@ -234,7 +234,7 @@ def main():
         dest='keep',
         type=int,
         default=DEFAULT_KEEP,
-        help=f'no. of best hits to keep [{KEEP}]',
+        help=f'no. of best hits to keep [{DEFAULT_KEEP}]',
     )
 
     args = parser.parse_args()
