@@ -13,7 +13,7 @@ from pathlib import Path
 from xopen import xopen
 from pprint import pprint
 
-KEEP = 100
+DEFAULT_KEEP = 100
 """
 For every read we want to know top 100 matches
 
@@ -233,7 +233,7 @@ def main():
         metavar='int',
         dest='keep',
         type=int,
-        default=KEEP,
+        default=DEFAULT_KEEP,
         help=f'no. of best hits to keep [{KEEP}]',
     )
 
