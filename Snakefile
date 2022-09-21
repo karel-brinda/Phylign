@@ -35,18 +35,22 @@ def get_filename_for_all_queries():
 
 
 def get_uncompressed_batch_size(wildcards, input):
-    batch=wildcards.batch
-    decompressed_indexes_sizes_filepath=input.decompressed_indexes_sizes
+    batch = wildcards.batch
+    decompressed_indexes_sizes_filepath = input.decompressed_indexes_sizes
     with open(decompressed_indexes_sizes_filepath) as decompressed_indexes_sizes_fh:
         for line in decompressed_indexes_sizes_fh:
             cobs_index, size_in_bytes = line.strip().split()
-            batch_for_cobs_index = cobs_index.split("/")[-1].replace(".cobs_classic.xz", "")
+            batch_for_cobs_index = cobs_index.split("/")[-1].replace(
+                ".cobs_classic.xz", ""
+            )
             size_in_bytes = int(size_in_bytes)
             size_in_MB = int(size_in_bytes / 1024 / 1024) + 1
             if batch == batch_for_cobs_index:
                 return size_in_MB
 
-    assert False, f"Error getting uncompressed batch size for batch {batch}: batch not found"
+    assert (
+        False
+    ), f"Error getting uncompressed batch size for batch {batch}: batch not found"
 
 
 ##################################
@@ -248,14 +252,15 @@ rule run_cobs:
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/concatenated_query/{qfile}.fa",
-        decompressed_indexes_sizes = "data/decompressed_indexes_sizes.txt",
+        decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
-        max_io_heavy_threads=1-int(config["load_complete"]),
+        max_io_heavy_threads=1 - int(config["load_complete"]),
         max_ram_mb=get_uncompressed_batch_size,
     threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
         load_complete="--load-complete" if config["load_complete"] else "",
+        nb_best_hits=config["nb_best_hits"],
     priority: 999
     conda:
         "envs/cobs.yaml"
@@ -268,7 +273,7 @@ rule run_cobs:
                     -T {threads} \\
                     -i {input.cobs_index} \\
                     -f {input.fa} \\
-                | perl -pe "s/^(?!\*).*_/_/g" \\
+                | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
                 | gzip \\
                 > {output.match}'
         """
@@ -282,7 +287,7 @@ rule decompress_and_run_cobs:
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
-        decompressed_indexes_sizes = "data/decompressed_indexes_sizes.txt",
+        decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=1,
         max_ram_mb=get_uncompressed_batch_size,
@@ -293,6 +298,7 @@ rule decompress_and_run_cobs:
         cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
         cobs_index_tmp=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
         load_complete="--load-complete" if config["load_complete"] else "",
+        nb_best_hits=config["nb_best_hits"],
     conda:
         "envs/cobs.yaml"
     shell:
@@ -310,7 +316,7 @@ rule decompress_and_run_cobs:
                     -T {threads} \\
                     -i "{params.cobs_index}" \\
                     -f {input.fa} \\
-                | perl -pe "s/^(?!\*).*_/_/g" \\
+                | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
                 | gzip \\
                 > {output.match}'
 
