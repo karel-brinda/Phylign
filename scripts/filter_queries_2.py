@@ -42,7 +42,8 @@ def cobs_iterator(cobs_matches_fn):
     qname = None
     matches_buffer = []
     batch = os.path.basename(cobs_matches_fn).split("____")[0]
-    print(f"Translating matches {cobs_matches_fn}", file=sys.stderr)
+    print(f"Opening cobs reading iterator for {cobs_matches_fn}",
+          file=sys.stderr)
     with xopen(cobs_matches_fn) as f:
         for x in f:
             x = x.strip()
@@ -112,12 +113,14 @@ class SingleQuery:
         _matches (list): A list of (ref, kmers)
     """
 
-    def __init__(self, qname, seq, keep_matches):
+    def __init__(self, keep_matches):
         self._keep_matches = keep_matches
-        self._min_matching_kmers = 0  #should be increased once the number of records >keep
-        self._matches = []
+
+    def new_query(self, qname, seq):
         self._qname = qname
         self._seq = seq
+        self._min_matching_kmers = 0  #should be increased once the number of records >keep
+        self._matches = []
 
     def add_matches(self, batch, matches):
         """Add matches.
@@ -127,9 +130,8 @@ class SingleQuery:
             kmers = int(kmers)
             if kmers >= self._min_matching_kmers:
                 self._matches.append((batch, ref, kmers))
-        self._housekeeping()
 
-    def _housekeeping(self):
+    def prune(self):
         # 1. sort and exit if not full
         self._matches.sort(key=lambda x: (-x[2], x[0], x[1]))
 
@@ -148,7 +150,7 @@ class SingleQuery:
                 else:
                     break
 
-    def fasta_record_matches(self):
+    def get_fasta(self):
         name = self._qname
         com = ",".join([x[1] for x in self._matches])
         seq = self._seq
@@ -160,16 +162,26 @@ class Sift:
     """
 
     def __init__(self, query_fn, keep_matches, match_fns):
-        self._fa_iterator=fa_iterator(query_fn)
-        self._cobs_iterators=[cobs_iterator(fn) for fn in match_fns]
+        self._fa_iterator = fa_iterator(query_fn)
+        self._cobs_iterators = [cobs_iterator(fn) for fn in match_fns]
         self._keep_matches = keep_matches
+        self._single_query = SingleQuery(self._keep_matches)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        pass
-
+        qname, seq, _ = next(self._fa_iterator)
+        self._single_query.new_query(qname, seq)
+        for ci in self._cobs_iterators:
+            #x=next(ci)
+            #print(x)
+            qname2, batch, matches = next(ci)
+            assert qname == qname2, f"{qname}!={qname2}"
+            self._single_query.add_matches(batch, matches)
+            self._single_query.prune()
+        #self._single_query.prune()
+        return qname, self._single_query.get_fasta()
 
     def process_cobs_file(self, cobs_fn):
         for i, (qname, batch, matches) in enumerate(cobs_iterator(cobs_fn)):
@@ -183,25 +195,13 @@ class Sift:
             self._query_dict[qname].add_matches(batch, matches)
             #print(qname)
 
-    def print_tsv_summary(self):
-        d = self._query_dict
-        for q in d:
-            #print(q, d[q]._matches)
-            #pass
-            for mtch in d[q]._matches:
-                print(q, *mtch, sep="\t")
-
-    def print_fa(self):
-        d = self._query_dict
-        for q in d:
-            frm = d[q].fasta_record_matches()
-            print(frm)
-
 
 def process_files(query_fn, match_fns, keep_matches):
-    sift = Sift(keep_matches=keep_matches, query_fn=query_fn, match_fns=match_fns)
-    for i,(qname, f) in enumerate(sift):
-        print(i, qname)
+    sift = Sift(keep_matches=keep_matches,
+                query_fn=query_fn,
+                match_fns=match_fns)
+    for i, (qname, f) in enumerate(sift):
+        print(f)
 
 
 def main():
@@ -229,7 +229,7 @@ def main():
         dest='keep',
         type=int,
         default=DEFAULT_KEEP,
-        help=f'no. of best hits to keep [{KEEP}]',
+        help=f'no. of best hits to keep [{DEFAULT_KEEP}]',
     )
 
     args = parser.parse_args()
