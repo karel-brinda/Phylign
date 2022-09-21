@@ -23,7 +23,28 @@ Approach:
     - keep just top k scores
 """
 
+BUFFER_SIZE = 1000
 
+
+def bufferize(func):
+
+    def wrapper(*args, **kwargs):
+        it = func(*args, **kwargs)
+        buffer = []
+        for i, x in enumerate(it, start=1):
+            buffer.append(x)
+            if i % BUFFER_SIZE == 0:
+                for y in buffer:
+                    yield y
+                buffer = []
+
+        for y in buffer:
+            yield y
+
+    return wrapper
+
+
+@bufferize
 def cobs_iterator(cobs_matches_fn):
     """Iterator for cobs matches.
 
@@ -67,6 +88,7 @@ def cobs_iterator(cobs_matches_fn):
     yield qname, batch, matches_buffer
 
 
+@bufferize
 def fa_iterator(fn):  # this is a generator function
     with open(fn) as fp:
         # From https://github.com/lh3/readfq/blob/master/readfq.py
