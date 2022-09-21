@@ -244,7 +244,7 @@ rule run_cobs:
     """Cobs matching
     """
     output:
-        match="intermediate/01_match/{batch}____{qfile}.xz",
+        match="intermediate/01_match/{batch}____{qfile}.gz",
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/concatenated_query/{qfile}.fa",
@@ -269,7 +269,7 @@ rule run_cobs:
                     -i {input.cobs_index} \\
                     -f {input.fa} \\
                 | perl -pe "s/^(?!\*).*_/_/g" \\
-                | xz -v -T {threads} \\
+                | gzip \\
                 > {output.match}'
         """
 
@@ -278,7 +278,7 @@ rule decompress_and_run_cobs:
     """Decompress Cobs index and run Cobs matching
     """
     output:
-        match="intermediate/01_match/{batch}____{qfile}.xz",
+        match="intermediate/01_match/{batch}____{qfile}.gz",
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
@@ -311,7 +311,7 @@ rule decompress_and_run_cobs:
                     -i "{params.cobs_index}" \\
                     -f {input.fa} \\
                 | perl -pe "s/^(?!\*).*_/_/g" \\
-                | xz -v -T {threads} \\
+                | gzip \\
                 > {output.match}'
 
         rm -v "{params.cobs_index}"
@@ -329,7 +329,7 @@ rule translate_matches:
     input:
         fa="intermediate/concatenated_query/{qfile}.fa",
         all_matches=[
-            f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches
+            f"intermediate/01_match/{batch}____{{qfile}}.gz" for batch in batches
         ],
     conda:
         "envs/minimap2.yaml"
