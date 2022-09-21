@@ -354,7 +354,7 @@ rule translate_matches:
 
 rule batch_align_minimap2:
     output:
-        sam="intermediate/03_map/{batch}____{qfile}.sam",
+        sam="intermediate/03_map/{batch}____{qfile}.sam.gz",
     input:
         qfa="intermediate/02_filter/{qfile}.fa",
         asm=f"{assemblies_dir}/{{batch}}.tar.xz",
@@ -377,7 +377,9 @@ rule batch_align_minimap2:
                     {params.pipe} \\
                     {input.asm} \\
                     {input.qfa} \\
-                > {output.sam} 2>{log}'
+                2>{log} \\
+                | gzip \\
+                > {output.sam}'
         """
 
 
@@ -385,7 +387,7 @@ rule aggregate_sams:
     output:
         pseudosam="output/{qfile}.sam_summary.xz",
     input:
-        sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
+        sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam.gz" for batch in batches],
     threads: workflow.cores
     shell:
         """

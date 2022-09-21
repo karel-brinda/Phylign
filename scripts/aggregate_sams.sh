@@ -18,7 +18,7 @@ do
 	fi
 	echo "==> $fn <=="
 	((i=i+1))
-	cat "$fn" \
+	gzcat "$fn" \
 		| grep -Ev "^@"
 done
 
