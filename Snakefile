@@ -35,18 +35,22 @@ def get_filename_for_all_queries():
 
 
 def get_uncompressed_batch_size(wildcards, input):
-    batch=wildcards.batch
-    decompressed_indexes_sizes_filepath=input.decompressed_indexes_sizes
+    batch = wildcards.batch
+    decompressed_indexes_sizes_filepath = input.decompressed_indexes_sizes
     with open(decompressed_indexes_sizes_filepath) as decompressed_indexes_sizes_fh:
         for line in decompressed_indexes_sizes_fh:
             cobs_index, size_in_bytes = line.strip().split()
-            batch_for_cobs_index = cobs_index.split("/")[-1].replace(".cobs_classic.xz", "")
+            batch_for_cobs_index = cobs_index.split("/")[-1].replace(
+                ".cobs_classic.xz", ""
+            )
             size_in_bytes = int(size_in_bytes)
             size_in_MB = int(size_in_bytes / 1024 / 1024) + 1
             if batch == batch_for_cobs_index:
                 return size_in_MB
 
-    assert False, f"Error getting uncompressed batch size for batch {batch}: batch not found"
+    assert (
+        False
+    ), f"Error getting uncompressed batch size for batch {batch}: batch not found"
 
 
 ##################################
@@ -244,18 +248,19 @@ rule run_cobs:
     """Cobs matching
     """
     output:
-        match="intermediate/01_match/{batch}____{qfile}.xz",
+        match="intermediate/01_match/{batch}____{qfile}.gz",
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/concatenated_query/{qfile}.fa",
-        decompressed_indexes_sizes = "data/decompressed_indexes_sizes.txt",
+        decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
-        max_io_heavy_threads=1-int(config["load_complete"]),
+        max_io_heavy_threads=1 - int(config["load_complete"]),
         max_ram_mb=get_uncompressed_batch_size,
     threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
         load_complete="--load-complete" if config["load_complete"] else "",
+        nb_best_hits=config["nb_best_hits"],
     priority: 999
     conda:
         "envs/cobs.yaml"
@@ -268,8 +273,8 @@ rule run_cobs:
                     -T {threads} \\
                     -i {input.cobs_index} \\
                     -f {input.fa} \\
-                | perl -pe "s/^(?!\*).*_/_/g" \\
-                | xz -v -T {threads} \\
+                | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
+                | gzip \\
                 > {output.match}'
         """
 
@@ -278,11 +283,11 @@ rule decompress_and_run_cobs:
     """Decompress Cobs index and run Cobs matching
     """
     output:
-        match="intermediate/01_match/{batch}____{qfile}.xz",
+        match="intermediate/01_match/{batch}____{qfile}.gz",
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/concatenated_query/{qfile}.fa",
-        decompressed_indexes_sizes = "data/decompressed_indexes_sizes.txt",
+        decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=1,
         max_ram_mb=get_uncompressed_batch_size,
@@ -293,6 +298,7 @@ rule decompress_and_run_cobs:
         cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
         cobs_index_tmp=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
         load_complete="--load-complete" if config["load_complete"] else "",
+        nb_best_hits=config["nb_best_hits"],
     conda:
         "envs/cobs.yaml"
     shell:
@@ -310,8 +316,8 @@ rule decompress_and_run_cobs:
                     -T {threads} \\
                     -i "{params.cobs_index}" \\
                     -f {input.fa} \\
-                | perl -pe "s/^(?!\*).*_/_/g" \\
-                | xz -v -T {threads} \\
+                | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
+                | gzip \\
                 > {output.match}'
 
         rm -v "{params.cobs_index}"
@@ -329,7 +335,7 @@ rule translate_matches:
     input:
         fa="intermediate/concatenated_query/{qfile}.fa",
         all_matches=[
-            f"intermediate/01_match/{batch}____{{qfile}}.xz" for batch in batches
+            f"intermediate/01_match/{batch}____{{qfile}}.gz" for batch in batches
         ],
     conda:
         "envs/minimap2.yaml"
@@ -348,7 +354,7 @@ rule translate_matches:
 
 rule batch_align_minimap2:
     output:
-        sam="intermediate/03_map/{batch}____{qfile}.sam",
+        sam="intermediate/03_map/{batch}____{qfile}.sam.gz",
     input:
         qfa="intermediate/02_filter/{qfile}.fa",
         asm=f"{assemblies_dir}/{{batch}}.tar.xz",
@@ -371,7 +377,9 @@ rule batch_align_minimap2:
                     {params.pipe} \\
                     {input.asm} \\
                     {input.qfa} \\
-                > {output.sam} 2>{log}'
+                2>{log} \\
+                | gzip \\
+                > {output.sam}'
         """
 
 
@@ -379,15 +387,12 @@ rule aggregate_sams:
     output:
         pseudosam="output/{qfile}.sam_summary.xz",
     input:
-        sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam" for batch in batches],
-    params:
-        nearly_inf=999_999_999,
+        sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam.gz" for batch in batches],
     threads: workflow.cores
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/aggregate_sams___{wildcards.qfile}.txt \\
-            'head -n {params.nearly_inf} {input.sam} \\
-                | grep -v "@" \\
+            './scripts/aggregate_sams.sh {input.sam} \\
                 | xz -v -T {threads} \\
                 > {output.pseudosam}'
         """
