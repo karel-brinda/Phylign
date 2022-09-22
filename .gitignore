@@ -7,4 +7,5 @@ logs/
 intermediate/*/*.fa
 intermediate/*/*.sam
 intermediate/*/*.txt
+intermediate/*/*.gz
 *.tmp
