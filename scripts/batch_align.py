@@ -123,7 +123,7 @@ def iterate_over_batch(asms_fn, selected_rnames):
         logging.info(f"Skipping {skipped} references in {asms_fn}")
 
 
-def load_qdicts(query_fn, selected_rnames):
+def load_qdicts(query_fn, accession_fn):
     """Load query dictionaries from the merged&filtered query file.
 
     Args:
@@ -140,23 +140,29 @@ def load_qdicts(query_fn, selected_rnames):
     # restricted keys, or defaultdict
     if selected_rnames:
         with open(selected_rnames) as f:
-            s = f.read()
+            s = f.read().strip()
             accessions = re.split(';|,|\n', s)
             logging.info(
                 f"Restricting reading only to the following accessions: {accessions}"
             )
-        rnames = {}
-        for x in accession:
-            rnames[x] = []
+        rname_to_qnames = {}
+        for x in accessions:
+            rname_to_qnames[x] = []
     else:
         rname_to_qnames = collections.defaultdict(lambda: [])
 
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, _ in readfq(fo):
             qname_to_qfa[qname] = f">{qname}\n{qseq}"
+            if not qcom:
+                continue
             rnames = qcom.split(",")
             for rname in rnames:
-                rname_to_qnames[rname].append(qname)
+                try:
+                    rname_to_qnames[rname].append(qname)
+                except KeyError:
+                    # key (accession) that's ignored
+                    pass
     return qname_to_qfa, dict(rname_to_qnames)
 
 
@@ -450,15 +456,15 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
     qname_to_qfa, rname_to_qnames = load_qdicts(query_fn, accessions_fn)
 
     #TODO: seems to be not really selected; should be selected based on the specific batch
-    rnames = set([x for x in rname_to_qnames])
-    nsr = len(rnames)
+    filtered_rnames = set([x for x in rname_to_qnames])
+    nsr = len(filtered_rnames)
     logging.debug(
-        f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}"
+        f"Identifying filtered rnames in the query file - #{nsr} records: {filtered_rnames}"
     )
     naligns_total = 0
     nrefs = 0
     refs = set()
-    for rname, rfa in iterate_over_batch(asms_fn, selected_rnames):
+    for rname, rfa in iterate_over_batch(asms_fn, filtered_rnames):
         start = timer()
         refs.add(rname)
 
@@ -554,7 +560,7 @@ def main():
                          minimap_threads=args.threads,
                          minimap_extra_params=args.extra_params,
                          prefer_pipe=args.pipe,
-                         accessions=args.accessions)
+                         accessions_fn=args.accessions)
 
 
 if __name__ == "__main__":
