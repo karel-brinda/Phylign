@@ -99,6 +99,7 @@ def iterate_over_batch(asms_fn, selected_rnames):
     """
     logging.info(f"Opening {asms_fn}")
     skipped = 0
+
     with tarfile.open(asms_fn, mode="r:xz") as tar:
         for member in tar.getmembers():
             # extract file headers
@@ -110,7 +111,9 @@ def iterate_over_batch(asms_fn, selected_rnames):
                 continue
             # extract file content
             if skipped > 0:
-                logging.info(f"Skipping {skipped} references in {asms_fn}")
+                logging.info(
+                    f"Skipping {skipped} references in {asms_fn} (no hits for them)"
+                )
                 skipped = 0
             logging.info(f"Extracting {rname} ({name})")
             f = tar.extractfile(member)
@@ -120,25 +123,41 @@ def iterate_over_batch(asms_fn, selected_rnames):
         logging.info(f"Skipping {skipped} references in {asms_fn}")
 
 
-def load_qdicts(query_fn):
+def load_qdicts(query_fn, selected_rnames):
     """Load query dictionaries from the merged&filtered query file.
 
     Args:
-        query_fn (str): Read
+        query_fn (str): Query file.
+        accessions_fn (str): List of allowed accessions.
 
     Returns:
         qname_to_qfa (OrderedDict): qname -> FASTA repr
         rname_to_qnames (dict): rname -> list of queries that should be mapped to this reference
     """
     qname_to_qfa = collections.OrderedDict()
-    rname_to_qnames = collections.defaultdict(lambda: [])
+
+    # all rnames to store, or only some of them? use either a dict with
+    # restricted keys, or defaultdict
+    if selected_rnames:
+        with open(selected_rnames) as f:
+            s = f.read()
+            accessions = re.split(';|,|\n', s)
+            logging.info(
+                f"Restricting reading only to the following accessions: {accessions}"
+            )
+        rnames = {}
+        for x in accession:
+            rnames[x] = []
+    else:
+        rname_to_qnames = collections.defaultdict(lambda: [])
+
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, _ in readfq(fo):
             qname_to_qfa[qname] = f">{qname}\n{qseq}"
             rnames = qcom.split(",")
             for rname in rnames:
                 rname_to_qnames[rname].append(qname)
-    return qname_to_qfa, rname_to_qnames
+    return qname_to_qfa, dict(rname_to_qnames)
 
 
 @contextmanager
@@ -410,7 +429,7 @@ def count_alignments(sam):
 
 
 def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
-                         minimap_extra_params, prefer_pipe):
+                         minimap_extra_params, prefer_pipe, accessions_fn):
     """Map queries to a batch.
 
     Args:
@@ -420,6 +439,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
         minimap_threads (int): Nb of minimap threads.
         minimap_extra_params (str): Additional minimap parameters.
         prefer_pipe (bool): Prefer using pipes.
+        accessions_fn (str): List of allowed accessions.
     """
     sstart = timer()
     logging.info(
@@ -427,11 +447,11 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
     )
 
     logging.info(f"Loading query dictionaries")
-    qname_to_qfa, rname_to_qnames = load_qdicts(query_fn)
+    qname_to_qfa, rname_to_qnames = load_qdicts(query_fn, accessions_fn)
 
     #TODO: seems to be not really selected; should be selected based on the specific batch
-    selected_rnames = set([x for x in rname_to_qnames])
-    nsr = len(selected_rnames)
+    rnames = set([x for x in rname_to_qnames])
+    nsr = len(rnames)
     logging.debug(
         f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}"
     )
@@ -510,6 +530,12 @@ def main():
     )
 
     parser.add_argument(
+        '--accessions',
+        default=None,
+        help='Restrict to a list of accesions (e.g., from a single batch)',
+    )
+
+    parser.add_argument(
         'batch_fn',
         metavar='batch.tar.xz',
         help='',
@@ -527,7 +553,8 @@ def main():
                          minimap_preset=args.minimap_preset,
                          minimap_threads=args.threads,
                          minimap_extra_params=args.extra_params,
-                         prefer_pipe=args.pipe)
+                         prefer_pipe=args.pipe,
+                         accessions=args.accessions)
 
 
 if __name__ == "__main__":
