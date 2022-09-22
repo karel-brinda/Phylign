@@ -40,8 +40,13 @@ logging.basicConfig(stream=sys.stderr,
                     format='[%(asctime)s] (%(levelname)s) %(message)s')
 
 
-def readfq(fp):  # this is a generator function
-    # From https://github.com/lh3/readfq/blob/master/readfq.py
+def readfq(fp):
+    """Read FASTA/FASTQ file. Based on https://github.com/lh3/readfq/blob/master/readfq.py
+
+    Args:
+        fp (file): Input file object.
+    """
+
     last = None  # this is a buffer keeping the last unprocessed line
     while True:  # mimic closure; is it a bad idea?
         if not last:  # the first record or a record following a fastq
@@ -86,6 +91,12 @@ def readfq(fp):  # this is a generator function
 
 
 def iterate_over_batch(asms_fn, selected_rnames):
+    """Iterate over an xz-compressed TAR file corresponding to a batch with individual FASTA files.
+
+    Args:
+        asms_fn (str): xz-compressed TAR file with FASTA files.
+        selected_rnames (list): Set of selected FASTA files for which a Minimap instance will be created (note: can contain rnames from other batches).
+    """
     logging.info(f"Opening {asms_fn}")
     skipped = 0
     with tarfile.open(asms_fn, mode="r:xz") as tar:
@@ -110,10 +121,19 @@ def iterate_over_batch(asms_fn, selected_rnames):
 
 
 def load_qdicts(query_fn):
+    """Load query dictionaries from the merged&filtered query file.
+
+    Args:
+        query_fn (str): Read
+
+    Returns:
+        qname_to_qfa (OrderedDict): qname -> FASTA repr
+        rname_to_qnames (dict): rname -> list of queries that should be mapped to this reference
+    """
     qname_to_qfa = collections.OrderedDict()
     rname_to_qnames = collections.defaultdict(lambda: [])
     with xopen(query_fn) as fo:
-        for qname, qcom, qseq, qquals in readfq(fo):
+        for qname, qcom, qseq, _ in readfq(fo):
             qname_to_qfa[qname] = f">{qname}\n{qseq}"
             rnames = qcom.split(",")
             for rname in rnames:
@@ -391,12 +411,25 @@ def count_alignments(sam):
 
 def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
                          minimap_extra_params, prefer_pipe):
+    """Map queries to a batch.
+
+    Args:
+        asms_fn (str): Batch .tar.xz file with batch FASTA files.
+        query_fn (str): Filtered & merged query FASTA file.
+        minimap_preset (str): Minimap preset.
+        minimap_threads (int): Nb of minimap threads.
+        minimap_extra_params (str): Additional minimap parameters.
+        prefer_pipe (bool): Prefer using pipes.
+    """
     sstart = timer()
     logging.info(
         f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset"
     )
+
+    logging.info(f"Loading query dictionaries")
     qname_to_qfa, rname_to_qnames = load_qdicts(query_fn)
 
+    #TODO: seems to be not really selected; should be selected based on the specific batch
     selected_rnames = set([x for x in rname_to_qnames])
     nsr = len(selected_rnames)
     logging.debug(
