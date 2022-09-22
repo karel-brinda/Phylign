@@ -128,7 +128,7 @@ def load_qdicts(query_fn, accession_fn):
 
     Args:
         query_fn (str): Query file.
-        accessions_fn (str): List of allowed accessions.
+        accessions_fn (str): File with a list of allowed accessions.
 
     Returns:
         qname_to_qfa (OrderedDict): qname -> FASTA repr
@@ -136,10 +136,11 @@ def load_qdicts(query_fn, accession_fn):
     """
     qname_to_qfa = collections.OrderedDict()
 
-    # all rnames to store, or only some of them? use either a dict with
-    # restricted keys, or defaultdict
-    if selected_rnames:
-        with open(selected_rnames) as f:
+    # 1) Setting up dict for accessions
+    if accession_fn:
+        # all rnames to store, or only some of them? use either a dict with
+        # restricted keys, or defaultdict
+        with open(accession_fn) as f:
             s = f.read().strip()
             accessions = re.split(';|,|\n', s)
             logging.info(
@@ -151,6 +152,7 @@ def load_qdicts(query_fn, accession_fn):
     else:
         rname_to_qnames = collections.defaultdict(lambda: [])
 
+    # 2) Filling up dictionaries
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, _ in readfq(fo):
             qname_to_qfa[qname] = f">{qname}\n{qseq}"
@@ -159,9 +161,10 @@ def load_qdicts(query_fn, accession_fn):
             rnames = qcom.split(",")
             for rname in rnames:
                 try:
+                    # this rname is not filtered
                     rname_to_qnames[rname].append(qname)
                 except KeyError:
-                    # key (accession) that's ignored
+                    # this rname (~accession) is filtered, skipping
                     pass
     return qname_to_qfa, dict(rname_to_qnames)
 
