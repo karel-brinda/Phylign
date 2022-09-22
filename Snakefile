@@ -367,23 +367,31 @@ rule batch_align_minimap2:
         minimap_preset=config["minimap_preset"],
         minimap_extra_params=config["minimap_extra_params"],
         pipe="--pipe" if config["prefer_pipe"] else "",
+        refs_tmp="intermediate/03_map/{batch}____{qfile}.refs.tmp",
     conda:
         "envs/minimap2.yaml"
     threads: config["minimap_threads"]
     shell:
         """
+        xzcat data/661k_batches.txt.xz \\
+            | grep {wildcards.batch} \\
+            | cut -f2 \\
+            > {params.refs_tmp}
+
         ./scripts/benchmark.py --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/batch_align.py \\
                     --minimap-preset {params.minimap_preset} \\
                     --threads {threads} \\
                     --extra-params=\"{params.minimap_extra_params}\" \\
-                    --accessions <(xzcat data/661k_batches.txt.xz | grep {wildcards.batch} | cut -f2)  \\
+                    --accessions {params.refs_tmp} \\
                     {params.pipe} \\
                     {input.asm} \\
                     {input.qfa} \\
                 2>{log} \\
                 | gzip \\
                 > {output.sam}'
+
+        rm -f {params.refs_tmp}
         """
 
 
