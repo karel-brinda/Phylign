@@ -225,8 +225,10 @@ def run_minimap2(command, qfa, timeout=None):
                                      universal_newlines=True,
                                      stderr=subprocess.DEVNULL,
                                      timeout=timeout)
+    output_lines = output.splitlines()
+    output_lines = list(filter(lambda line: not line.startswith("@"), output_lines))
     logging.debug(f"Finished command: {command}")
-    return output
+    return output_lines
 
 
 def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
@@ -399,16 +401,6 @@ def minimap2(rfa, qfa, minimap_preset):
     return output.decode("utf-8")
 
 
-def count_alignments(sam):
-    j = 0
-    #for x in sam.encode("utf8"):
-    for x in sam.split("\n"):
-        if x and x[0] != "@":
-            #logging.info(x)
-            j += 1
-    return j
-
-
 def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
                          minimap_extra_params, prefer_pipe):
     """Map queries to a batch.
@@ -451,16 +443,14 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
         logging.info(f"Mapping {qnames} to {rname}")
 
         logging.debug("Starting minimap2 process...")
-        result = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset,
+        minimap2_output_lines = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset,
                                  minimap_threads, minimap_extra_params,
                                  prefer_pipe)
+        minimap2_output_str = "\n".join(minimap2_output_lines)
         logging.debug("minimap2 finished successfully!")
-
-        assert result and result[
-            0] == "@", f"Output of Minimap2 is empty ('{result}')"
-        logging.debug(f"Minimap result: {result}")
-        print(result, end="")
-        naligns = count_alignments(result)
+        logging.debug(f"Minimap result: {minimap2_output_str}")
+        print(minimap2_output_str)
+        naligns = len(minimap2_output_lines)
         naligns_total += naligns
         end = timer()
         s = round(1000 * (end - start)) / 1000.0
