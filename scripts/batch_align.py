@@ -144,7 +144,7 @@ def load_qdicts(query_fn, accession_fn):
             s = f.read().strip()
             accessions = re.split(';|,|\n', s)
             logging.info(
-                f"Restricting reading only to the following accessions: {accessions}"
+                f"Loaded ref accesions to consider: {accessions}"
             )
         rname_to_qnames = {}
         for x in accessions:
@@ -152,6 +152,7 @@ def load_qdicts(query_fn, accession_fn):
     else:
         rname_to_qnames = collections.defaultdict(lambda: [])
 
+    logging.info(f"Loading query dictionaries")
     # 2) Filling up dictionaries
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, _ in readfq(fo):
@@ -166,6 +167,7 @@ def load_qdicts(query_fn, accession_fn):
                 except KeyError:
                     # this rname (~accession) is filtered, skipping
                     pass
+    logging.info(f"Query dictionaries loaded")
     return qname_to_qfa, dict(rname_to_qnames)
 
 
@@ -455,10 +457,8 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
         f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset"
     )
 
-    logging.info(f"Loading query dictionaries")
     qname_to_qfa, rname_to_qnames = load_qdicts(query_fn, accessions_fn)
 
-    #TODO: seems to be not really selected; should be selected based on the specific batch
     filtered_rnames = set([x for x in rname_to_qnames])
     nsr = len(filtered_rnames)
     logging.debug(
@@ -467,6 +467,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
     naligns_total = 0
     nrefs = 0
     refs = set()
+    logging.info(f"Starting the alignment loop")
     for rname, rfa in iterate_over_batch(asms_fn, filtered_rnames):
         start = timer()
         refs.add(rname)
