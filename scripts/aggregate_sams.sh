@@ -19,6 +19,6 @@ do
 	echo "==> $fn <=="
 	((i=i+1))
 	gunzip --stdout "$fn" \
-		| grep -Ev "^@"
+		| grep -Ev "^@" || true
 done
 
