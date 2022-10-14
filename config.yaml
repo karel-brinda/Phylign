@@ -70,14 +70,14 @@ cobs_threads: 1
 # We recommend to increase cobs_threads to the max if you set this to True.
 # If you get huge slowdowns with this option, the pipeline might be suffering thrashing. Control the RAM usage with the
 # max_ram_gb parameter so that you don't get constant page swapping.
-load_complete: False
+load_complete: True
 
 # maximum number of I/O-heavy threads. Use this to control the amount of filesystem I/O to not overflow the filesystem.
 # in more details, this parameter controls how many I/O-heavy threads can run simultaneously.
 # I/O-heavy threads include:
 #     * 1 thread for xz-decompression of COBS kmer indexes;
 #     * cobs_threads threads for each COBS process if load_complete==False or 1 thread for each COBS process if load_complete==True
-max_io_heavy_threads: 6
+max_io_heavy_threads: 100  # unlimited
 ##################################################
 
 ##################################################
