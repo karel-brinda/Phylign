@@ -243,7 +243,7 @@ rule decompress_cobs:
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
-            'xzcat "{input.xz}" > "{params.cobs_index_tmp}" \\
+            'xz --decompress --stdout --no-sparse --ignore-check "{input.xz}" > "{params.cobs_index_tmp}" \\
             && mv "{params.cobs_index_tmp}" "{output.cobs_index}"'
         """
 

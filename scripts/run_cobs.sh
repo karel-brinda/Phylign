@@ -7,7 +7,8 @@ query=$5
 nb_best_hits=$6
 output=$7
 
-cobs query --load-complete -t ${kmer_thres} -T ${threads} -i <(xzcat "${compressed_cobs_index}") \
+cobs query --load-complete -t ${kmer_thres} -T ${threads} \
+  -i <(xz --decompress --stdout --no-sparse --ignore-check "${compressed_cobs_index}") \
   --index-sizes ${uncompressed_batch_size} -f "${query}" \
   | ./scripts/postprocess_cobs.py -n ${nb_best_hits} \
   | gzip > "${output}"
