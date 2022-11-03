@@ -2,4 +2,4 @@ channels:
  - bioconda
  - conda-forge
 dependencies:
- - cobs=0.2.0
+ - cobs=0.2.1

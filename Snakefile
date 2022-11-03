@@ -266,6 +266,8 @@ rule run_cobs:
         load_complete="--load-complete" if config["load_complete"] else "",
         nb_best_hits=config["nb_best_hits"],
     priority: 999
+    conda:
+        "envs/cobs.yaml"
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
@@ -298,6 +300,8 @@ rule decompress_and_run_cobs:
         kmer_thres=config["cobs_kmer_thres"],
         nb_best_hits=config["nb_best_hits"],
         uncompressed_batch_size=get_uncompressed_batch_size,
+    conda:
+        "envs/cobs.yaml"
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
