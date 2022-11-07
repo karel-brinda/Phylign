@@ -52,12 +52,17 @@ def get_uncompressed_batch_size(wildcards, input):
     ), f"Error getting uncompressed batch size for batch {batch}: batch not found"
 
 
-def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM):
+def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming):
     if ignore_RAM:
         return 0
+    if streaming:
+        # then we are decompressing and running cobs at the same time
+        xz_decompression_RAM_usage_in_MB = int(config["xz_dict_size"])
+    else:
+        xz_decompression_RAM_usage_in_MB = 0
     size_in_bytes = get_uncompressed_batch_size(wildcards, input)
     size_in_MB = int(size_in_bytes / 1024 / 1024) + 1
-    return size_in_MB
+    return size_in_MB + xz_decompression_RAM_usage_in_MB
 
 
 def get_index_load_mode():
@@ -284,7 +289,7 @@ rule run_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
-        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM),
+        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming),
     threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
@@ -319,7 +324,7 @@ rule decompress_and_run_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
-        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM),
+        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming),
     threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
