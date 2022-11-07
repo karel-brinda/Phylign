@@ -61,9 +61,6 @@ max_download_threads: 8
 
 ##################################################
 # kmer matching
-# number of threads when running COBS kmer matching (note: too many might limit the pipeline parallelism)
-cobs_threads: 1
-
 # specify how to load the kmer index. Options are:
 # 1. mem-stream : default and preferred. With this mode, the pipeline extracts the compressed kmer index and streams
 #                 it directly into COBS, which saves it completely in RAM. This mode uses the least filesystems operations
