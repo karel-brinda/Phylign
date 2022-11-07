@@ -67,23 +67,24 @@ cobs_threads: 1
 # specify how to load the kmer index. Options are:
 # 1. mem-stream : default and preferred. With this mode, the pipeline extracts the compressed kmer index and streams
 #                 it directly into COBS, which saves it completely in RAM. This mode uses the least filesystems operations
-#                 possible, which is usually the bottleneck of this pipeline.
-#                 If this option is set, then parameters max_io_heavy_threads, keep_cobs_indexes and decompression_dir are ignored.
+#                 possible, which is usually the bottleneck of this pipeline if your filesystem is slow.
+#                 If this option is set, then parameters keep_cobs_indexes and decompression_dir are ignored.
 # 2. mem-disk   : this mode extracts the compressed kmer index to the disk, and then COBS loads it completely to the RAM.
-#                 The only reason to use this mode is to speed up subsequent searches as the kmer indexes will be already
-#                 decompressed, but that also requires parameter keep_cobs_indexes to be set to True, and will use lots of
-#                 disk space.
+#                 Can be an option if your filesystem is very fast. Another reason to use this mode is to speed up
+#                 subsequent searches as the kmer indexes will be already decompressed, but that also requires parameter
+#                 keep_cobs_indexes to be set to True, and will use lots of disk space.
 # 3. mmap-disk  : this mode extracts the compressed kmer index to the disk, and then COBS just loads parts of it on demand.
-#                 This can be done if you don't have enough RAM to run the pipeline, but can incur huge slowdowns.
+#                 This can be done if you don't have enough RAM to run the pipeline, but can incur huge slowdowns, especially
+#                 if your filesystem is slow.
 #                 If this mode is selected, then the parameter max_ram_gb is ignored.
 index_load_mode: mem-stream
 
 # maximum number of I/O-heavy threads. Use this to control the amount of filesystem I/O to not overflow the filesystem.
-# if index_load_mode == mem-stream, then this parameter is ignored
+# it can control the amount of xz-decompression and COBS jobs (if index_load_mode == mmap-disk) that are run simultaneously.
 # in more details, this parameter controls how many I/O-heavy threads can run simultaneously.
 # I/O-heavy threads include:
 #     * 1 thread for xz-decompression of COBS kmer indexes;
-#     * cobs_threads threads for each COBS process if index_load_mode is mem-disk or mmap-disk
+#     * 1 thread for each COBS process if index_load_mode is mmap-disk
 max_io_heavy_threads: 8
 ##################################################
 
@@ -109,7 +110,6 @@ keep_cobs_indexes: False
 
 # directory to store the COBS decompressed indexes. Can be used to put the decompressed indexes in an external
 # or large filesystem capable of holding them. If not defined, defaults to "intermediate/00_cobs"
-# if index_load_mode == mem-stream, then this parameter is ignored
 # decompression_dir: cobs_decompressed_indexes
 
 # directory to store all downloaded files. This is where an "asms" folder with all assemblies and a "cobs" folder

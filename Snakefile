@@ -88,22 +88,25 @@ assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
 decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs"))
 keep_cobs_indexes = config["keep_cobs_indexes"]
-max_io_heavy_threads_unit = 1
 ignore_RAM = False
-index_load_mode = get_index_load_mode()
 load_complete=False
 streaming=False
+cobs_is_an_IO_heavy_job=False
+index_load_mode = get_index_load_mode()
 
 if index_load_mode=="mem-stream":
+    # this parameter is ignored because we never decompress indexes to disk with this load mode
     keep_cobs_indexes = False
-    max_io_heavy_threads_unit = 0
-    decompression_dir = "intermediate/00_cobs"
     load_complete=True
     streaming=True
 elif index_load_mode=="mem-disk":
     load_complete=True
 elif index_load_mode=="mmap-disk":
+    # we ignore RAM usage because the OS is responsible for controlling RAM usage in this case
     ignore_RAM = True
+    # we set cobs as an IO-heavy job because during its execution it might access the disk several times
+    # due to mmap
+    cobs_is_an_IO_heavy_job = True
 
 
 wildcard_constraints:
@@ -258,7 +261,7 @@ rule decompress_cobs:
     input:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
-        max_io_heavy_threads=max_io_heavy_threads_unit,
+        max_io_heavy_threads=1,
     threads: config["cobs_threads"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     params:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
@@ -280,7 +283,7 @@ rule run_cobs:
         fa="intermediate/concatenated_query/{qfile}.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
-        max_io_heavy_threads=max_io_heavy_threads_unit,
+        max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM),
     threads: config["cobs_threads"]
     params:
@@ -315,7 +318,7 @@ rule decompress_and_run_cobs:
         fa="intermediate/concatenated_query/{qfile}.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
-        max_io_heavy_threads=max_io_heavy_threads_unit,
+        max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM),
     threads: config["cobs_threads"]
     params:
