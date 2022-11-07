@@ -268,7 +268,7 @@ rule decompress_cobs:
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
-            'xz --decompress --stdout --no-sparse --ignore-check "{input.xz}" > "{params.cobs_index_tmp}" \\
+            'xzcat --no-sparse --ignore-check "{input.xz}" > "{params.cobs_index_tmp}" \\
             && mv "{params.cobs_index_tmp}" "{output.cobs_index}"'
         """
 
@@ -337,7 +337,10 @@ rule decompress_and_run_cobs:
         if [ {params.streaming} = 1 ]
         then
             ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
-            './scripts/run_cobs_streaming.sh {params.kmer_thres} {threads} "{input.compressed_cobs_index}" {params.uncompressed_batch_size} "{input.fa}" {params.nb_best_hits} "{output.match}"'
+            './scripts/run_cobs_streaming.sh {params.kmer_thres} {threads} "{input.compressed_cobs_index}" {params.uncompressed_batch_size} "{input.fa}" \\
+                    | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
+                    | gzip \\
+                    > {output.match}'
         else
             mkdir -p {params.decompression_dir}
             ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
