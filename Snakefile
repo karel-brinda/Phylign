@@ -44,13 +44,27 @@ def get_uncompressed_batch_size(wildcards, input):
                 ".cobs_classic.xz", ""
             )
             size_in_bytes = int(size_in_bytes)
-            size_in_MB = int(size_in_bytes / 1024 / 1024) + 1
             if batch == batch_for_cobs_index:
-                return size_in_MB
+                return size_in_bytes
 
     assert (
         False
     ), f"Error getting uncompressed batch size for batch {batch}: batch not found"
+
+
+def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM):
+    if ignore_RAM:
+        return 0
+    size_in_bytes = get_uncompressed_batch_size(wildcards, input)
+    size_in_MB = int(size_in_bytes / 1024 / 1024) + 1
+    return size_in_MB
+
+
+def get_index_load_mode():
+    allowed_index_load_modes = ["mem-stream", "mem-disk", "mmap-disk"]
+    index_load_mode = config["index_load_mode"]
+    assert index_load_mode in allowed_index_load_modes, f"index_load_mode must be one of {allowed_index_load_modes}"
+    return index_load_mode
 
 
 ##################################
@@ -73,21 +87,36 @@ print(f"Query files: {list(map(str, qfiles))}")
 assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
 decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs"))
+keep_cobs_indexes = config["keep_cobs_indexes"]
+ignore_RAM = False
+load_complete=False
+streaming=False
+cobs_is_an_IO_heavy_job=False
+index_load_mode = get_index_load_mode()
+
+if index_load_mode=="mem-stream":
+    # this parameter is ignored because we never decompress indexes to disk with this load mode
+    keep_cobs_indexes = False
+    load_complete=True
+    streaming=True
+elif index_load_mode=="mem-disk":
+    load_complete=True
+elif index_load_mode=="mmap-disk":
+    # we ignore RAM usage because the OS is responsible for controlling RAM usage in this case
+    ignore_RAM = True
+    # we set cobs as an IO-heavy job because during its execution it might access the disk several times
+    # due to mmap
+    cobs_is_an_IO_heavy_job = True
 
 
 wildcard_constraints:
     batch=".+__\d\d",
 
 
-if config["keep_cobs_indexes"]:
-
+if keep_cobs_indexes:
     ruleorder: decompress_cobs > run_cobs > decompress_and_run_cobs
-
-
 else:
-
     ruleorder: decompress_and_run_cobs > decompress_cobs > run_cobs
-
 
 ##################################
 ## Download params
@@ -239,7 +268,7 @@ rule decompress_cobs:
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
-            'xzcat "{input.xz}" > "{params.cobs_index_tmp}" \\
+            'xzcat --no-sparse --ignore-check "{input.xz}" > "{params.cobs_index_tmp}" \\
             && mv "{params.cobs_index_tmp}" "{output.cobs_index}"'
         """
 
@@ -254,12 +283,12 @@ rule run_cobs:
         fa="intermediate/concatenated_query/{qfile}.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
-        max_io_heavy_threads=1 - int(config["load_complete"]),
-        max_ram_mb=get_uncompressed_batch_size,
+        max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
+        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM),
     threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
-        load_complete="--load-complete" if config["load_complete"] else "",
+        load_complete="--load-complete" if load_complete else "",
         nb_best_hits=config["nb_best_hits"],
     priority: 999
     conda:
@@ -289,38 +318,46 @@ rule decompress_and_run_cobs:
         fa="intermediate/concatenated_query/{qfile}.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
-        max_io_heavy_threads=1,
-        max_ram_mb=get_uncompressed_batch_size,
+        max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
+        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM),
     threads: config["cobs_threads"]
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
-        cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
-        cobs_index_tmp=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
-        load_complete="--load-complete" if config["load_complete"] else "",
+        cobs_index= lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
+        cobs_index_tmp= lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
+        load_complete="--load-complete" if load_complete else "",
         nb_best_hits=config["nb_best_hits"],
+        uncompressed_batch_size=get_uncompressed_batch_size,
+        streaming=int(streaming),
     conda:
         "envs/cobs.yaml"
     shell:
         """
-        mkdir -p {params.decompression_dir}
-
-        ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
-            'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index_tmp}" \\
-            && mv "{params.cobs_index_tmp}" "{params.cobs_index}"'
-
-        ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
-            'cobs query \\
-                    {params.load_complete} \\
-                    -t {params.kmer_thres} \\
-                    -T {threads} \\
-                    -i "{params.cobs_index}" \\
-                    -f {input.fa} \\
-                | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
-                | gzip \\
-                > {output.match}'
-
-        rm -v "{params.cobs_index}"
+        if [ {params.streaming} = 1 ]
+        then
+            ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
+            './scripts/run_cobs_streaming.sh {params.kmer_thres} {threads} "{input.compressed_cobs_index}" {params.uncompressed_batch_size} "{input.fa}" \\
+                    | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
+                    | gzip \\
+                    > {output.match}'
+        else
+            mkdir -p {params.decompression_dir}
+            ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
+                'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index_tmp}" \\
+                && mv "{params.cobs_index_tmp}" "{params.cobs_index}"'
+            ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
+                'cobs query \\
+                        {params.load_complete} \\
+                        -t {params.kmer_thres} \\
+                        -T {threads} \\
+                        -i "{params.cobs_index}" \\
+                        -f "{input.fa}" \\
+                    | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
+                    | gzip \\
+                    > {output.match}'
+            rm -v "{params.cobs_index}"
+        fi
         """
 
 

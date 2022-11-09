@@ -52,6 +52,7 @@ threads: all
 # maximum RAM to use in GB - this should be at most 80% of your max RAM
 # note: if you use more than your available RAM, constant page swapping will happen and the pipeline will severely
 # slow down.
+# if index_load_mode == mmap-disk, then this parameter is ignored as the OS will manage RAM usage
 max_ram_gb: 12
 
 # maximum number of download threads at a time (note: too many might slow down download speed)
@@ -63,21 +64,28 @@ max_download_threads: 8
 # number of threads when running COBS kmer matching (note: too many might limit the pipeline parallelism)
 cobs_threads: 1
 
-# loads the complete kmer index to RAM
-# note: this can speed up the pipeline a lot if:
-#           1. you have no SSD filesystem, or your filesystem is encrypted or slow for another reason;
-#           2. your queries are long (e.g. plasmids) or you have a huge query file;
-# We recommend to increase cobs_threads to the max if you set this to True.
-# If you get huge slowdowns with this option, the pipeline might be suffering thrashing. Control the RAM usage with the
-# max_ram_gb parameter so that you don't get constant page swapping.
-load_complete: False
+# specify how to load the kmer index. Options are:
+# 1. mem-stream : default and preferred. With this mode, the pipeline extracts the compressed kmer index and streams
+#                 it directly into COBS, which saves it completely in RAM. This mode uses the least filesystems operations
+#                 possible, which is usually the bottleneck of this pipeline if your filesystem is slow.
+#                 If this option is set, then parameters keep_cobs_indexes and decompression_dir are ignored.
+# 2. mem-disk   : this mode extracts the compressed kmer index to the disk, and then COBS loads it completely to the RAM.
+#                 Can be an option if your filesystem is very fast. Another reason to use this mode is to speed up
+#                 subsequent searches as the kmer indexes will be already decompressed, but that also requires parameter
+#                 keep_cobs_indexes to be set to True, and will use lots of disk space.
+# 3. mmap-disk  : this mode extracts the compressed kmer index to the disk, and then COBS just loads parts of it on demand.
+#                 This can be done if you don't have enough RAM to run the pipeline, but can incur huge slowdowns, especially
+#                 if your filesystem is slow.
+#                 If this mode is selected, then the parameter max_ram_gb is ignored.
+index_load_mode: mem-stream
 
 # maximum number of I/O-heavy threads. Use this to control the amount of filesystem I/O to not overflow the filesystem.
+# it can control the amount of xz-decompression and COBS jobs (if index_load_mode == mmap-disk) that are run simultaneously.
 # in more details, this parameter controls how many I/O-heavy threads can run simultaneously.
 # I/O-heavy threads include:
 #     * 1 thread for xz-decompression of COBS kmer indexes;
-#     * cobs_threads threads for each COBS process if load_complete==False or 1 thread for each COBS process if load_complete==True
-max_io_heavy_threads: 6
+#     * 1 thread for each COBS process if index_load_mode is mmap-disk
+max_io_heavy_threads: 8
 ##################################################
 
 ##################################################
@@ -97,6 +105,7 @@ prefer_pipe: True
 
 # keep or not the decompressed COBS indexes. If kept, can speed up subsequent searches but will take much more disk
 # space, as the decompressed indexes won't be cleaned up.
+# if index_load_mode == mem-stream, then this parameter is ignored
 keep_cobs_indexes: False
 
 # directory to store the COBS decompressed indexes. Can be used to put the decompressed indexes in an external
