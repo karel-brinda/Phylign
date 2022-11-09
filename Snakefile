@@ -71,6 +71,10 @@ def get_number_of_COBS_threads(wildcards, input, streaming):
     number_of_cores_to_use = round(uncompressed_batch_size_in_MB / max_RAM_MB * workflow.cores)
     number_of_cores_to_use = max(number_of_cores_to_use, 1)
     number_of_cores_to_use = min(number_of_cores_to_use, workflow.cores)
+    is_using_more_than_half_of_the_cores = number_of_cores_to_use > workflow.cores/2
+    if is_using_more_than_half_of_the_cores:
+        # usually in this situation we run just one COBS jobs simultaneously. Better then to use all cores then
+        number_of_cores_to_use = workflow.cores
     return number_of_cores_to_use
 
 
