@@ -247,8 +247,10 @@ def run_minimap2(command, qfa, timeout=None):
                                      universal_newlines=True,
                                      stderr=subprocess.DEVNULL,
                                      timeout=timeout)
+    output_lines = output.splitlines()
+    output_lines = list(filter(lambda line: not line.startswith("@"), output_lines))
     logging.debug(f"Finished command: {command}")
-    return output
+    return output_lines
 
 
 def minimap2_4(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params):

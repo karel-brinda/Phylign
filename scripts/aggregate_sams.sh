@@ -18,7 +18,7 @@ do
 	fi
 	echo "==> $fn <=="
 	((i=i+1))
-	gzcat "$fn" \
-		| grep -Ev "^@"
+	gunzip --stdout "$fn" \
+		| grep -Ev "^@" || true
 done
 
