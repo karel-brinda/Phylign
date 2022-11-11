@@ -63,8 +63,7 @@ def cobs_iterator(cobs_matches_fn):
     qname = None
     matches_buffer = []
     batch = os.path.basename(cobs_matches_fn).split("____")[0]
-    print(f"Opening cobs reading iterator for {cobs_matches_fn}",
-          file=sys.stderr)
+    print(f"Opening cobs reading iterator for {cobs_matches_fn}", file=sys.stderr)
     with xopen(cobs_matches_fn) as f:
         for x in f:
             x = x.strip()
@@ -207,8 +206,7 @@ class Sift:
 
     def process_cobs_file(self, cobs_fn):
         for i, (qname, batch, matches) in enumerate(cobs_iterator(cobs_fn)):
-            print(f"Processing batch {batch} query #{i} ({qname})",
-                  file=sys.stderr)
+            print(f"Processing batch {batch} query #{i} ({qname})", file=sys.stderr)
             #try:
             #    _ = self._query_dict[qname]
             #except KeyError:
@@ -219,9 +217,7 @@ class Sift:
 
 
 def process_files(query_fn, match_fns, keep_matches):
-    sift = Sift(keep_matches=keep_matches,
-                query_fn=query_fn,
-                match_fns=match_fns)
+    sift = Sift(keep_matches=keep_matches, query_fn=query_fn, match_fns=match_fns)
     for i, (qname, f) in enumerate(sift):
         print(f)
 
