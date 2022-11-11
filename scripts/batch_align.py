@@ -35,9 +35,7 @@ except ImportError:
 
 # ./scripts/batch_align.py asms/chlamydia_pecorum__01.tar.xz ./intermediate/02_filter/gc01_1kl.fa
 
-logging.basicConfig(stream=sys.stderr,
-                    level=logging.INFO,
-                    format='[%(asctime)s] (%(levelname)s) %(message)s')
+logging.basicConfig(stream=sys.stderr, level=logging.INFO, format='[%(asctime)s] (%(levelname)s) %(message)s')
 
 
 def readfq(fp):
@@ -208,9 +206,7 @@ def _write_to_pipe(pipe_path, data):
                 pipe_buffer_shrunk = bytes_written == 0
                 if pipe_buffer_shrunk:
                     buffer_size = buffer_size // 2  # let's reduce the amount we write
-                    buffer_size = max(
-                        buffer_size,
-                        8)  # we should be able to write at least 8 bytes
+                    buffer_size = max(buffer_size, 8)  # we should be able to write at least 8 bytes
                     logging.debug(f"Reduced pipe buffer size to {buffer_size}")
 
             except BrokenPipeError:
@@ -231,15 +227,13 @@ def run_minimap2(command, qfa, timeout=None):
     return output_lines
 
 
-def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
-               minimap_extra_params):
+def minimap2_4(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params):
     logging.debug(f"Running minimap2...")
 
     with named_pipe() as rfn:
         command = [
             "minimap2", "-a", "-x", minimap_preset, "-t",
-            str(minimap_threads), *(shlex.split(minimap_extra_params)), rfn,
-            '-'
+            str(minimap_threads), *(shlex.split(minimap_extra_params)), rfn, '-'
         ]
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # we first get minimap2 up and reading from the pipe
@@ -259,40 +253,30 @@ def minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
             return minimap_2_output.result(timeout=5)
 
 
-def minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads,
-                        minimap_extra_params):
+def minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params):
     logging.debug(f"Running minimap2 with disk...")
-    with tempfile.NamedTemporaryFile(mode='wb',
-                                     suffix=".fa",
-                                     prefix="mof",
-                                     delete=True) as ref_fh:
+    with tempfile.NamedTemporaryFile(mode='wb', suffix=".fa", prefix="mof", delete=True) as ref_fh:
         logging.debug(f"Writing data to temp file...")
         ref_fh.write(rfa)
-        ref_fh.flush(
-        )  # ensure data is written to the file before is read by minimap2
+        ref_fh.flush()  # ensure data is written to the file before is read by minimap2
 
         ref_filepath = ref_fh.name
         command = [
             "minimap2", "-a", "-x", minimap_preset, "-t",
-            str(minimap_threads), *(shlex.split(minimap_extra_params)),
-            ref_filepath, '-'
+            str(minimap_threads), *(shlex.split(minimap_extra_params)), ref_filepath, '-'
         ]
         return run_minimap2(command, qfa)
 
 
-def minimap_wrapper(rfa, qfa, minimap_preset, minimap_threads,
-                    minimap_extra_params, prefer_pipe):
+def minimap_wrapper(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params, prefer_pipe):
     if prefer_pipe:
         try:
-            return minimap2_4(rfa, qfa, minimap_preset, minimap_threads,
-                              minimap_extra_params)
+            return minimap2_4(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params)
         except (concurrent.futures.TimeoutError, subprocess.TimeoutExpired):
             logging.warning("Minimap2 timed out, using disk")
-            return minimap2_using_disk(rfa, qfa, minimap_preset,
-                                       minimap_threads, minimap_extra_params)
+            return minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params)
     else:
-        return minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads,
-                                   minimap_extra_params)
+        return minimap2_using_disk(rfa, qfa, minimap_preset, minimap_threads, minimap_extra_params)
 
 
 def minimap2_3(rfa, qfa, minimap_preset):
@@ -355,10 +339,7 @@ def minimap2_2(rfa, qfa, minimap_preset):
                     rfo.write(rfa)
                     logging.debug(f"Writing query fasta")
                     qfo.write(qfa)
-                    command = [
-                        "minimap2", "-a", "--eqx", "-x", minimap_preset,
-                        rfn.name, qfn.name
-                    ]
+                    command = ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfn.name, qfn.name]
                     logging.info(f"Running command: {command}")
                     output = check_output(command)
                     return output.decode("utf-8")
@@ -379,10 +360,7 @@ def minimap2(rfa, qfa, minimap_preset):
 
             try:
                 #p = Popen(["minimap2", rfile.name, qfile.name])
-                command = [
-                    "minimap2", "-a", "--eqx", "-x", minimap_preset,
-                    rfile.name, qfile.name
-                ]
+                command = ["minimap2", "-a", "--eqx", "-x", minimap_preset, rfile.name, qfile.name]
                 logging.info(f"Running command: {command}")
                 output = check_output(command)
                 #p = Popen(["minimap2", rfile.name, qfile.name],
@@ -401,8 +379,7 @@ def minimap2(rfa, qfa, minimap_preset):
     return output.decode("utf-8")
 
 
-def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
-                         minimap_extra_params, prefer_pipe):
+def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, minimap_extra_params, prefer_pipe):
     """Map queries to a batch.
 
     Args:
@@ -414,9 +391,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
         prefer_pipe (bool): Prefer using pipes.
     """
     sstart = timer()
-    logging.info(
-        f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset"
-    )
+    logging.info(f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset")
 
     logging.info(f"Loading query dictionaries")
     qname_to_qfa, rname_to_qnames = load_qdicts(query_fn)
@@ -424,9 +399,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
     #TODO: seems to be not really selected; should be selected based on the specific batch
     selected_rnames = set([x for x in rname_to_qnames])
     nsr = len(selected_rnames)
-    logging.debug(
-        f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}"
-    )
+    logging.debug(f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}")
     naligns_total = 0
     nrefs = 0
     refs = set()
@@ -443,9 +416,8 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
         logging.info(f"Mapping {qnames} to {rname}")
 
         logging.debug("Starting minimap2 process...")
-        minimap2_output_lines = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset,
-                                 minimap_threads, minimap_extra_params,
-                                 prefer_pipe)
+        minimap2_output_lines = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset, minimap_threads,
+                                                minimap_extra_params, prefer_pipe)
         minimap2_output_str = "\n".join(minimap2_output_lines)
         logging.debug("minimap2 finished successfully!")
         logging.debug(f"Minimap result: {minimap2_output_str}")
@@ -455,9 +427,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads,
         end = timer()
         s = round(1000 * (end - start)) / 1000.0
         n_q = len(qnames)
-        logging.info(
-            f"Computed {naligns} alignments of {n_q} queries to {rname} in {s} seconds"
-        )
+        logging.info(f"Computed {naligns} alignments of {n_q} queries to {rname} in {s} seconds")
     eend = timer()
     ss = round(1000 * (eend - sstart)) / 1000.0
     nrefs = len(refs)
@@ -495,8 +465,7 @@ def main():
         '--pipe',
         action="store_true",
         default=False,
-        help=
-        'Prefer using pipe instead of disk when communicating with minimap2',
+        help='Prefer using pipe instead of disk when communicating with minimap2',
     )
 
     parser.add_argument(

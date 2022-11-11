@@ -42,9 +42,7 @@ def process_cobs_output(hits_to_keep):
 def main():
 
     parser = argparse.ArgumentParser(
-        description=
-        "Postprocess cobs output: keep top n hits (+ties) and remove random identifiers"
-    )
+        description="Postprocess cobs output: keep top n hits (+ties) and remove random identifiers")
 
     parser.add_argument(
         '-n',
