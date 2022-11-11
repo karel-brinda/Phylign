@@ -8,13 +8,8 @@ import datetime
 
 def get_args():
     parser = argparse.ArgumentParser(description='Benchmark a command.')
-    parser.add_argument('command',
-                        type=str,
-                        help='The command to be benchmarked')
-    parser.add_argument('--log',
-                        type=str,
-                        required=True,
-                        help='Path to the log file with benchmark statistics.')
+    parser.add_argument('command', type=str, help='The command to be benchmarked')
+    parser.add_argument('--log', type=str, required=True, help='Path to the log file with benchmark statistics.')
     args = parser.parse_args()
     return args
 
@@ -35,12 +30,11 @@ def main():
     log_file.parent.mkdir(parents=True, exist_ok=True)
     tmp_log_file = Path(f"{log_file}.tmp")
     with open(log_file, "w") as log_fh:
-        formatted_command = " ".join(
-            args.command.replace("\\\n", " ").strip().split())
+        formatted_command = " ".join(args.command.replace("\\\n", " ").strip().split())
         print(f"# Benchmarking command: {formatted_command}", file=log_fh)
         header = [
-            "real(s)", "sys(s)", "user(s)", "percent_CPU", "max_RAM(kb)",
-            "FS_inputs", "FS_outputs", "elapsed_time_alt(s)"
+            "real(s)", "sys(s)", "user(s)", "percent_CPU", "max_RAM(kb)", "FS_inputs", "FS_outputs",
+            "elapsed_time_alt(s)"
         ]
         print("\t".join(header), file=log_fh)
 

@@ -169,16 +169,13 @@ class Sift:
         d = collections.OrderedDict()
         with xopen(fx_fn) as fo:
             for qname, seq, _ in readfq(fo):
-                d[qname] = SingleQuery(qname=qname,
-                                       keep_matches=keep_matches,
-                                       seq=seq)
+                d[qname] = SingleQuery(qname=qname, keep_matches=keep_matches, seq=seq)
         #pprint(d)
         return d
 
     def process_cobs_file(self, cobs_fn):
         for i, (qname, batch, matches) in enumerate(cobs_iterator(cobs_fn)):
-            print(f"Processing batch {batch} query #{i} ({qname})",
-                  file=sys.stderr)
+            print(f"Processing batch {batch} query #{i} ({qname})", file=sys.stderr)
             #try:
             #    _ = self._query_dict[qname]
             #except KeyError:
