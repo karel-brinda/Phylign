@@ -469,7 +469,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
 
         # STEP 2c: Print Minimap output
         mm_output_str = "".join(mm_output_lines)
-        print(mm_output_str, end="\n")
+        print(mm_output_str, end="")
 
         # STEP 2d: Update & report stats
         naligns = len(mm_output_lines)
