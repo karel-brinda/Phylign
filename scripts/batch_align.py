@@ -405,16 +405,6 @@ def minimap2(rfa, qfa, minimap_preset):
     return output.decode("utf-8")
 
 
-def count_alignments(sam):
-    j = 0
-    #for x in sam.encode("utf8"):
-    for x in sam.split("\n"):
-        if x and x[0] != "@":
-            #logging.info(x)
-            j += 1
-    return j
-
-
 def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, minimap_extra_params, prefer_pipe,
                          accessions_fn):
     """Map queries to a batch.
@@ -453,14 +443,13 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
         logging.info(f"Mapping {qnames} to {rname}")
 
         logging.debug("Starting minimap2 process...")
-        result = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset, minimap_threads, minimap_extra_params,
-                                 prefer_pipe)
+        mm_output_lines = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset, minimap_threads, minimap_extra_params,
+                                          prefer_pipe)
         logging.debug("minimap2 finished successfully!")
-
-        assert result and result[0] == "@", f"Output of Minimap2 is empty ('{result}')"
-        logging.debug(f"Minimap result: {result}")
-        print(result, end="")
-        naligns = count_alignments(result)
+        mm_output_str = "".join(mm_output_lines)
+        assert len(mm_output_str) > 0, f"Output of Minimap2 is empty or corrupted ('{mm_output_str}')"
+        print(mm_output_str, end="\n")
+        naligns = len(mm_output_lines)
         naligns_total += naligns
         end = timer()
         s = round(1000 * (end - start)) / 1000.0
