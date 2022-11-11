@@ -155,12 +155,12 @@ def load_qdicts(query_fn, accession_fn):
     else:
         rname_to_qnames = collections.defaultdict(lambda: [])
 
-    # STEP 2: Fill up the dictionary
+    # STEP 2: Fill up the query dictionaries
     logging.info(f"Loading query dictionaries (query name -> fasta string, ref_name -> list of its COBS candidates)")
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, _ in readfq(fo):
             qname_to_qfa[qname] = f">{qname}\n{qseq}"
-            if not qcom:  # no refs proposed by COBS
+            if not qcom:  # no refs proposed by COBS for local rnames
                 continue
             rnames = qcom.split(",")
             for rname in rnames:
@@ -449,7 +449,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
 
     # STEP 2: Iterate over compressed assemblies: (ref name, ref FASTA)
     #   Here it's already restricted only to the references proposed by COBS, i.e, hot candidates
-    for rname, rfa in iterate_over_batch(asms_fn, rnames_local_subset):
+    for i, (rname, rfa) in enumerate(iterate_over_batch(asms_fn, rnames_local_subset), 1):
         start = timer()
         refs.add(rname)
 
@@ -462,7 +462,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
             qfas.append(qfa)
 
         # STEP 2b: Create a Minimap instance, pass all the data, and get the output lines
-        logging.info(f"Mapping {qnames} to {rname} (starting an instance of Minimap2)")
+        logging.info(f"Minimapping to {rname} (#{i}): {', '.join(qnames)}")
         mm_output_lines = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset, minimap_threads, minimap_extra_params,
                                           prefer_pipe)
         logging.debug("minimap2 finished successfully!")
