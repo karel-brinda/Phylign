@@ -156,7 +156,7 @@ def load_qdicts(query_fn, accession_fn):
         rname_to_qnames = collections.defaultdict(lambda: [])
 
     # STEP 2: Fill up the query dictionaries
-    logging.info(f"Loading query dictionaries (query name -> fasta string, ref_name -> list of its COBS candidates)")
+    logging.info(f"Loading query dictionaries (query name -> fasta string, ref_name -> list of cobs-matching queries)")
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, _ in readfq(fo):
             qname_to_qfa[qname] = f">{qname}\n{qseq}"
@@ -468,7 +468,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
         logging.debug("minimap2 finished successfully!")
 
         # STEP 2c: Print Minimap output
-        mm_output_str = "".join(mm_output_lines)
+        mm_output_str = "\n".join(mm_output_lines)
         print(mm_output_str, end="")
 
         # STEP 2d: Update & report stats
