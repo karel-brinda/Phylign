@@ -1,32 +1,32 @@
 #! /usr/bin/env python3
 
 import argparse
-import atexit
+#import atexit
 import collections
 import concurrent.futures
 import logging
 import os
 import re
 import shutil
+import shlex
 import sys
-import stat
+#import stat
 import subprocess
 import tarfile
 import tempfile
-import threading
+import time
+#import threading
 
 from contextlib import contextmanager
+from fcntl import fcntl
 from pathlib import Path
 from pprint import pprint
+from select import select
 from subprocess import check_output
-from subprocess import PIPE
-from subprocess import Popen
+#from subprocess import PIPE
+#from subprocess import Popen
 from timeit import default_timer as timer
 from xopen import xopen
-import time
-import shlex
-from select import select
-from fcntl import fcntl
 try:
     from fcntl import F_SETPIPE_SZ
 except ImportError:
