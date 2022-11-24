@@ -85,7 +85,9 @@ def get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, stream
 def get_index_load_mode():
     allowed_index_load_modes = ["mem-stream", "mem-disk", "mmap-disk"]
     index_load_mode = config["index_load_mode"]
-    assert index_load_mode in allowed_index_load_modes, f"index_load_mode must be one of {allowed_index_load_modes}"
+    assert (
+        index_load_mode in allowed_index_load_modes
+    ), f"index_load_mode must be one of {allowed_index_load_modes}"
     return index_load_mode
 
 
@@ -112,19 +114,19 @@ decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs")
 keep_cobs_indexes = config["keep_cobs_indexes"]
 predefined_cobs_threads = config["cobs_threads"]
 ignore_RAM = False
-load_complete=False
-streaming=False
-cobs_is_an_IO_heavy_job=False
+load_complete = False
+streaming = False
+cobs_is_an_IO_heavy_job = False
 index_load_mode = get_index_load_mode()
 
-if index_load_mode=="mem-stream":
+if index_load_mode == "mem-stream":
     # this parameter is ignored because we never decompress indexes to disk with this load mode
     keep_cobs_indexes = False
-    load_complete=True
-    streaming=True
-elif index_load_mode=="mem-disk":
-    load_complete=True
-elif index_load_mode=="mmap-disk":
+    load_complete = True
+    streaming = True
+elif index_load_mode == "mem-disk":
+    load_complete = True
+elif index_load_mode == "mmap-disk":
     # we ignore RAM usage because the OS is responsible for controlling RAM usage in this case
     ignore_RAM = True
     # we set cobs as an IO-heavy job because during its execution it might access the disk several times
@@ -137,9 +139,14 @@ wildcard_constraints:
 
 
 if keep_cobs_indexes:
+
     ruleorder: decompress_cobs > run_cobs > decompress_and_run_cobs
+
+
 else:
+
     ruleorder: decompress_and_run_cobs > decompress_cobs > run_cobs
+
 
 ##################################
 ## Download params
@@ -344,13 +351,14 @@ rule decompress_and_run_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
+
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming),
     threads: lambda wildcards, input: get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming),
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
-        cobs_index= lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
-        cobs_index_tmp= lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
+        cobs_index=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic",
+        cobs_index_tmp=lambda wildcards: f"{decompression_dir}/{wildcards.batch}.cobs_classic.tmp",
         load_complete="--load-complete" if load_complete else "",
         nb_best_hits=config["nb_best_hits"],
         uncompressed_batch_size=get_uncompressed_batch_size,

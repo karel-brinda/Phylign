@@ -114,10 +114,8 @@ def compute_stats(results_fn, queries_fn):
     if queries is not None:
         print("queries", len(queries), sep="\t")
         print("cumul_length_bps", queries_bps, sep="\t")
-        assert queries_matched.issubset(
-            queries), f"queries_matched not a subset of queries"
-        assert queries_aligned.issubset(
-            queries), f"queries_aligned not a subset of queries"
+        assert queries_matched.issubset(queries), f"queries_matched not a subset of queries"
+        assert queries_aligned.issubset(queries), f"queries_aligned not a subset of queries"
     print("matched_queries", len(queries_matched), sep="\t")
     print("aligned_queries", len(queries_aligned), sep="\t")
     print("aligned_segments", nb_alignments, sep="\t")
