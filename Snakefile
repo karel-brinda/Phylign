@@ -52,12 +52,34 @@ def get_uncompressed_batch_size(wildcards, input):
     ), f"Error getting uncompressed batch size for batch {batch}: batch not found"
 
 
-def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM):
+def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming):
     if ignore_RAM:
         return 0
+    if streaming:
+        # then we are decompressing and running cobs at the same time
+        xz_decompression_RAM_usage_in_MB = int(config["xz_dict_size"])
+    else:
+        xz_decompression_RAM_usage_in_MB = 0
     size_in_bytes = get_uncompressed_batch_size(wildcards, input)
     size_in_MB = int(size_in_bytes / 1024 / 1024) + 1
-    return size_in_MB
+    return size_in_MB + xz_decompression_RAM_usage_in_MB
+
+
+def get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming):
+    user_defined_nb_of_threads = predefined_cobs_threads != "auto"
+    if user_defined_nb_of_threads:
+        return int(predefined_cobs_threads)
+
+    uncompressed_batch_size_in_MB = get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM=False, streaming=streaming)
+    max_RAM_MB = int(config["max_ram_gb"]) * 1024
+    number_of_cores_to_use = round(uncompressed_batch_size_in_MB / max_RAM_MB * workflow.cores)
+    number_of_cores_to_use = max(number_of_cores_to_use, 1)
+    number_of_cores_to_use = min(number_of_cores_to_use, workflow.cores)
+    is_using_more_than_half_of_the_cores = number_of_cores_to_use > workflow.cores/2
+    if is_using_more_than_half_of_the_cores:
+        # usually in this situation we run just one COBS jobs simultaneously. Better then to use all cores then
+        number_of_cores_to_use = workflow.cores
+    return number_of_cores_to_use
 
 
 def get_index_load_mode():
@@ -90,6 +112,7 @@ assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
 decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs"))
 keep_cobs_indexes = config["keep_cobs_indexes"]
+predefined_cobs_threads = config["cobs_threads"]
 ignore_RAM = False
 load_complete = False
 streaming = False
@@ -269,7 +292,9 @@ rule decompress_cobs:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
         max_io_heavy_threads=1,
-    threads: config["cobs_threads"]  # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+    threads:
+        # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+        lambda wildcards, input: get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming),
     params:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     shell:
@@ -291,10 +316,8 @@ rule run_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
-        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
-            wildcards, input, ignore_RAM
-        ),
-    threads: config["cobs_threads"]
+        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming),
+    threads: lambda wildcards, input: get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming),
     params:
         kmer_thres=config["cobs_kmer_thres"],
         load_complete="--load-complete" if load_complete else "",
@@ -328,10 +351,9 @@ rule decompress_and_run_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
-        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
-            wildcards, input, ignore_RAM
-        ),
-    threads: config["cobs_threads"]
+
+        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming),
+    threads: lambda wildcards, input: get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming),
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,

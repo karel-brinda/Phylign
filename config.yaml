@@ -61,8 +61,10 @@ max_download_threads: 8
 
 ##################################################
 # kmer matching
-# number of threads when running COBS kmer matching (note: too many might limit the pipeline parallelism)
-cobs_threads: 1
+# number of threads when running COBS kmer matching
+# allowed values are auto or an integer number > 0 (note: too many might limit the pipeline parallelism)
+# auto basically sets cobs_threads to be proportional to the amount of RAM used
+cobs_threads: auto
 
 # specify how to load the kmer index. Options are:
 # 1. mem-stream : default and preferred. With this mode, the pipeline extracts the compressed kmer index and streams
@@ -116,4 +118,9 @@ keep_cobs_indexes: False
 # with all COBS indexes will be created. This is a heavy directory, put it in a filesystem that has at least
 # 100 GB free
 download_dir: "."
+
+# dictionary size used to compress indexes with xz, in MB
+# this is used to have a better estimation of the RAM usage of COBS
+# do not change this unless you know exactly what this parameter does
+xz_dict_size: 1500
 ###################################################################################################
