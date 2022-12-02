@@ -47,6 +47,8 @@ clean: ## Clean intermediate search files
 	rm -fv intermediate/*/*
 	rm -rfv logs
 	rm -fv output/*
+	mkdir -p .snakemake/old_log
+	mv .snakemake/log/*.log .snakemake/old_log/ || true
 
 cleanall: clean ## Clean all generated and downloaded files
 	rm -f {asms,cobs}/*.xz{,.tmp}
