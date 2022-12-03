@@ -1,6 +1,7 @@
 import glob
 from pathlib import Path
 from snakemake.utils import min_version
+import re
 
 ##################################
 ## Helper functions
@@ -65,20 +66,34 @@ def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming):
     return size_in_MB + xz_decompression_RAM_usage_in_MB
 
 
+def get_max_number_of_COBS_threads_from_auto_string(auto_string):
+    cobs_threads = re.findall(r"auto\((\d+)\)", auto_string)
+    parsing_was_successful = len(cobs_threads) == 1
+    assert parsing_was_successful, "Error parsing parameter cobs_threads parameter"
+    cobs_threads = int(cobs_threads[0])
+    return cobs_threads
+
+
 def get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming):
-    user_defined_nb_of_threads = predefined_cobs_threads != "auto"
+    user_defined_nb_of_threads = not predefined_cobs_threads.startswith("auto")
     if user_defined_nb_of_threads:
         return int(predefined_cobs_threads)
 
+    use_max_cores = predefined_cobs_threads == "auto"
+    if use_max_cores:
+        max_number_of_COBS_threads = workflow.cores
+    else:
+        max_number_of_COBS_threads = get_max_number_of_COBS_threads_from_auto_string(predefined_cobs_threads)
+
     uncompressed_batch_size_in_MB = get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM=False, streaming=streaming)
     max_RAM_MB = int(config["max_ram_gb"]) * 1024
-    number_of_cores_to_use = round(uncompressed_batch_size_in_MB / max_RAM_MB * workflow.cores)
+    number_of_cores_to_use = round(uncompressed_batch_size_in_MB / max_RAM_MB * max_number_of_COBS_threads)
     number_of_cores_to_use = max(number_of_cores_to_use, 1)
-    number_of_cores_to_use = min(number_of_cores_to_use, workflow.cores)
-    is_using_more_than_half_of_the_cores = number_of_cores_to_use > workflow.cores/2
+    number_of_cores_to_use = min(number_of_cores_to_use, max_number_of_COBS_threads)
+    is_using_more_than_half_of_the_cores = number_of_cores_to_use > max_number_of_COBS_threads/2
     if is_using_more_than_half_of_the_cores:
         # usually in this situation we run just one COBS jobs simultaneously. Better then to use all cores then
-        number_of_cores_to_use = workflow.cores
+        number_of_cores_to_use = max_number_of_COBS_threads
     return number_of_cores_to_use
 
 
@@ -112,7 +127,7 @@ assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
 decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs"))
 keep_cobs_indexes = config["keep_cobs_indexes"]
-predefined_cobs_threads = config["cobs_threads"]
+predefined_cobs_threads = str(config["cobs_threads"])
 ignore_RAM = False
 load_complete = False
 streaming = False
