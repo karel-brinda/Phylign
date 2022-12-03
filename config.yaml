@@ -118,9 +118,4 @@ keep_cobs_indexes: False
 # with all COBS indexes will be created. This is a heavy directory, put it in a filesystem that has at least
 # 100 GB free
 download_dir: "."
-
-# dictionary size used to compress indexes with xz, in MB
-# this is used to have a better estimation of the RAM usage of COBS
-# do not change this unless you know exactly what this parameter does
-xz_dict_size: 1500
 ###################################################################################################

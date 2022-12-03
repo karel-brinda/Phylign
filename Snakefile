@@ -34,22 +34,31 @@ def get_filename_for_all_queries():
     return "___".join(get_all_query_filenames())
 
 
-def get_uncompressed_batch_size(wildcards, input):
+def get_index_metadata(wildcards, input):
     batch = wildcards.batch
     decompressed_indexes_sizes_filepath = input.decompressed_indexes_sizes
     with open(decompressed_indexes_sizes_filepath) as decompressed_indexes_sizes_fh:
         for line in decompressed_indexes_sizes_fh:
-            cobs_index, size_in_bytes = line.strip().split()
+            cobs_index, size_in_bytes, xz_decompress_RAM = line.strip().split()
             batch_for_cobs_index = cobs_index.split("/")[-1].replace(
                 ".cobs_classic.xz", ""
             )
             size_in_bytes = int(size_in_bytes)
+            xz_decompress_RAM = int(xz_decompress_RAM)
             if batch == batch_for_cobs_index:
-                return size_in_bytes
+                return size_in_bytes, xz_decompress_RAM
 
     assert (
         False
     ), f"Error getting uncompressed batch size for batch {batch}: batch not found"
+
+
+def get_uncompressed_batch_size(wildcards, input):
+    return get_index_metadata(wildcards, input)[0]
+
+
+def get_xz_decompress_RAM(wildcards, input):
+    return get_index_metadata(wildcards, input)[1]
 
 
 def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming):
@@ -57,7 +66,8 @@ def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming):
         return 0
     if streaming:
         # then we are decompressing and running cobs at the same time
-        xz_decompression_RAM_usage_in_MB = int(config["xz_dict_size"])
+        xz_decompression_RAM_usage_in_bytes = get_xz_decompress_RAM(wildcards, input)
+        xz_decompression_RAM_usage_in_MB = int(xz_decompression_RAM_usage_in_bytes / 1024 / 1024) + 1
     else:
         xz_decompression_RAM_usage_in_MB = 0
     size_in_bytes = get_uncompressed_batch_size(wildcards, input)
