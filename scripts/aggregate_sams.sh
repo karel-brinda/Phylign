@@ -18,7 +18,6 @@ do
 	fi
 	echo "==> $fn <=="
 	((i=i+1))
-	gunzip --stdout "$fn" \
-		| grep -Ev "^@" || true
+	gunzip --stdout "$fn"
 done
 

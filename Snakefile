@@ -473,6 +473,7 @@ rule batch_align_minimap2:
                     {input.asm} \\
                     {input.qfa} \\
                 2>{log} \\
+                | {{ grep -Ev "^@" || true; }} \\
                 | gzip \\
                 > {output.sam}'
         """
