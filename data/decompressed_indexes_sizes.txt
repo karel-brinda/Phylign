@@ -1,305 +1,305 @@
-cobs/acinetobacter_baumannii__01.cobs_classic.xz  6397214551 
-cobs/acinetobacter_baumannii__02.cobs_classic.xz  1684668262 
-cobs/acinetobacter_nosocomialis__01.cobs_classic.xz  169634725 
-cobs/acinetobacter_pittii__01.cobs_classic.xz  281597332 
-cobs/actinobacillus_pleuropneumoniae__01.cobs_classic.xz  162724782 
-cobs/aeromonas_hydrophila__01.cobs_classic.xz  306741070 
-cobs/aeromonas_salmonicida__01.cobs_classic.xz  307803666 
-cobs/aeromonas_veronii__01.cobs_classic.xz  239990253 
-cobs/bacillus_anthracis__01.cobs_classic.xz  1371110416 
-cobs/bacillus_cereus__01.cobs_classic.xz  1396184332 
-cobs/bacillus_subtilis__01.cobs_classic.xz  797270108 
-cobs/bacillus_thuringiensis__01.cobs_classic.xz  540358044 
-cobs/bacteroides_fragilis__01.cobs_classic.xz  326940239 
-cobs/bordetella_bronchiseptica__01.cobs_classic.xz  248281726 
-cobs/bordetella_pertussis__01.cobs_classic.xz  1838914941 
-cobs/borreliella_burgdorferi__01.cobs_classic.xz  150175568 
-cobs/brucella_abortus__01.cobs_classic.xz  579452898 
-cobs/brucella_melitensis__01.cobs_classic.xz  294046590 
-cobs/brucella_suis__01.cobs_classic.xz  167469756 
-cobs/burkholderia_cenocepacia__01.cobs_classic.xz  1260711854 
-cobs/burkholderia_cepacia__01.cobs_classic.xz  629818833 
-cobs/burkholderia_contaminans__01.cobs_classic.xz  420792551 
-cobs/burkholderia_gladioli__01.cobs_classic.xz  763329734 
-cobs/burkholderia_multivorans__01.cobs_classic.xz  298673855 
-cobs/burkholderia_pseudomallei__01.cobs_classic.xz  4690477595 
-cobs/burkholderia_ubonensis__01.cobs_classic.xz  764882391 
-cobs/burkholderia_vietnamiensis__01.cobs_classic.xz  406889700 
-cobs/campylobacter_coli__01.cobs_classic.xz  2844129280 
-cobs/campylobacter_coli__02.cobs_classic.xz  2869793207 
-cobs/campylobacter_coli__03.cobs_classic.xz  686128386 
-cobs/campylobacter_fetus__01.cobs_classic.xz  197265536 
-cobs/campylobacter_helveticus__01.cobs_classic.xz  251931022 
-cobs/campylobacter_jejuni__01.cobs_classic.xz  2802845858 
-cobs/campylobacter_jejuni__02.cobs_classic.xz  2840259581 
-cobs/campylobacter_jejuni__03.cobs_classic.xz  2669976918 
-cobs/campylobacter_jejuni__04.cobs_classic.xz  2762726716 
-cobs/campylobacter_jejuni__05.cobs_classic.xz  2772648732 
-cobs/campylobacter_jejuni__06.cobs_classic.xz  2709309966 
-cobs/campylobacter_jejuni__07.cobs_classic.xz  2740488312 
-cobs/campylobacter_jejuni__08.cobs_classic.xz  333959406 
-cobs/campylobacter_lari__01.cobs_classic.xz  141896404 
-cobs/caulobacter_vibrioides__01.cobs_classic.xz  170460435 
-cobs/chlamydia_pecorum__01.cobs_classic.xz  28803390 
-cobs/chlamydia_trachomatis__01.cobs_classic.xz  495420245 
-cobs/citrobacter_freundii__01.cobs_classic.xz  686080668 
-cobs/citrobacter_rodentium__01.cobs_classic.xz  103651819 
-cobs/clostridioides_difficile__01.cobs_classic.xz  6802326997 
-cobs/clostridioides_difficile__02.cobs_classic.xz  6728847262 
-cobs/clostridioides_difficile__03.cobs_classic.xz  6174138460 
-cobs/clostridioides_difficile__04.cobs_classic.xz  2611533890 
-cobs/clostridium_botulinum__01.cobs_classic.xz  693036278 
-cobs/clostridium_perfringens__01.cobs_classic.xz  649702452 
-cobs/corynebacterium_diphtheriae__01.cobs_classic.xz  168931979 
-cobs/cronobacter_sakazakii__01.cobs_classic.xz  427953988 
-cobs/cutibacterium_acnes__01.cobs_classic.xz  86108330 
-cobs/dichelobacter_nodosus__01.cobs_classic.xz  77532074 
-cobs/dustbin__01.cobs_classic.xz  3195150779 
-cobs/dustbin__02.cobs_classic.xz  3193100043 
-cobs/dustbin__03.cobs_classic.xz  2871254473 
-cobs/dustbin__04.cobs_classic.xz  2939833436 
-cobs/dustbin__05.cobs_classic.xz  3040385969 
-cobs/dustbin__06.cobs_classic.xz  2968296120 
-cobs/dustbin__07.cobs_classic.xz  3326580948 
-cobs/dustbin__08.cobs_classic.xz  3412846423 
-cobs/dustbin__09.cobs_classic.xz  3444857486 
-cobs/dustbin__10.cobs_classic.xz  3132081807 
-cobs/dustbin__11.cobs_classic.xz  3265293355 
-cobs/dustbin__12.cobs_classic.xz  3442331344 
-cobs/dustbin__13.cobs_classic.xz  3048582485 
-cobs/dustbin__14.cobs_classic.xz  3017655550 
-cobs/dustbin__15.cobs_classic.xz  3300540665 
-cobs/dustbin__16.cobs_classic.xz  3062755860 
-cobs/dustbin__17.cobs_classic.xz  2783064177 
-cobs/dustbin__18.cobs_classic.xz  3529928231 
-cobs/dustbin__19.cobs_classic.xz  2791820892 
-cobs/dustbin__20.cobs_classic.xz  2537479371 
-cobs/dustbin__21.cobs_classic.xz  3979561093 
-cobs/dustbin__22.cobs_classic.xz  2681730083 
-cobs/elizabethkingia_anophelis__01.cobs_classic.xz  162347344 
-cobs/enterobacter_cloacae__01.cobs_classic.xz  2238032211 
-cobs/enterobacter_hormaechei__01.cobs_classic.xz  2534968542 
-cobs/enterococcus_faecalis__01.cobs_classic.xz  2104939712 
-cobs/enterococcus_faecium__01.cobs_classic.xz  5249656777 
-cobs/enterococcus_faecium__02.cobs_classic.xz  4994979703 
-cobs/enterococcus_faecium__03.cobs_classic.xz  786883194 
-cobs/enterococcus_hirae__01.cobs_classic.xz  174086914 
-cobs/erysipelothrix_rhusiopathiae__01.cobs_classic.xz  167667576 
-cobs/escherichia_albertii__01.cobs_classic.xz  397690407 
-cobs/escherichia_coli__01.cobs_classic.xz  8055887477 
-cobs/escherichia_coli__02.cobs_classic.xz  8478514981 
-cobs/escherichia_coli__03.cobs_classic.xz  8078133829 
-cobs/escherichia_coli__04.cobs_classic.xz  8150962580 
-cobs/escherichia_coli__05.cobs_classic.xz  8144775061 
-cobs/escherichia_coli__06.cobs_classic.xz  8292569660 
-cobs/escherichia_coli__07.cobs_classic.xz  8385948823 
-cobs/escherichia_coli__08.cobs_classic.xz  8242276355 
-cobs/escherichia_coli__09.cobs_classic.xz  8340167910 
-cobs/escherichia_coli__10.cobs_classic.xz  8140937352 
-cobs/escherichia_coli__11.cobs_classic.xz  8262191959 
-cobs/escherichia_coli__12.cobs_classic.xz  8073968171 
-cobs/escherichia_coli__13.cobs_classic.xz  8765174112 
-cobs/escherichia_coli__14.cobs_classic.xz  8747430682 
-cobs/escherichia_coli__15.cobs_classic.xz  8570045244 
-cobs/escherichia_coli__16.cobs_classic.xz  8658811469 
-cobs/escherichia_coli__17.cobs_classic.xz  8716726890 
-cobs/escherichia_coli__18.cobs_classic.xz  8376027018 
-cobs/escherichia_coli__19.cobs_classic.xz  8525854583 
-cobs/escherichia_coli__20.cobs_classic.xz  8536347256 
-cobs/escherichia_coli__21.cobs_classic.xz  8268386200 
-cobs/escherichia_coli__22.cobs_classic.xz  8336177655 
-cobs/escherichia_coli__23.cobs_classic.xz  1474424267 
-cobs/eubacterium_hallii__01.cobs_classic.xz  128124394 
-cobs/flavobacterium_johnsoniae__01.cobs_classic.xz  217331232 
-cobs/glaesserella_parasuis__01.cobs_classic.xz  291625630 
-cobs/haemophilus_influenzae__01.cobs_classic.xz  714709528 
-cobs/helicobacter_pylori__01.cobs_classic.xz  222626105 
-cobs/hungateiclostridium_thermocellum__01.cobs_classic.xz  391183396 
-cobs/klebsiella_aerogenes__01.cobs_classic.xz  563486463 
-cobs/klebsiella_oxytoca__01.cobs_classic.xz  703637375 
-cobs/klebsiella_pneumoniae__01.cobs_classic.xz  9391232417 
-cobs/klebsiella_pneumoniae__02.cobs_classic.xz  9060689418 
-cobs/klebsiella_pneumoniae__03.cobs_classic.xz  8964837754 
-cobs/klebsiella_pneumoniae__04.cobs_classic.xz  3568038933 
-cobs/klebsiella_quasipneumoniae__01.cobs_classic.xz  1268659407 
-cobs/klebsiella_variicola__01.cobs_classic.xz  909964140 
-cobs/lactobacillus_casei__01.cobs_classic.xz  141422810 
-cobs/lactobacillus_plantarum__01.cobs_classic.xz  158495800 
-cobs/lactobacillus_rhamnosus__01.cobs_classic.xz  135431874 
-cobs/lactobacillus_salivarius__01.cobs_classic.xz  80584599 
-cobs/lactococcus_lactis__01.cobs_classic.xz  114066982 
-cobs/legionella_pneumophila__01.cobs_classic.xz  3197133016 
-cobs/leptospira_interrogans__01.cobs_classic.xz  778283811 
-cobs/listeria_monocytogenes__01.cobs_classic.xz  4551597806 
-cobs/listeria_monocytogenes__02.cobs_classic.xz  4612078382 
-cobs/listeria_monocytogenes__03.cobs_classic.xz  4776416410 
-cobs/listeria_monocytogenes__04.cobs_classic.xz  4510831830 
-cobs/listeria_monocytogenes__05.cobs_classic.xz  4247530512 
-cobs/listeria_monocytogenes__06.cobs_classic.xz  4552216506 
-cobs/listeria_monocytogenes__07.cobs_classic.xz  914982118 
-cobs/mannheimia_haemolytica__01.cobs_classic.xz  1156789018 
-cobs/mesorhizobium_ciceri__01.cobs_classic.xz  420257168 
-cobs/moraxella_catarrhalis__01.cobs_classic.xz  86849727 
-cobs/morganella_morganii__01.cobs_classic.xz  88709803 
-cobs/mycobacterium_avium__01.cobs_classic.xz  1957337485 
-cobs/mycobacterium_bovis__01.cobs_classic.xz  350122681 
-cobs/mycobacterium_chimaera__01.cobs_classic.xz  1698499813 
-cobs/mycobacterium_intracellulare__01.cobs_classic.xz  273909065 
-cobs/mycobacterium_kansasii__01.cobs_classic.xz  535641144 
-cobs/mycobacterium_tuberculosis__01.cobs_classic.xz  5827350537 
-cobs/mycobacterium_tuberculosis__02.cobs_classic.xz  6691905620 
-cobs/mycobacterium_tuberculosis__03.cobs_classic.xz  6845402566 
-cobs/mycobacterium_tuberculosis__04.cobs_classic.xz  6722377398 
-cobs/mycobacterium_tuberculosis__05.cobs_classic.xz  6846719482 
-cobs/mycobacterium_tuberculosis__06.cobs_classic.xz  6319078733 
-cobs/mycobacterium_tuberculosis__07.cobs_classic.xz  6459724836 
-cobs/mycobacterium_tuberculosis__08.cobs_classic.xz  6495660233 
-cobs/mycobacterium_tuberculosis__09.cobs_classic.xz  6704841966 
-cobs/mycobacterium_tuberculosis__10.cobs_classic.xz  6190512648 
-cobs/mycobacterium_tuberculosis__11.cobs_classic.xz  6204608742 
-cobs/mycobacterium_tuberculosis__12.cobs_classic.xz  6161562912 
-cobs/mycobacterium_tuberculosis__13.cobs_classic.xz  1073472268 
-cobs/mycobacterium_ulcerans__01.cobs_classic.xz  1586392910 
-cobs/mycobacteroides_abscessus__01.cobs_classic.xz  5576497582 
-cobs/mycobacteroides_chelonae__01.cobs_classic.xz  434515623 
-cobs/mycolicibacterium_smegmatis__01.cobs_classic.xz  297641692 
-cobs/mycoplasma_bovis__01.cobs_classic.xz  53022641 
-cobs/mycoplasma_hyopneumoniae__01.cobs_classic.xz  43230519 
-cobs/mycoplasma_pneumoniae__01.cobs_classic.xz  51180398 
-cobs/neisseria_gonorrhoeae__01.cobs_classic.xz  3290103391 
-cobs/neisseria_gonorrhoeae__02.cobs_classic.xz  3171741214 
-cobs/neisseria_gonorrhoeae__03.cobs_classic.xz  706960280 
-cobs/neisseria_lactamica__01.cobs_classic.xz  802423148 
-cobs/neisseria_meningitidis__01.cobs_classic.xz  3346175128 
-cobs/neisseria_meningitidis__02.cobs_classic.xz  3209072472 
-cobs/neisseria_meningitidis__03.cobs_classic.xz  3261524247 
-cobs/neisseria_meningitidis__04.cobs_classic.xz  3271433290 
-cobs/neisseria_meningitidis__05.cobs_classic.xz  1080464942 
-cobs/neisseria_subflava__01.cobs_classic.xz  84941188 
-cobs/oenococcus_oeni__01.cobs_classic.xz  99187584 
-cobs/paenibacillus_larvae__01.cobs_classic.xz  236303217 
-cobs/pasteurella_multocida__01.cobs_classic.xz  227037513 
-cobs/porphyromonas_gingivalis__01.cobs_classic.xz  92236258 
-cobs/prochlorococcus_marinus__01.cobs_classic.xz  54679896 
-cobs/proteus_mirabilis__01.cobs_classic.xz  214767785 
-cobs/pseudomonas_aeruginosa__01.cobs_classic.xz  10594417049 
-cobs/pseudomonas_aeruginosa__02.cobs_classic.xz  6035388288 
-cobs/pseudomonas_fluorescens__01.cobs_classic.xz  1608827332 
-cobs/pseudomonas_putida__01.cobs_classic.xz  615141194 
-cobs/pseudomonas_syringae__01.cobs_classic.xz  336329033 
-cobs/rhizobium_leguminosarum__01.cobs_classic.xz  287024359 
-cobs/roseburia_hominis__01.cobs_classic.xz  83996255 
-cobs/salmonella_bongori__01.cobs_classic.xz  178076138 
-cobs/salmonella_enterica__01.cobs_classic.xz  7769292609 
-cobs/salmonella_enterica__02.cobs_classic.xz  7891913182 
-cobs/salmonella_enterica__03.cobs_classic.xz  7815293026 
-cobs/salmonella_enterica__04.cobs_classic.xz  7840071536 
-cobs/salmonella_enterica__05.cobs_classic.xz  7966521314 
-cobs/salmonella_enterica__06.cobs_classic.xz  7729880977 
-cobs/salmonella_enterica__07.cobs_classic.xz  7763130604 
-cobs/salmonella_enterica__08.cobs_classic.xz  7897248632 
-cobs/salmonella_enterica__09.cobs_classic.xz  7943906913 
-cobs/salmonella_enterica__10.cobs_classic.xz  7889910273 
-cobs/salmonella_enterica__11.cobs_classic.xz  7755829659 
-cobs/salmonella_enterica__12.cobs_classic.xz  7711324023 
-cobs/salmonella_enterica__13.cobs_classic.xz  7757296209 
-cobs/salmonella_enterica__14.cobs_classic.xz  7839373883 
-cobs/salmonella_enterica__15.cobs_classic.xz  7696013868 
-cobs/salmonella_enterica__16.cobs_classic.xz  7758145016 
-cobs/salmonella_enterica__17.cobs_classic.xz  7954442346 
-cobs/salmonella_enterica__18.cobs_classic.xz  7761188004 
-cobs/salmonella_enterica__19.cobs_classic.xz  7945278570 
-cobs/salmonella_enterica__20.cobs_classic.xz  7905291341 
-cobs/salmonella_enterica__21.cobs_classic.xz  7849181922 
-cobs/salmonella_enterica__22.cobs_classic.xz  7838701672 
-cobs/salmonella_enterica__23.cobs_classic.xz  7943214492 
-cobs/salmonella_enterica__24.cobs_classic.xz  7941650154 
-cobs/salmonella_enterica__25.cobs_classic.xz  7939971024 
-cobs/salmonella_enterica__26.cobs_classic.xz  7775067101 
-cobs/salmonella_enterica__27.cobs_classic.xz  7883150721 
-cobs/salmonella_enterica__28.cobs_classic.xz  7829122172 
-cobs/salmonella_enterica__29.cobs_classic.xz  8019526899 
-cobs/salmonella_enterica__30.cobs_classic.xz  7856453766 
-cobs/salmonella_enterica__31.cobs_classic.xz  7834401461 
-cobs/salmonella_enterica__32.cobs_classic.xz  7598139719 
-cobs/salmonella_enterica__33.cobs_classic.xz  7903948983 
-cobs/salmonella_enterica__34.cobs_classic.xz  7871394525 
-cobs/salmonella_enterica__35.cobs_classic.xz  7846503030 
-cobs/salmonella_enterica__36.cobs_classic.xz  7936657142 
-cobs/salmonella_enterica__37.cobs_classic.xz  7867816368 
-cobs/salmonella_enterica__38.cobs_classic.xz  7834356618 
-cobs/salmonella_enterica__39.cobs_classic.xz  7891933802 
-cobs/salmonella_enterica__40.cobs_classic.xz  8046631191 
-cobs/salmonella_enterica__41.cobs_classic.xz  7740516540 
-cobs/salmonella_enterica__42.cobs_classic.xz  7853133210 
-cobs/salmonella_enterica__43.cobs_classic.xz  7421487714 
-cobs/salmonella_enterica__44.cobs_classic.xz  7624697577 
-cobs/salmonella_enterica__45.cobs_classic.xz  7890810492 
-cobs/salmonella_enterica__46.cobs_classic.xz  3463834679 
-cobs/serratia_marcescens__01.cobs_classic.xz  1137952498 
-cobs/shigella_dysenteriae__01.cobs_classic.xz  969482407 
-cobs/shigella_flexneri__01.cobs_classic.xz  1256942970 
-cobs/sinorhizobium_meliloti__01.cobs_classic.xz  679499144 
-cobs/staphylococcus_agnetis__01.cobs_classic.xz  90643968 
-cobs/staphylococcus_argenteus__01.cobs_classic.xz  368361108 
-cobs/staphylococcus_aureus__01.cobs_classic.xz  4637710620 
-cobs/staphylococcus_aureus__02.cobs_classic.xz  4688333817 
-cobs/staphylococcus_aureus__03.cobs_classic.xz  4505980161 
-cobs/staphylococcus_aureus__04.cobs_classic.xz  4465656699 
-cobs/staphylococcus_aureus__05.cobs_classic.xz  4571327120 
-cobs/staphylococcus_aureus__06.cobs_classic.xz  4308041944 
-cobs/staphylococcus_aureus__07.cobs_classic.xz  4496859540 
-cobs/staphylococcus_aureus__08.cobs_classic.xz  4282776013 
-cobs/staphylococcus_aureus__09.cobs_classic.xz  4370336403 
-cobs/staphylococcus_aureus__10.cobs_classic.xz  4410943966 
-cobs/staphylococcus_aureus__11.cobs_classic.xz  4468372006 
-cobs/staphylococcus_aureus__12.cobs_classic.xz  4199069284 
-cobs/staphylococcus_aureus__13.cobs_classic.xz  457758812 
-cobs/staphylococcus_capitis__01.cobs_classic.xz  161577555 
-cobs/staphylococcus_epidermidis__01.cobs_classic.xz  1327722735 
-cobs/staphylococcus_haemolyticus__01.cobs_classic.xz  327440972 
-cobs/staphylococcus_pseudintermedius__01.cobs_classic.xz  349186317 
-cobs/staphylococcus_sciuri__01.cobs_classic.xz  162538098 
-cobs/stenotrophomonas_maltophilia__01.cobs_classic.xz  634125370 
-cobs/streptococcus_agalactiae__01.cobs_classic.xz  3398997934 
-cobs/streptococcus_agalactiae__02.cobs_classic.xz  3423544560 
-cobs/streptococcus_agalactiae__03.cobs_classic.xz  1909287411 
-cobs/streptococcus_dysgalactiae__01.cobs_classic.xz  525064721 
-cobs/streptococcus_equi__01.cobs_classic.xz  541418681 
-cobs/streptococcus_mitis__01.cobs_classic.xz  202147945 
-cobs/streptococcus_mutans__01.cobs_classic.xz  217255580 
-cobs/streptococcus_oralis__01.cobs_classic.xz  134902416 
-cobs/streptococcus_pneumoniae__01.cobs_classic.xz  3296426996 
-cobs/streptococcus_pneumoniae__02.cobs_classic.xz  3356504778 
-cobs/streptococcus_pneumoniae__03.cobs_classic.xz  3464840508 
-cobs/streptococcus_pneumoniae__04.cobs_classic.xz  3464679915 
-cobs/streptococcus_pneumoniae__05.cobs_classic.xz  3490316292 
-cobs/streptococcus_pneumoniae__06.cobs_classic.xz  3416861697 
-cobs/streptococcus_pneumoniae__07.cobs_classic.xz  3417372628 
-cobs/streptococcus_pneumoniae__08.cobs_classic.xz  3480238904 
-cobs/streptococcus_pneumoniae__09.cobs_classic.xz  3257611691 
-cobs/streptococcus_pneumoniae__10.cobs_classic.xz  3345422348 
-cobs/streptococcus_pneumoniae__11.cobs_classic.xz  3358710166 
-cobs/streptococcus_pneumoniae__12.cobs_classic.xz  3337472816 
-cobs/streptococcus_pneumoniae__13.cobs_classic.xz  2853127266 
-cobs/streptococcus_pseudopneumoniae__01.cobs_classic.xz  102941580 
-cobs/streptococcus_pyogenes__01.cobs_classic.xz  2961077758 
-cobs/streptococcus_pyogenes__02.cobs_classic.xz  2933034334 
-cobs/streptococcus_pyogenes__03.cobs_classic.xz  2740810830 
-cobs/streptococcus_pyogenes__04.cobs_classic.xz  2869253754 
-cobs/streptococcus_pyogenes__05.cobs_classic.xz  599384138 
-cobs/streptococcus_sp_group_b__01.cobs_classic.xz  120736833 
-cobs/streptococcus_suis__01.cobs_classic.xz  1473362380 
-cobs/streptococcus_uberis__01.cobs_classic.xz  366495990 
-cobs/taylorella_equigenitalis__01.cobs_classic.xz  115775039 
-cobs/treponema_pallidum__01.cobs_classic.xz  58025855 
-cobs/vibrio_cholerae__01.cobs_classic.xz  6645300211 
-cobs/vibrio_cholerae__02.cobs_classic.xz  2535117575 
-cobs/vibrio_parahaemolyticus__01.cobs_classic.xz  2628033108 
-cobs/vibrio_shilonii__01.cobs_classic.xz  449326176 
-cobs/vibrio_vulnificus__01.cobs_classic.xz  406351221 
-cobs/wolbachia_endosymbiont_of_drosophila_melanogaster__01.cobs_classic.xz  52260129 
-cobs/xanthomonas_oryzae__01.cobs_classic.xz  444310994 
-cobs/yersinia_enterocolitica__01.cobs_classic.xz  828329283 
-cobs/yersinia_pestis__01.cobs_classic.xz  553532730 
-cobs/yersinia_pseudotuberculosis__01.cobs_classic.xz  626023476 
+cobs/acinetobacter_baumannii__01.cobs_classic.xz  6397214551  1610678320
+cobs/acinetobacter_baumannii__02.cobs_classic.xz  1684668262  1610678320
+cobs/acinetobacter_nosocomialis__01.cobs_classic.xz  169634725  1610678320
+cobs/acinetobacter_pittii__01.cobs_classic.xz  281597332  1610678320
+cobs/actinobacillus_pleuropneumoniae__01.cobs_classic.xz  162724782  1610678320
+cobs/aeromonas_hydrophila__01.cobs_classic.xz  306741070  1610678320
+cobs/aeromonas_salmonicida__01.cobs_classic.xz  307803666  1610678320
+cobs/aeromonas_veronii__01.cobs_classic.xz  239990253  1610678320
+cobs/bacillus_anthracis__01.cobs_classic.xz  1371110416  1610678320
+cobs/bacillus_cereus__01.cobs_classic.xz  1396184332  1610678320
+cobs/bacillus_subtilis__01.cobs_classic.xz  797270108  1610678320
+cobs/bacillus_thuringiensis__01.cobs_classic.xz  540358044  1610678320
+cobs/bacteroides_fragilis__01.cobs_classic.xz  326940239  1610678320
+cobs/bordetella_bronchiseptica__01.cobs_classic.xz  248281726  1610678320
+cobs/bordetella_pertussis__01.cobs_classic.xz  1838914941  1610678320
+cobs/borreliella_burgdorferi__01.cobs_classic.xz  150175568  1610678320
+cobs/brucella_abortus__01.cobs_classic.xz  579452898  1610678320
+cobs/brucella_melitensis__01.cobs_classic.xz  294046590  1610678320
+cobs/brucella_suis__01.cobs_classic.xz  167469756  1610678320
+cobs/burkholderia_cenocepacia__01.cobs_classic.xz  1260711854  1610678320
+cobs/burkholderia_cepacia__01.cobs_classic.xz  629818833  1610678320
+cobs/burkholderia_contaminans__01.cobs_classic.xz  420792551  1610678320
+cobs/burkholderia_gladioli__01.cobs_classic.xz  763329734  1610678320
+cobs/burkholderia_multivorans__01.cobs_classic.xz  298673855  1610678320
+cobs/burkholderia_pseudomallei__01.cobs_classic.xz  4690477595  1610678320
+cobs/burkholderia_ubonensis__01.cobs_classic.xz  764882391  1610678320
+cobs/burkholderia_vietnamiensis__01.cobs_classic.xz  406889700  1610678320
+cobs/campylobacter_coli__01.cobs_classic.xz  2844129280  1610678320
+cobs/campylobacter_coli__02.cobs_classic.xz  2869793207  1610678320
+cobs/campylobacter_coli__03.cobs_classic.xz  686128386  1610678320
+cobs/campylobacter_fetus__01.cobs_classic.xz  197265536  1610678320
+cobs/campylobacter_helveticus__01.cobs_classic.xz  251931022  1610678320
+cobs/campylobacter_jejuni__01.cobs_classic.xz  2802845858  1610678320
+cobs/campylobacter_jejuni__02.cobs_classic.xz  2840259581  1610678320
+cobs/campylobacter_jejuni__03.cobs_classic.xz  2669976918  1610678320
+cobs/campylobacter_jejuni__04.cobs_classic.xz  2762726716  1610678320
+cobs/campylobacter_jejuni__05.cobs_classic.xz  2772648732  1610678320
+cobs/campylobacter_jejuni__06.cobs_classic.xz  2709309966  1610678320
+cobs/campylobacter_jejuni__07.cobs_classic.xz  2740488312  1610678320
+cobs/campylobacter_jejuni__08.cobs_classic.xz  333959406  1610678320
+cobs/campylobacter_lari__01.cobs_classic.xz  141896404  1610678320
+cobs/caulobacter_vibrioides__01.cobs_classic.xz  170460435  1610678320
+cobs/chlamydia_pecorum__01.cobs_classic.xz  28803390  1610678320
+cobs/chlamydia_trachomatis__01.cobs_classic.xz  495420245  1610678320
+cobs/citrobacter_freundii__01.cobs_classic.xz  686080668  1610678320
+cobs/citrobacter_rodentium__01.cobs_classic.xz  103651819  1610678320
+cobs/clostridioides_difficile__01.cobs_classic.xz  6802326997  1610678320
+cobs/clostridioides_difficile__02.cobs_classic.xz  6728847262  1610678320
+cobs/clostridioides_difficile__03.cobs_classic.xz  6174138460  1610678320
+cobs/clostridioides_difficile__04.cobs_classic.xz  2611533890  1610678320
+cobs/clostridium_botulinum__01.cobs_classic.xz  693036278  1610678320
+cobs/clostridium_perfringens__01.cobs_classic.xz  649702452  1610678320
+cobs/corynebacterium_diphtheriae__01.cobs_classic.xz  168931979  1610678320
+cobs/cronobacter_sakazakii__01.cobs_classic.xz  427953988  1610678320
+cobs/cutibacterium_acnes__01.cobs_classic.xz  86108330  1610678320
+cobs/dichelobacter_nodosus__01.cobs_classic.xz  77532074  1610678320
+cobs/dustbin__01.cobs_classic.xz  3195150779  1610678320
+cobs/dustbin__02.cobs_classic.xz  3193100043  1610678320
+cobs/dustbin__03.cobs_classic.xz  2871254473  1610678320
+cobs/dustbin__04.cobs_classic.xz  2939833436  1610678320
+cobs/dustbin__05.cobs_classic.xz  3040385969  1610678320
+cobs/dustbin__06.cobs_classic.xz  2968296120  1610678320
+cobs/dustbin__07.cobs_classic.xz  3326580948  1610678320
+cobs/dustbin__08.cobs_classic.xz  3412846423  1610678320
+cobs/dustbin__09.cobs_classic.xz  3444857486  1610678320
+cobs/dustbin__10.cobs_classic.xz  3132081807  1610678320
+cobs/dustbin__11.cobs_classic.xz  3265293355  1610678320
+cobs/dustbin__12.cobs_classic.xz  3442331344  1610678320
+cobs/dustbin__13.cobs_classic.xz  3048582485  1610678320
+cobs/dustbin__14.cobs_classic.xz  3017655550  1610678320
+cobs/dustbin__15.cobs_classic.xz  3300540665  1610678320
+cobs/dustbin__16.cobs_classic.xz  3062755860  1610678320
+cobs/dustbin__17.cobs_classic.xz  2783064177  1610678320
+cobs/dustbin__18.cobs_classic.xz  3529928231  1610678320
+cobs/dustbin__19.cobs_classic.xz  2791820892  1610678320
+cobs/dustbin__20.cobs_classic.xz  2537479371  1610678320
+cobs/dustbin__21.cobs_classic.xz  3979561093  1610678320
+cobs/dustbin__22.cobs_classic.xz  2681730083  1610678320
+cobs/elizabethkingia_anophelis__01.cobs_classic.xz  162347344  1610678320
+cobs/enterobacter_cloacae__01.cobs_classic.xz  2238032211  1610678320
+cobs/enterobacter_hormaechei__01.cobs_classic.xz  2534968542  1610678320
+cobs/enterococcus_faecalis__01.cobs_classic.xz  2104939712  1610678320
+cobs/enterococcus_faecium__01.cobs_classic.xz  5249656777  1610678320
+cobs/enterococcus_faecium__02.cobs_classic.xz  4994979703  1610678320
+cobs/enterococcus_faecium__03.cobs_classic.xz  786883194  1610678320
+cobs/enterococcus_hirae__01.cobs_classic.xz  174086914  1610678320
+cobs/erysipelothrix_rhusiopathiae__01.cobs_classic.xz  167667576  1610678320
+cobs/escherichia_albertii__01.cobs_classic.xz  397690407  1610678320
+cobs/escherichia_coli__01.cobs_classic.xz  8055887477  1610678320
+cobs/escherichia_coli__02.cobs_classic.xz  8478514981  1610678320
+cobs/escherichia_coli__03.cobs_classic.xz  8078133829  1610678320
+cobs/escherichia_coli__04.cobs_classic.xz  8150962580  1610678320
+cobs/escherichia_coli__05.cobs_classic.xz  8144775061  1610678320
+cobs/escherichia_coli__06.cobs_classic.xz  8292569660  1610678320
+cobs/escherichia_coli__07.cobs_classic.xz  8385948823  1610678320
+cobs/escherichia_coli__08.cobs_classic.xz  8242276355  1610678320
+cobs/escherichia_coli__09.cobs_classic.xz  8340167910  1610678320
+cobs/escherichia_coli__10.cobs_classic.xz  8140937352  1610678320
+cobs/escherichia_coli__11.cobs_classic.xz  8262191959  1610678320
+cobs/escherichia_coli__12.cobs_classic.xz  8073968171  1610678320
+cobs/escherichia_coli__13.cobs_classic.xz  8765174112  1610678320
+cobs/escherichia_coli__14.cobs_classic.xz  8747430682  1610678320
+cobs/escherichia_coli__15.cobs_classic.xz  8570045244  1610678320
+cobs/escherichia_coli__16.cobs_classic.xz  8658811469  1610678320
+cobs/escherichia_coli__17.cobs_classic.xz  8716726890  1610678320
+cobs/escherichia_coli__18.cobs_classic.xz  8376027018  1610678320
+cobs/escherichia_coli__19.cobs_classic.xz  8525854583  1610678320
+cobs/escherichia_coli__20.cobs_classic.xz  8536347256  1610678320
+cobs/escherichia_coli__21.cobs_classic.xz  8268386200  1610678320
+cobs/escherichia_coli__22.cobs_classic.xz  8336177655  1610678320
+cobs/escherichia_coli__23.cobs_classic.xz  1474424267  1610678320
+cobs/eubacterium_hallii__01.cobs_classic.xz  128124394  1610678320
+cobs/flavobacterium_johnsoniae__01.cobs_classic.xz  217331232  1610678320
+cobs/glaesserella_parasuis__01.cobs_classic.xz  291625630  1610678320
+cobs/haemophilus_influenzae__01.cobs_classic.xz  714709528  1610678320
+cobs/helicobacter_pylori__01.cobs_classic.xz  222626105  1610678320
+cobs/hungateiclostridium_thermocellum__01.cobs_classic.xz  391183396  1610678320
+cobs/klebsiella_aerogenes__01.cobs_classic.xz  563486463  1610678320
+cobs/klebsiella_oxytoca__01.cobs_classic.xz  703637375  1610678320
+cobs/klebsiella_pneumoniae__01.cobs_classic.xz  9391232417  1610678320
+cobs/klebsiella_pneumoniae__02.cobs_classic.xz  9060689418  1610678320
+cobs/klebsiella_pneumoniae__03.cobs_classic.xz  8964837754  1610678320
+cobs/klebsiella_pneumoniae__04.cobs_classic.xz  3568038933  1610678320
+cobs/klebsiella_quasipneumoniae__01.cobs_classic.xz  1268659407  1610678320
+cobs/klebsiella_variicola__01.cobs_classic.xz  909964140  1610678320
+cobs/lactobacillus_casei__01.cobs_classic.xz  141422810  1610678320
+cobs/lactobacillus_plantarum__01.cobs_classic.xz  158495800  1610678320
+cobs/lactobacillus_rhamnosus__01.cobs_classic.xz  135431874  1610678320
+cobs/lactobacillus_salivarius__01.cobs_classic.xz  80584599  1610678320
+cobs/lactococcus_lactis__01.cobs_classic.xz  114066982  1610678320
+cobs/legionella_pneumophila__01.cobs_classic.xz  3197133016  1610678320
+cobs/leptospira_interrogans__01.cobs_classic.xz  778283811  1610678320
+cobs/listeria_monocytogenes__01.cobs_classic.xz  4551597806  1610678320
+cobs/listeria_monocytogenes__02.cobs_classic.xz  4612078382  1610678320
+cobs/listeria_monocytogenes__03.cobs_classic.xz  4776416410  1610678320
+cobs/listeria_monocytogenes__04.cobs_classic.xz  4510831830  1610678320
+cobs/listeria_monocytogenes__05.cobs_classic.xz  4247530512  1610678320
+cobs/listeria_monocytogenes__06.cobs_classic.xz  4552216506  1610678320
+cobs/listeria_monocytogenes__07.cobs_classic.xz  914982118  1610678320
+cobs/mannheimia_haemolytica__01.cobs_classic.xz  1156789018  1610678320
+cobs/mesorhizobium_ciceri__01.cobs_classic.xz  420257168  1610678320
+cobs/moraxella_catarrhalis__01.cobs_classic.xz  86849727  1610678320
+cobs/morganella_morganii__01.cobs_classic.xz  88709803  1610678320
+cobs/mycobacterium_avium__01.cobs_classic.xz  1957337485  1610678320
+cobs/mycobacterium_bovis__01.cobs_classic.xz  350122681  1610678320
+cobs/mycobacterium_chimaera__01.cobs_classic.xz  1698499813  1610678320
+cobs/mycobacterium_intracellulare__01.cobs_classic.xz  273909065  1610678320
+cobs/mycobacterium_kansasii__01.cobs_classic.xz  535641144  1610678320
+cobs/mycobacterium_tuberculosis__01.cobs_classic.xz  5827350537  1610678320
+cobs/mycobacterium_tuberculosis__02.cobs_classic.xz  6691905620  1610678320
+cobs/mycobacterium_tuberculosis__03.cobs_classic.xz  6845402566  1610678320
+cobs/mycobacterium_tuberculosis__04.cobs_classic.xz  6722377398  1610678320
+cobs/mycobacterium_tuberculosis__05.cobs_classic.xz  6846719482  1610678320
+cobs/mycobacterium_tuberculosis__06.cobs_classic.xz  6319078733  1610678320
+cobs/mycobacterium_tuberculosis__07.cobs_classic.xz  6459724836  1610678320
+cobs/mycobacterium_tuberculosis__08.cobs_classic.xz  6495660233  1610678320
+cobs/mycobacterium_tuberculosis__09.cobs_classic.xz  6704841966  1610678320
+cobs/mycobacterium_tuberculosis__10.cobs_classic.xz  6190512648  1610678320
+cobs/mycobacterium_tuberculosis__11.cobs_classic.xz  6204608742  1610678320
+cobs/mycobacterium_tuberculosis__12.cobs_classic.xz  6161562912  1610678320
+cobs/mycobacterium_tuberculosis__13.cobs_classic.xz  1073472268  1610678320
+cobs/mycobacterium_ulcerans__01.cobs_classic.xz  1586392910  1610678320
+cobs/mycobacteroides_abscessus__01.cobs_classic.xz  5576497582  1610678320
+cobs/mycobacteroides_chelonae__01.cobs_classic.xz  434515623  1610678320
+cobs/mycolicibacterium_smegmatis__01.cobs_classic.xz  297641692  1610678320
+cobs/mycoplasma_bovis__01.cobs_classic.xz  53022641  1610678320
+cobs/mycoplasma_hyopneumoniae__01.cobs_classic.xz  43230519  1610678320
+cobs/mycoplasma_pneumoniae__01.cobs_classic.xz  51180398  1610678320
+cobs/neisseria_gonorrhoeae__01.cobs_classic.xz  3290103391  1610678320
+cobs/neisseria_gonorrhoeae__02.cobs_classic.xz  3171741214  1610678320
+cobs/neisseria_gonorrhoeae__03.cobs_classic.xz  706960280  1610678320
+cobs/neisseria_lactamica__01.cobs_classic.xz  802423148  1610678320
+cobs/neisseria_meningitidis__01.cobs_classic.xz  3346175128  1610678320
+cobs/neisseria_meningitidis__02.cobs_classic.xz  3209072472  1610678320
+cobs/neisseria_meningitidis__03.cobs_classic.xz  3261524247  1610678320
+cobs/neisseria_meningitidis__04.cobs_classic.xz  3271433290  1610678320
+cobs/neisseria_meningitidis__05.cobs_classic.xz  1080464942  1610678320
+cobs/neisseria_subflava__01.cobs_classic.xz  84941188  1610678320
+cobs/oenococcus_oeni__01.cobs_classic.xz  99187584  1610678320
+cobs/paenibacillus_larvae__01.cobs_classic.xz  236303217  1610678320
+cobs/pasteurella_multocida__01.cobs_classic.xz  227037513  1610678320
+cobs/porphyromonas_gingivalis__01.cobs_classic.xz  92236258  1610678320
+cobs/prochlorococcus_marinus__01.cobs_classic.xz  54679896  1610678320
+cobs/proteus_mirabilis__01.cobs_classic.xz  214767785  1610678320
+cobs/pseudomonas_aeruginosa__01.cobs_classic.xz  10594417049  1610678320
+cobs/pseudomonas_aeruginosa__02.cobs_classic.xz  6035388288  1610678320
+cobs/pseudomonas_fluorescens__01.cobs_classic.xz  1608827332  1610678320
+cobs/pseudomonas_putida__01.cobs_classic.xz  615141194  1610678320
+cobs/pseudomonas_syringae__01.cobs_classic.xz  336329033  1610678320
+cobs/rhizobium_leguminosarum__01.cobs_classic.xz  287024359  1610678320
+cobs/roseburia_hominis__01.cobs_classic.xz  83996255  1610678320
+cobs/salmonella_bongori__01.cobs_classic.xz  178076138  1610678320
+cobs/salmonella_enterica__01.cobs_classic.xz  7769292609  1610678320
+cobs/salmonella_enterica__02.cobs_classic.xz  7891913182  1610678320
+cobs/salmonella_enterica__03.cobs_classic.xz  7815293026  1610678320
+cobs/salmonella_enterica__04.cobs_classic.xz  7840071536  1610678320
+cobs/salmonella_enterica__05.cobs_classic.xz  7966521314  1610678320
+cobs/salmonella_enterica__06.cobs_classic.xz  7729880977  1610678320
+cobs/salmonella_enterica__07.cobs_classic.xz  7763130604  1610678320
+cobs/salmonella_enterica__08.cobs_classic.xz  7897248632  1610678320
+cobs/salmonella_enterica__09.cobs_classic.xz  7943906913  1610678320
+cobs/salmonella_enterica__10.cobs_classic.xz  7889910273  1610678320
+cobs/salmonella_enterica__11.cobs_classic.xz  7755829659  1610678320
+cobs/salmonella_enterica__12.cobs_classic.xz  7711324023  1610678320
+cobs/salmonella_enterica__13.cobs_classic.xz  7757296209  1610678320
+cobs/salmonella_enterica__14.cobs_classic.xz  7839373883  1610678320
+cobs/salmonella_enterica__15.cobs_classic.xz  7696013868  1610678320
+cobs/salmonella_enterica__16.cobs_classic.xz  7758145016  1610678320
+cobs/salmonella_enterica__17.cobs_classic.xz  7954442346  1610678320
+cobs/salmonella_enterica__18.cobs_classic.xz  7761188004  1610678320
+cobs/salmonella_enterica__19.cobs_classic.xz  7945278570  1610678320
+cobs/salmonella_enterica__20.cobs_classic.xz  7905291341  1610678320
+cobs/salmonella_enterica__21.cobs_classic.xz  7849181922  1610678320
+cobs/salmonella_enterica__22.cobs_classic.xz  7838701672  1610678320
+cobs/salmonella_enterica__23.cobs_classic.xz  7943214492  1610678320
+cobs/salmonella_enterica__24.cobs_classic.xz  7941650154  1610678320
+cobs/salmonella_enterica__25.cobs_classic.xz  7939971024  1610678320
+cobs/salmonella_enterica__26.cobs_classic.xz  7775067101  1610678320
+cobs/salmonella_enterica__27.cobs_classic.xz  7883150721  1610678320
+cobs/salmonella_enterica__28.cobs_classic.xz  7829122172  1610678320
+cobs/salmonella_enterica__29.cobs_classic.xz  8019526899  1610678320
+cobs/salmonella_enterica__30.cobs_classic.xz  7856453766  1610678320
+cobs/salmonella_enterica__31.cobs_classic.xz  7834401461  1610678320
+cobs/salmonella_enterica__32.cobs_classic.xz  7598139719  1610678320
+cobs/salmonella_enterica__33.cobs_classic.xz  7903948983  1610678320
+cobs/salmonella_enterica__34.cobs_classic.xz  7871394525  1610678320
+cobs/salmonella_enterica__35.cobs_classic.xz  7846503030  1610678320
+cobs/salmonella_enterica__36.cobs_classic.xz  7936657142  1610678320
+cobs/salmonella_enterica__37.cobs_classic.xz  7867816368  1610678320
+cobs/salmonella_enterica__38.cobs_classic.xz  7834356618  1610678320
+cobs/salmonella_enterica__39.cobs_classic.xz  7891933802  1610678320
+cobs/salmonella_enterica__40.cobs_classic.xz  8046631191  1610678320
+cobs/salmonella_enterica__41.cobs_classic.xz  7740516540  1610678320
+cobs/salmonella_enterica__42.cobs_classic.xz  7853133210  1610678320
+cobs/salmonella_enterica__43.cobs_classic.xz  7421487714  1610678320
+cobs/salmonella_enterica__44.cobs_classic.xz  7624697577  1610678320
+cobs/salmonella_enterica__45.cobs_classic.xz  7890810492  1610678320
+cobs/salmonella_enterica__46.cobs_classic.xz  3463834679  1610678320
+cobs/serratia_marcescens__01.cobs_classic.xz  1137952498  1610678320
+cobs/shigella_dysenteriae__01.cobs_classic.xz  969482407  1610678320
+cobs/shigella_flexneri__01.cobs_classic.xz  1256942970  1610678320
+cobs/sinorhizobium_meliloti__01.cobs_classic.xz  679499144  1610678320
+cobs/staphylococcus_agnetis__01.cobs_classic.xz  90643968  1610678320
+cobs/staphylococcus_argenteus__01.cobs_classic.xz  368361108  1610678320
+cobs/staphylococcus_aureus__01.cobs_classic.xz  4637710620  1610678320
+cobs/staphylococcus_aureus__02.cobs_classic.xz  4688333817  1610678320
+cobs/staphylococcus_aureus__03.cobs_classic.xz  4505980161  1610678320
+cobs/staphylococcus_aureus__04.cobs_classic.xz  4465656699  1610678320
+cobs/staphylococcus_aureus__05.cobs_classic.xz  4571327120  1610678320
+cobs/staphylococcus_aureus__06.cobs_classic.xz  4308041944  1610678320
+cobs/staphylococcus_aureus__07.cobs_classic.xz  4496859540  1610678320
+cobs/staphylococcus_aureus__08.cobs_classic.xz  4282776013  1610678320
+cobs/staphylococcus_aureus__09.cobs_classic.xz  4370336403  1610678320
+cobs/staphylococcus_aureus__10.cobs_classic.xz  4410943966  1610678320
+cobs/staphylococcus_aureus__11.cobs_classic.xz  4468372006  1610678320
+cobs/staphylococcus_aureus__12.cobs_classic.xz  4199069284  1610678320
+cobs/staphylococcus_aureus__13.cobs_classic.xz  457758812  1610678320
+cobs/staphylococcus_capitis__01.cobs_classic.xz  161577555  1610678320
+cobs/staphylococcus_epidermidis__01.cobs_classic.xz  1327722735  1610678320
+cobs/staphylococcus_haemolyticus__01.cobs_classic.xz  327440972  1610678320
+cobs/staphylococcus_pseudintermedius__01.cobs_classic.xz  349186317  1610678320
+cobs/staphylococcus_sciuri__01.cobs_classic.xz  162538098  1610678320
+cobs/stenotrophomonas_maltophilia__01.cobs_classic.xz  634125370  1610678320
+cobs/streptococcus_agalactiae__01.cobs_classic.xz  3398997934  1610678320
+cobs/streptococcus_agalactiae__02.cobs_classic.xz  3423544560  1610678320
+cobs/streptococcus_agalactiae__03.cobs_classic.xz  1909287411  1610678320
+cobs/streptococcus_dysgalactiae__01.cobs_classic.xz  525064721  1610678320
+cobs/streptococcus_equi__01.cobs_classic.xz  541418681  1610678320
+cobs/streptococcus_mitis__01.cobs_classic.xz  202147945  1610678320
+cobs/streptococcus_mutans__01.cobs_classic.xz  217255580  1610678320
+cobs/streptococcus_oralis__01.cobs_classic.xz  134902416  1610678320
+cobs/streptococcus_pneumoniae__01.cobs_classic.xz  3296426996  1610678320
+cobs/streptococcus_pneumoniae__02.cobs_classic.xz  3356504778  1610678320
+cobs/streptococcus_pneumoniae__03.cobs_classic.xz  3464840508  1610678320
+cobs/streptococcus_pneumoniae__04.cobs_classic.xz  3464679915  1610678320
+cobs/streptococcus_pneumoniae__05.cobs_classic.xz  3490316292  1610678320
+cobs/streptococcus_pneumoniae__06.cobs_classic.xz  3416861697  1610678320
+cobs/streptococcus_pneumoniae__07.cobs_classic.xz  3417372628  1610678320
+cobs/streptococcus_pneumoniae__08.cobs_classic.xz  3480238904  1610678320
+cobs/streptococcus_pneumoniae__09.cobs_classic.xz  3257611691  1610678320
+cobs/streptococcus_pneumoniae__10.cobs_classic.xz  3345422348  1610678320
+cobs/streptococcus_pneumoniae__11.cobs_classic.xz  3358710166  1610678320
+cobs/streptococcus_pneumoniae__12.cobs_classic.xz  3337472816  1610678320
+cobs/streptococcus_pneumoniae__13.cobs_classic.xz  2853127266  1610678320
+cobs/streptococcus_pseudopneumoniae__01.cobs_classic.xz  102941580  1610678320
+cobs/streptococcus_pyogenes__01.cobs_classic.xz  2961077758  1610678320
+cobs/streptococcus_pyogenes__02.cobs_classic.xz  2933034334  1610678320
+cobs/streptococcus_pyogenes__03.cobs_classic.xz  2740810830  1610678320
+cobs/streptococcus_pyogenes__04.cobs_classic.xz  2869253754  1610678320
+cobs/streptococcus_pyogenes__05.cobs_classic.xz  599384138  1610678320
+cobs/streptococcus_sp_group_b__01.cobs_classic.xz  120736833  1610678320
+cobs/streptococcus_suis__01.cobs_classic.xz  1473362380  1610678320
+cobs/streptococcus_uberis__01.cobs_classic.xz  366495990  1610678320
+cobs/taylorella_equigenitalis__01.cobs_classic.xz  115775039  1610678320
+cobs/treponema_pallidum__01.cobs_classic.xz  58025855  1610678320
+cobs/vibrio_cholerae__01.cobs_classic.xz  6645300211  1610678320
+cobs/vibrio_cholerae__02.cobs_classic.xz  2535117575  1610678320
+cobs/vibrio_parahaemolyticus__01.cobs_classic.xz  2628033108  1610678320
+cobs/vibrio_shilonii__01.cobs_classic.xz  449326176  1610678320
+cobs/vibrio_vulnificus__01.cobs_classic.xz  406351221  1610678320
+cobs/wolbachia_endosymbiont_of_drosophila_melanogaster__01.cobs_classic.xz  52260129  1610678320
+cobs/xanthomonas_oryzae__01.cobs_classic.xz  444310994  1610678320
+cobs/yersinia_enterocolitica__01.cobs_classic.xz  828329283  1610678320
+cobs/yersinia_pestis__01.cobs_classic.xz  553532730  1610678320
+cobs/yersinia_pseudotuberculosis__01.cobs_classic.xz  626023476  1610678320
