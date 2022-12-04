@@ -372,7 +372,7 @@ rule run_cobs:
                     -i {input.cobs_index} \\
                     -f {input.fa} \\
                 | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
-                | gzip \\
+                | gzip --fast \\
                 > {output.match}'
         """
 
@@ -410,7 +410,7 @@ rule decompress_and_run_cobs:
             ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/run_cobs_streaming.sh {params.kmer_thres} {threads} "{input.compressed_cobs_index}" {params.uncompressed_batch_size} "{input.fa}" \\
                     | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
-                    | gzip \\
+                    | gzip --fast\\
                     > {output.match}'
         else
             mkdir -p {params.decompression_dir}
@@ -425,7 +425,7 @@ rule decompress_and_run_cobs:
                         -i "{params.cobs_index}" \\
                         -f "{input.fa}" \\
                     | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
-                    | gzip \\
+                    | gzip --fast\\
                     > {output.match}'
             rm -v "{params.cobs_index}"
         fi
@@ -487,7 +487,7 @@ rule batch_align_minimap2:
                     {input.qfa} \\
                 2>{log} \\
                 | {{ grep -Ev "^@" || true; }} \\
-                | gzip \\
+                | gzip --fast\\
                 > {output.sam}'
         """
 
