@@ -68,7 +68,9 @@ def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming):
     if streaming:
         # then we are decompressing and running cobs at the same time
         xz_decompression_RAM_usage_in_bytes = get_xz_decompress_RAM(wildcards, input)
-        xz_decompression_RAM_usage_in_MB = int(xz_decompression_RAM_usage_in_bytes / 1024 / 1024) + 1
+        xz_decompression_RAM_usage_in_MB = (
+            int(xz_decompression_RAM_usage_in_bytes / 1024 / 1024) + 1
+        )
     else:
         xz_decompression_RAM_usage_in_MB = 0
     size_in_bytes = get_uncompressed_batch_size(wildcards, input)
@@ -93,14 +95,22 @@ def get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, stream
     if use_max_cores:
         max_number_of_COBS_threads = workflow.cores
     else:
-        max_number_of_COBS_threads = get_max_number_of_COBS_threads_from_auto_string(predefined_cobs_threads)
+        max_number_of_COBS_threads = get_max_number_of_COBS_threads_from_auto_string(
+            predefined_cobs_threads
+        )
 
-    uncompressed_batch_size_in_MB = get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM=False, streaming=streaming)
+    uncompressed_batch_size_in_MB = get_uncompressed_batch_size_in_MB(
+        wildcards, input, ignore_RAM=False, streaming=streaming
+    )
     max_RAM_MB = int(config["max_ram_gb"]) * 1024
-    number_of_cores_to_use = round(uncompressed_batch_size_in_MB / max_RAM_MB * max_number_of_COBS_threads)
+    number_of_cores_to_use = round(
+        uncompressed_batch_size_in_MB / max_RAM_MB * max_number_of_COBS_threads
+    )
     number_of_cores_to_use = max(number_of_cores_to_use, 1)
     number_of_cores_to_use = min(number_of_cores_to_use, max_number_of_COBS_threads)
-    is_using_more_than_half_of_the_cores = number_of_cores_to_use > max_number_of_COBS_threads/2
+    is_using_more_than_half_of_the_cores = (
+        number_of_cores_to_use > max_number_of_COBS_threads / 2
+    )
     if is_using_more_than_half_of_the_cores:
         # usually in this situation we run just one COBS jobs simultaneously. Better then to use all cores then
         number_of_cores_to_use = max_number_of_COBS_threads
@@ -199,7 +209,7 @@ rule all:
     """Run all
     """
     input:
-        f"output/{get_filename_for_all_queries()}.sam_summary.xz",
+        f"output/{get_filename_for_all_queries()}.sam_summary.gz",
         f"output/{get_filename_for_all_queries()}.sam_summary.stats",
 
 
@@ -222,7 +232,7 @@ rule map:
     """Map reads to the assemblies.
     """
     input:
-        f"output/{get_filename_for_all_queries()}.sam_summary.xz",
+        f"output/{get_filename_for_all_queries()}.sam_summary.gz",
         f"output/{get_filename_for_all_queries()}.sam_summary.stats",
 
 
@@ -317,11 +327,11 @@ rule decompress_cobs:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
     resources:
         max_io_heavy_threads=1,
+    params:
+        cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     threads:
         # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
         lambda wildcards, input: get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming),
-    params:
-        cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
@@ -341,7 +351,9 @@ rule run_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
-        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming),
+        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
+            wildcards, input, ignore_RAM, streaming
+        ),
     threads: lambda wildcards, input: get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming),
     params:
         kmer_thres=config["cobs_kmer_thres"],
@@ -360,7 +372,7 @@ rule run_cobs:
                     -i {input.cobs_index} \\
                     -f {input.fa} \\
                 | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
-                | gzip \\
+                | gzip --fast \\
                 > {output.match}'
         """
 
@@ -376,8 +388,9 @@ rule decompress_and_run_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
-
-        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming),
+        max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
+            wildcards, input, ignore_RAM, streaming
+        ),
     threads: lambda wildcards, input: get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming),
     params:
         kmer_thres=config["cobs_kmer_thres"],
@@ -397,7 +410,7 @@ rule decompress_and_run_cobs:
             ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/run_cobs_streaming.sh {params.kmer_thres} {threads} "{input.compressed_cobs_index}" {params.uncompressed_batch_size} "{input.fa}" \\
                     | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
-                    | gzip \\
+                    | gzip --fast\\
                     > {output.match}'
         else
             mkdir -p {params.decompression_dir}
@@ -412,7 +425,7 @@ rule decompress_and_run_cobs:
                         -i "{params.cobs_index}" \\
                         -f "{input.fa}" \\
                     | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
-                    | gzip \\
+                    | gzip --fast\\
                     > {output.match}'
             rm -v "{params.cobs_index}"
         fi
@@ -473,22 +486,21 @@ rule batch_align_minimap2:
                     {input.asm} \\
                     {input.qfa} \\
                 2>{log} \\
-                | gzip \\
+                | {{ grep -Ev "^@" || true; }} \\
+                | gzip --fast\\
                 > {output.sam}'
         """
 
 
 rule aggregate_sams:
     output:
-        pseudosam="output/{qfile}.sam_summary.xz",
+        pseudosam="output/{qfile}.sam_summary.gz",
     input:
         sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam.gz" for batch in batches],
-    threads: workflow.cores
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/aggregate_sams___{wildcards.qfile}.txt \\
             './scripts/aggregate_sams.sh {input.sam} \\
-                | xz -v -T {threads} \\
                 > {output.pseudosam}'
         """
 
@@ -497,8 +509,10 @@ rule final_stats:
     output:
         stats="output/{qfile}.sam_summary.stats",
     input:
-        pseudosam="output/{qfile}.sam_summary.xz",
+        pseudosam="output/{qfile}.sam_summary.gz",
         concatenated_query=f"intermediate/concatenated_query/{get_filename_for_all_queries()}.fa",
+    conda:
+        "envs/minimap2.yaml"
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/final_stats___{wildcards.qfile}.txt \\

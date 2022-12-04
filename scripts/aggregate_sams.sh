@@ -13,12 +13,13 @@ readonly NARGS="$#"
 i=0
 for fn in "$@"
 do
-	if [[ "$i" -ne "0" ]]; then
-		echo
-	fi
-	echo "==> $fn <=="
+	(
+		if [[ "$i" -ne "0" ]]; then
+			echo
+		fi
+		echo "==> $fn <=="
+	) | gzip
 	((i=i+1))
-	gunzip --stdout "$fn" \
-		| grep -Ev "^@" || true
+	cat "$fn"
 done
 
