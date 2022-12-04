@@ -1,9 +1,10 @@
 #! /usr/bin/env python3
 
 import argparse
-import lzma
 import os
 import sys
+
+from xopen import xopen
 
 
 def readfq(fp):
@@ -87,9 +88,9 @@ def compute_stats(results_fn, queries_fn):
     nb_alignments = 0
     nb_nonalignments = 0
 
-    with lzma.open(results_fn) as fo:
+    with xopen(results_fn) as fo:
         for x in fo:
-            x = x.decode().strip()
+            x = x.strip()
             # 1) empty line
             if not x:
                 continue
