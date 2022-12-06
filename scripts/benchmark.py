@@ -29,6 +29,10 @@ def main():
     log_file = Path(args.log)
     log_file.parent.mkdir(parents=True, exist_ok=True)
     tmp_log_file = Path(f"{log_file}.tmp")
+
+    # TODO: this would be done better with a decorator, would avoid the two ifs
+    is_benchmarking_pipeline = args.command.split()[0] == "snakemake"
+
     with open(log_file, "w") as log_fh:
         formatted_command = " ".join(args.command.replace("\\\n", " ").strip().split())
         print(f"# Benchmarking command: {formatted_command}", file=log_fh)
@@ -41,6 +45,10 @@ def main():
     time_command = get_time_command()
     benchmark_command = f'{time_command} -o {tmp_log_file} -f "%e\t%S\t%U\t%P\t%M\t%I\t%O"'
 
+    if is_benchmarking_pipeline:
+        RAM_tmp_log_file = Path(f"{log_file}.RAM.tmp")
+        RAM_benchmarking_process = subprocess.Popen(["python", "scripts/get_RAM_usage.py", str(RAM_tmp_log_file)])
+
     start_time = datetime.datetime.now()
     subprocess.check_call(f'{benchmark_command} {args.command}', shell=True)
     end_time = datetime.datetime.now()
@@ -49,6 +57,14 @@ def main():
         log_line = log_fh_tmp.readline().strip()
         log_line += f"\t{elapsed_seconds}"
         print(log_line, file=log_fh)
+
+    if is_benchmarking_pipeline:
+        RAM_benchmarking_process.kill()
+        with open(RAM_tmp_log_file) as log_fh_tmp, open(log_file, "a") as log_fh:
+            print("RAM usage:", file=log_fh)
+            print("\n".join(map(str.strip, log_fh_tmp.readlines())), file=log_fh)
+        RAM_tmp_log_file.unlink()
+
     tmp_log_file.unlink()
 
 
