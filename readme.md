@@ -13,6 +13,7 @@ Others are non-standard (which you might need to install) and standard (which yo
 * `python >= 3.7`
 * `snakemake >= 6.2.0`
 * `mamba >= 0.20.0`
+* `psutil`
 
 If you want to benchmark the pipeline and is on `Mac OS X`, you need to install `gnu-time`:
 ```
