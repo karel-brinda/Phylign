@@ -59,7 +59,7 @@ cluster: ## Submit to a SLURM cluster
         -p priority \
         --mem=80GB \
         -t 0-08:00:00 \
-        --wrap="snakemake --rerun-incomplete -p -j all -k"
+        --wrap="make"
 
 viewconf: ## View configuration without comments
 	@cat config.yaml \

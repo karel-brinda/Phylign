@@ -455,7 +455,10 @@ rule translate_matches:
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/translate_matches/translate_matches___{wildcards.qfile}.txt \\
-            './scripts/filter_queries.py -n {params.nb_best_hits} -q {input.fa} {input.all_matches} \\
+            './scripts/filter_queries.py \\
+                    -n {params.nb_best_hits} \\
+                    -q {input.fa} \\
+                    {input.all_matches} \\
                 > {output.fa} 2>{log}'
         """
 
@@ -472,16 +475,23 @@ rule batch_align_minimap2:
         minimap_preset=config["minimap_preset"],
         minimap_extra_params=config["minimap_extra_params"],
         pipe="--pipe" if config["prefer_pipe"] else "",
+        refs_tmp="intermediate/03_map/{batch}____{qfile}.refs.tmp",
     conda:
         "envs/minimap2.yaml"
     threads: config["minimap_threads"]
     shell:
         """
+        xzcat data/661k_batches.txt.xz \\
+            | grep {wildcards.batch} \\
+            | cut -f2 \\
+            > {params.refs_tmp}
+
         ./scripts/benchmark.py --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/batch_align.py \\
                     --minimap-preset {params.minimap_preset} \\
                     --threads {threads} \\
                     --extra-params=\"{params.minimap_extra_params}\" \\
+                    --accessions {params.refs_tmp} \\
                     {params.pipe} \\
                     {input.asm} \\
                     {input.qfa} \\
@@ -489,6 +499,8 @@ rule batch_align_minimap2:
                 | {{ grep -Ev "^@" || true; }} \\
                 | gzip --fast\\
                 > {output.sam}'
+
+        rm -f {params.refs_tmp}
         """
 
 
