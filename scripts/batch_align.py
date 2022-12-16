@@ -260,6 +260,7 @@ def run_minimap2(command, qfa, timeout=None):
     assert output and output[0] == "@", f"Output of Minimap2 is empty or corrupted ('{output}')"
     output_lines = output.splitlines()
     output_lines = list(filter(lambda line: not line.startswith("@"), output_lines))
+    output_lines = list(filter(lambda line: len(line.strip()), output_lines))
     logging.debug(f"Finished command: {command}")
     return output_lines
 
@@ -439,9 +440,8 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
     #   Extract the relevant subset of rnames - rnames_local_subset
     qname_to_qfa, rname_to_qnames = load_qdicts(query_fn, accessions_fn)
 
-    rnames_local_subset = set([x for x in rname_to_qnames])
-    nsr = len(rnames_local_subset)
-    logging.debug(f"Identifying filtered rnames in the query file - #{nsr} records: {rnames_local_subset}")
+    nsr = len(rname_to_qnames)
+    logging.debug(f"Identifying filtered rnames in the query file - #{nsr} records: {rname_to_qnames.keys()}")
     naligns_total = 0
     nrefs = 0
     refs = set()
@@ -449,7 +449,7 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
 
     # STEP 2: Iterate over compressed assemblies: (ref name, ref FASTA)
     #   Here it's already restricted only to the references proposed by COBS, i.e, hot candidates
-    for i, (rname, rfa) in enumerate(iterate_over_batch(asms_fn, rnames_local_subset), 1):
+    for i, (rname, rfa) in enumerate(iterate_over_batch(asms_fn, rname_to_qnames.keys()), 1):
         start = timer()
         refs.add(rname)
 
@@ -468,11 +468,13 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
         logging.debug("minimap2 finished successfully!")
 
         # STEP 2c: Print Minimap output
-        mm_output_str = "\n".join(mm_output_lines)
-        print(mm_output_str)
+        naligns = len(mm_output_lines)
+        minimap_output_is_empty = naligns == 0
+        if not minimap_output_is_empty:
+            mm_output_str = "\n".join(mm_output_lines)
+            print(mm_output_str)
 
         # STEP 2d: Update & report stats
-        naligns = len(mm_output_lines)
         naligns_total += naligns
         end = timer()
         s = round(1000 * (end - start)) / 1000.0
