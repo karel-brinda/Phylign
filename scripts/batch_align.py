@@ -1,32 +1,32 @@
 #! /usr/bin/env python3
 
 import argparse
-import atexit
+#import atexit
 import collections
 import concurrent.futures
 import logging
 import os
 import re
 import shutil
+import shlex
 import sys
-import stat
+#import stat
 import subprocess
 import tarfile
 import tempfile
-import threading
+import time
+#import threading
 
 from contextlib import contextmanager
+from fcntl import fcntl
 from pathlib import Path
 from pprint import pprint
+from select import select
 from subprocess import check_output
-from subprocess import PIPE
-from subprocess import Popen
+#from subprocess import PIPE
+#from subprocess import Popen
 from timeit import default_timer as timer
 from xopen import xopen
-import time
-import shlex
-from select import select
-from fcntl import fcntl
 try:
     from fcntl import F_SETPIPE_SZ
 except ImportError:
@@ -94,9 +94,12 @@ def iterate_over_batch(asms_fn, selected_rnames):
     Args:
         asms_fn (str): xz-compressed TAR file with FASTA files.
         selected_rnames (list): Set of selected FASTA files for which a Minimap instance will be created (note: can contain rnames from other batches).
+    Returns:
+        (rname (str), rfa (str))
     """
     logging.info(f"Opening {asms_fn}")
     skipped = 0
+
     with tarfile.open(asms_fn, mode="r:xz") as tar:
         for member in tar.getmembers():
             # extract file headers
@@ -108,7 +111,7 @@ def iterate_over_batch(asms_fn, selected_rnames):
                 continue
             # extract file content
             if skipped > 0:
-                logging.info(f"Skipping {skipped} references in {asms_fn}")
+                logging.info(f"Skipping {skipped} references in {asms_fn} (no hits for them)")
                 skipped = 0
             logging.info(f"Extracting {rname} ({name})")
             f = tar.extractfile(member)
@@ -118,24 +121,49 @@ def iterate_over_batch(asms_fn, selected_rnames):
         logging.info(f"Skipping {skipped} references in {asms_fn}")
 
 
-def load_qdicts(query_fn):
-    """Load query dictionaries from the merged&filtered query file.
+def load_qdicts(query_fn, accession_fn):
+    """Load query dictionaries from the merged & filtered query file.
 
     Args:
-        query_fn (str): Read
+        query_fn (str): Query file.
+        accessions_fn (str): File with a list of allowed accessions.
 
     Returns:
         qname_to_qfa (OrderedDict): qname -> FASTA repr
         rname_to_qnames (dict): rname -> list of queries that should be mapped to this reference
     """
     qname_to_qfa = collections.OrderedDict()
-    rname_to_qnames = collections.defaultdict(lambda: [])
+
+    # STEP 1: Set up dict for accessions
+    # all rnames to store, or only some of them?
+    #    some -> use dict with restricted keys
+    #    all  -> use defaultdict
+    # ...rname to be used encoded through key "insertability"
+    with open(accession_fn) as f:
+        s = f.read().strip()
+        accessions = re.split(';|,|\n', s)
+        logging.info(f"Loaded ref accesions to consider: {accessions}")
+    rname_to_qnames = {}
+    for x in accessions:
+        rname_to_qnames[x] = []
+
+    # STEP 2: Fill up the query dictionaries
+    logging.info(f"Loading query dictionaries (query name -> fasta string, ref_name -> list of cobs-matching queries)")
     with xopen(query_fn) as fo:
         for qname, qcom, qseq, _ in readfq(fo):
             qname_to_qfa[qname] = f">{qname}\n{qseq}"
+            if not qcom:  # no refs proposed by COBS for local rnames
+                continue
             rnames = qcom.split(",")
             for rname in rnames:
-                rname_to_qnames[rname].append(qname)
+                try:
+                    rname_to_qnames[rname].append(qname)
+                except KeyError:
+                    # batch accession filtering on & not in this batch
+                    pass
+
+    # STEP 3: Ensure everything get converted to standard dicts
+    logging.info(f"Query dictionaries loaded")
     return qname_to_qfa, rname_to_qnames
 
 
@@ -221,8 +249,10 @@ def run_minimap2(command, qfa, timeout=None):
                                      universal_newlines=True,
                                      stderr=subprocess.DEVNULL,
                                      timeout=timeout)
+    assert output and output[0] == "@", f"Output of Minimap2 is empty or corrupted ('{output}')"
     output_lines = output.splitlines()
     output_lines = list(filter(lambda line: not line.startswith("@"), output_lines))
+    output_lines = list(filter(lambda line: len(line.strip()), output_lines))
     logging.debug(f"Finished command: {command}")
     return output_lines
 
@@ -379,7 +409,8 @@ def minimap2(rfa, qfa, minimap_preset):
     return output.decode("utf-8")
 
 
-def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, minimap_extra_params, prefer_pipe):
+def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, minimap_extra_params, prefer_pipe,
+                         accessions_fn):
     """Map queries to a batch.
 
     Args:
@@ -389,45 +420,60 @@ def map_queries_to_batch(asms_fn, query_fn, minimap_preset, minimap_threads, min
         minimap_threads (int): Nb of minimap threads.
         minimap_extra_params (str): Additional minimap parameters.
         prefer_pipe (bool): Prefer using pipes.
+        accessions_fn (str): List of allowed accessions.
     """
     sstart = timer()
     logging.info(f"Mapping queries from '{query_fn}' to '{asms_fn}' using Minimap2 with the '{minimap_preset}' preset")
 
-    logging.info(f"Loading query dictionaries")
-    qname_to_qfa, rname_to_qnames = load_qdicts(query_fn)
+    # STEP 1: Set up all tables
+    #   Load query dictionaries (ideally restricted to this batch):
+    #     qname_to_qfa:     query name -> FASTA string
+    #     rname_to_qnames:  ref name   -> list of its COBS candidates"
+    #   Extract the relevant subset of rnames - rnames_local_subset
+    qname_to_qfa, rname_to_qnames = load_qdicts(query_fn, accessions_fn)
 
-    #TODO: seems to be not really selected; should be selected based on the specific batch
-    selected_rnames = set([x for x in rname_to_qnames])
-    nsr = len(selected_rnames)
-    logging.debug(f"Identifying rnames in the query file - #{nsr} records: {selected_rnames}")
+    nsr = len(rname_to_qnames)
+    logging.debug(f"Identifying filtered rnames in the query file - #{nsr} records: {rname_to_qnames.keys()}")
     naligns_total = 0
     nrefs = 0
     refs = set()
-    for rname, rfa in iterate_over_batch(asms_fn, selected_rnames):
+    logging.info(f"Starting the alignment loop")
+
+    # STEP 2: Iterate over compressed assemblies: (ref name, ref FASTA)
+    #   Here it's already restricted only to the references proposed by COBS, i.e, hot candidates
+    for i, (rname, rfa) in enumerate(iterate_over_batch(asms_fn, rname_to_qnames.keys()), 1):
         start = timer()
         refs.add(rname)
 
+        # STEP 2a: identify queries that are to be mapped to this reference (i.e., rname, rfa)
         qfas = []
         qnames = []
         for qname in rname_to_qnames[rname]:
             qnames.append(qname)
             qfa = qname_to_qfa[qname]
             qfas.append(qfa)
-        logging.info(f"Mapping {qnames} to {rname}")
 
-        logging.debug("Starting minimap2 process...")
-        minimap2_output_lines = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset, minimap_threads,
-                                                minimap_extra_params, prefer_pipe)
-        minimap2_output_str = "\n".join(minimap2_output_lines)
+        # STEP 2b: Create a Minimap instance, pass all the data, and get the output lines
+        logging.info(f"Minimapping to {rname} (#{i}): {', '.join(qnames)}")
+        mm_output_lines = minimap_wrapper(rfa, "\n".join(qfas), minimap_preset, minimap_threads, minimap_extra_params,
+                                          prefer_pipe)
         logging.debug("minimap2 finished successfully!")
-        logging.debug(f"Minimap result: {minimap2_output_str}")
-        print(minimap2_output_str)
-        naligns = len(minimap2_output_lines)
+
+        # STEP 2c: Print Minimap output
+        naligns = len(mm_output_lines)
+        minimap_output_is_empty = naligns == 0
+        if not minimap_output_is_empty:
+            mm_output_str = "\n".join(mm_output_lines)
+            print(mm_output_str)
+
+        # STEP 2d: Update & report stats
         naligns_total += naligns
         end = timer()
         s = round(1000 * (end - start)) / 1000.0
         n_q = len(qnames)
         logging.info(f"Computed {naligns} alignments of {n_q} queries to {rname} in {s} seconds")
+
+    # STEP 3: Update & report the final stats
     eend = timer()
     ss = round(1000 * (eend - sstart)) / 1000.0
     nrefs = len(refs)
@@ -469,6 +515,12 @@ def main():
     )
 
     parser.add_argument(
+        '--accessions',
+        default=None,
+        help='Restrict to a list of accesions (e.g., from a single batch)',
+    )
+
+    parser.add_argument(
         'batch_fn',
         metavar='batch.tar.xz',
         help='',
@@ -486,7 +538,8 @@ def main():
                          minimap_preset=args.minimap_preset,
                          minimap_threads=args.threads,
                          minimap_extra_params=args.extra_params,
-                         prefer_pipe=args.pipe)
+                         prefer_pipe=args.pipe,
+                         accessions_fn=args.accessions)
 
 
 if __name__ == "__main__":
