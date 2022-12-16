@@ -124,10 +124,6 @@ def iterate_over_batch(asms_fn, selected_rnames):
 def load_qdicts(query_fn, accession_fn):
     """Load query dictionaries from the merged & filtered query file.
 
-    (!) It's strongly recommended to have accession_fn as then only relevant
-    queries are kept in memory. This is especially important for large input
-    datasets.
-
     Args:
         query_fn (str): Query file.
         accessions_fn (str): File with a list of allowed accessions.
@@ -136,24 +132,20 @@ def load_qdicts(query_fn, accession_fn):
         qname_to_qfa (OrderedDict): qname -> FASTA repr
         rname_to_qnames (dict): rname -> list of queries that should be mapped to this reference
     """
-
     qname_to_qfa = collections.OrderedDict()
 
     # STEP 1: Set up dict for accessions
-    if accession_fn:
-        # all rnames to store, or only some of them?
-        #    some -> use dict with restricted keys
-        #    all  -> use defaultdict
-        # ...rname to be used encoded through key "insertability"
-        with open(accession_fn) as f:
-            s = f.read().strip()
-            accessions = re.split(';|,|\n', s)
-            logging.info(f"Loaded ref accesions to consider: {accessions}")
-        rname_to_qnames = {}
-        for x in accessions:
-            rname_to_qnames[x] = []
-    else:
-        rname_to_qnames = collections.defaultdict(lambda: [])
+    # all rnames to store, or only some of them?
+    #    some -> use dict with restricted keys
+    #    all  -> use defaultdict
+    # ...rname to be used encoded through key "insertability"
+    with open(accession_fn) as f:
+        s = f.read().strip()
+        accessions = re.split(';|,|\n', s)
+        logging.info(f"Loaded ref accesions to consider: {accessions}")
+    rname_to_qnames = {}
+    for x in accessions:
+        rname_to_qnames[x] = []
 
     # STEP 2: Fill up the query dictionaries
     logging.info(f"Loading query dictionaries (query name -> fasta string, ref_name -> list of cobs-matching queries)")
@@ -170,9 +162,9 @@ def load_qdicts(query_fn, accession_fn):
                     # batch accession filtering on & not in this batch
                     pass
 
-    # STEP 3: Ensure everythign get converted to standard dicts
+    # STEP 3: Ensure everything get converted to standard dicts
     logging.info(f"Query dictionaries loaded")
-    return qname_to_qfa, dict(rname_to_qnames)
+    return qname_to_qfa, rname_to_qnames
 
 
 @contextmanager
