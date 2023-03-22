@@ -1,0 +1,20 @@
+from pathlib import Path
+
+batches = [f"batch_{i:03}" for i in range(662)]
+assemblies_dir = Path("Assemblies")
+
+rule all:
+    input: [f"output/kmer_counting/{batch}" for batch in batches]
+
+rule count_kmers:
+    output:
+        kmer_dir=directory("output/kmer_counting/{batch}"),
+    input:
+        assembly_batch=f"{assemblies_dir}/{{batch}}",
+    log:
+        log="logs/count_kmers/{batch}.log",
+    conda:
+        "envs/jellyfish.yaml"
+    params:
+        k=31
+    script: "scripts/count_kmers.py"
