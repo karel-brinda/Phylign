@@ -1,7 +1,7 @@
 from pathlib import Path
 
 batches = [f"batch_{i:03}" for i in range(662)]
-assemblies_dir = Path("Assemblies")
+assemblies_dir = Path(config["assemblies_dir"])
 
 rule all:
     input: [f"output/kmer_counting/{batch}" for batch in batches]
