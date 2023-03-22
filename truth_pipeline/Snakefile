@@ -17,6 +17,7 @@ rule count_kmers:
         log="logs/count_kmers/{batch}.log",
     conda:
         "envs/jellyfish.yaml"
+    shadow: "shallow"
     params:
         k=31
     script: "scripts/count_kmers.py"
