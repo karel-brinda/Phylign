@@ -8,7 +8,7 @@ kmer_size = int(config["k"])
 
 
 rule all:
-    input: [f"output/kmer_matches/{batch}.counts.txt" for batch in batches]
+    input: [f"output/{batch}.counts.txt" for batch in batches]
 
 
 rule count_kmers:
