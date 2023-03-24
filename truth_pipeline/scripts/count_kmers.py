@@ -3,7 +3,6 @@ import subprocess
 
 
 def count_kmers(batch_dir: Path, reads_file: Path, kmer_size: int, kmer_counts: Path):
-    output_dir.mkdir(parents=True, exist_ok=True)
     with open(kmer_counts, "w") as kmer_counts_fh:
         for file in batch_dir.iterdir():
             if file.name.endswith(".fa.gz"):

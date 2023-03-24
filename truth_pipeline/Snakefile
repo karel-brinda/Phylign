@@ -16,7 +16,7 @@ rule count_kmers:
         assembly_batch=f"{assemblies_dir}/{{batch}}",
         reads=config["reads"]
     output:
-        kmer_counts = "output/kmer_matches/{batch}.counts.txt"
+        kmer_counts = "output/{batch}.counts.txt"
     conda:
         "envs/jellyfish.yaml"
     shadow: "shallow"
