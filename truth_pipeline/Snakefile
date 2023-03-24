@@ -6,43 +6,20 @@ batches = [f"batch_{i:03}" for i in range(662)]
 assemblies_dir = Path(config["assemblies_dir"])
 kmer_size = int(config["k"])
 
+
 rule all:
     input: [f"output/kmer_matches/{batch}.counts.txt" for batch in batches]
 
+
 rule count_kmers:
-    output:
-        kmer_dir=directory("output/kmer_counting/{batch}")
     input:
         assembly_batch=f"{assemblies_dir}/{{batch}}",
         reads=config["reads"]
-    log:
-        log="logs/count_kmers/{batch}.log",
+    output:
+        kmer_counts = "output/kmer_matches/{batch}.counts.txt"
     conda:
         "envs/jellyfish.yaml"
     shadow: "shallow"
     params:
         k=kmer_size
     script: "scripts/count_kmers.py"
-
-
-rule count_kmer_matches:
-    input:
-        kmer_dir = rules.count_kmers.output.kmer_dir
-    output:
-        kmer_counts = "output/kmer_matches/{batch}.counts.txt"
-    run:
-        with open(output.kmer_counts, "w") as kmer_counts_fh:
-            for kmer_fasta in Path(input.kmer_dir).iterdir():
-                if kmer_fasta.name.endswith(".fa"):
-                    with open(kmer_fasta) as kmer_fasta_fh:
-                        kmer_present = 0
-                        kmer_absent = 0
-                        for line in kmer_fasta_fh:
-                            if line[0]==">":
-                                line = line.strip()
-                                if line!=">0":
-                                    kmer_present += 1
-                                else:
-                                    kmer_absent += 1
-                        sample = kmer_fasta.name.split(".")[0]
-                        print(f"{sample} {kmer_present} {kmer_absent} {kmer_present/(kmer_present+kmer_absent)}", file=kmer_counts_fh)
