@@ -1,1 +1,3 @@
 assemblies_dir: "/hps/nobackup/iqbal/leandro/cobs/compress_all_data/Assemblies"
+reads: /hps/nobackup/iqbal/leandro/cobs/mof-search/truth_pipeline/reads.fa
+k: 31
