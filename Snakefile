@@ -28,8 +28,8 @@ def get_all_query_filenames():
 
 
 def get_batches():
-    return sorted([x.strip() for x in open(config["batches"])])
-
+    with open(config["batches"]) as fin:
+        return sorted([x.strip() for x in fin])
 
 def get_filename_for_all_queries():
     return "___".join(get_all_query_filenames())
