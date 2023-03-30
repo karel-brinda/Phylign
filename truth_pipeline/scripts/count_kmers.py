@@ -2,8 +2,8 @@ from pathlib import Path
 import subprocess
 
 
-def count_kmers(batch_dir: Path, reads_file: Path, kmer_size: int, kmer_counts: Path):
-    with open(kmer_counts, "w") as kmer_counts_fh:
+def count_kmers(batch_dir: Path, reads_file: Path, kmer_size: int, kmer_counts_filename: Path):
+    with open(kmer_counts_filename, "w") as kmer_counts_fh:
         for file in batch_dir.iterdir():
             if file.name.endswith(".fa.gz"):
                 file = file.resolve()
