@@ -330,10 +330,11 @@ rule decompress_cobs:
         max_io_heavy_threads=1,
     params:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
-    # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
-    threads: lambda wildcards, input: get_number_of_COBS_threads(
-    wildcards, input, predefined_cobs_threads, streaming
-)
+    threads:
+        # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+        lambda wildcards, inp: get_number_of_COBS_threads(
+            wildcards, inp, predefined_cobs_threads, streaming
+        )
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
@@ -356,9 +357,11 @@ rule run_cobs:
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
-    threads: lambda wildcards, input: get_number_of_COBS_threads(
-    wildcards, input, predefined_cobs_threads, streaming
-)
+    threads:
+        # ...
+        lambda wildcards, input: get_number_of_COBS_threads(
+            wildcards, input, predefined_cobs_threads, streaming
+        )
     params:
         kmer_thres=config["cobs_kmer_thres"],
         load_complete="--load-complete" if load_complete else "",
@@ -395,9 +398,11 @@ rule decompress_and_run_cobs:
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
-    threads: lambda wildcards, input: get_number_of_COBS_threads(
-    wildcards, input, predefined_cobs_threads, streaming
-)
+    threads:
+        # ...
+        lambda wildcards, input: get_number_of_COBS_threads(
+            wildcards, input, predefined_cobs_threads, streaming
+        )
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
