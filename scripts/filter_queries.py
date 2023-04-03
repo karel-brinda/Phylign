@@ -177,9 +177,9 @@ class Sift:
         for i, (qname, batch, matches) in enumerate(cobs_iterator(cobs_fn)):
             print(f"Processing batch {batch} query #{i} ({qname})", file=sys.stderr)
             try:
-               _ = self._query_dict[qname]
+                _ = self._query_dict[qname]
             except KeyError:
-               self._query_dict[qname] = SingleQuery(qname, self._keep_matches)
+                self._query_dict[qname] = SingleQuery(qname, self._keep_matches)
             self._query_dict[qname].add_matches(batch, matches)
 
     def print_tsv_summary(self):

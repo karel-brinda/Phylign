@@ -49,12 +49,16 @@ def main():
     main_process = subprocess.Popen(f'{benchmark_command} {args.command}', shell=True)
     if is_benchmarking_pipeline:
         RAM_tmp_log_file = Path(f"{log_file}.RAM.tmp")
-        RAM_benchmarking_process = subprocess.Popen([sys.executable, "scripts/get_RAM_usage.py", str(RAM_tmp_log_file),
-                                                     str(main_process.pid)])
+        RAM_benchmarking_process = subprocess.Popen(
+            [sys.executable, "scripts/get_RAM_usage.py",
+             str(RAM_tmp_log_file),
+             str(main_process.pid)])
     return_code = main_process.wait()
     if return_code:
-        raise subprocess.CalledProcessError(return_code, main_process.args,
-                                 output=main_process.stdout, stderr=main_process.stderr)
+        raise subprocess.CalledProcessError(return_code,
+                                            main_process.args,
+                                            output=main_process.stdout,
+                                            stderr=main_process.stderr)
 
     end_time = datetime.datetime.now()
     elapsed_seconds = (end_time - start_time).total_seconds()
