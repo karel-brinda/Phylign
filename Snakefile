@@ -325,6 +325,7 @@ rule decompress_cobs:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
     input:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
+        decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=1,
     params:

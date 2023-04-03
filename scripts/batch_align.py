@@ -162,7 +162,9 @@ def load_qdicts(query_fn, accession_fn):
                     # batch accession filtering on & not in this batch
                     pass
 
-    # STEP 3: Ensure everything get converted to standard dicts
+    # STEP 3: Filter rname_to_qnames to references that have at least one COBS match
+    rname_to_qnames = {k: v for k, v in rname_to_qnames.items() if len(v) > 0}
+
     logging.info(f"Query dictionaries loaded")
     return qname_to_qfa, rname_to_qnames
 
