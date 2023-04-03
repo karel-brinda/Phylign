@@ -176,13 +176,11 @@ class Sift:
     def process_cobs_file(self, cobs_fn):
         for i, (qname, batch, matches) in enumerate(cobs_iterator(cobs_fn)):
             print(f"Processing batch {batch} query #{i} ({qname})", file=sys.stderr)
-            #try:
-            #    _ = self._query_dict[qname]
-            #except KeyError:
-            #    self._query_dict[qname] = SingleQuery(qname, self._keep_matches)
-            #print(f"qname {qname} batch {batch} matches {matches}")
+            try:
+               _ = self._query_dict[qname]
+            except KeyError:
+               self._query_dict[qname] = SingleQuery(qname, self._keep_matches)
             self._query_dict[qname].add_matches(batch, matches)
-            #print(qname)
 
     def print_tsv_summary(self):
         d = self._query_dict

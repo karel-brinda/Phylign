@@ -14,11 +14,6 @@ Others are non-standard (which you might need to install) and standard (which yo
 * `snakemake >= 6.2.0`
 * `mamba >= 0.20.0`
 
-If you want to benchmark the pipeline and is on `Mac OS X`, you need to install `gnu-time`:
-```
-brew install gnu-time
-```
-
 ### Standard
 * `bash`
 * `make`
@@ -28,6 +23,18 @@ brew install gnu-time
 * `grep`
 * `awk`
 * `diff`
+* `cat`
+* `gzip`
+* `cut`
+
+### Benchmarking
+
+If you want to benchmark the pipeline and is on `Mac OS X`, you need to install `gnu-time`:
+```
+brew install gnu-time
+```
+
+You will also get more benchmarking stats if `psutil` is installed.
 
 ## Walkthrough
 
