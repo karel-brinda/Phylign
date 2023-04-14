@@ -1,4 +1,0 @@
-channels:
- - bioconda
-dependencies:
- - jellyfish=2.2.10
