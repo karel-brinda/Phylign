@@ -109,4 +109,4 @@ For now, all query names have to be unique among all query files.
 
 [Karel Brinda](http://karel-brinda.github.io) \<karel.brinda@inria.fr\>
 
-Leandro Lima \<leandro@ebi.ac.uk\>
+[Leandro Lima](https://github.com/leoisl) \<leandro@ebi.ac.uk\>
