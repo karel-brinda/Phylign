@@ -59,8 +59,10 @@ def get_uncompressed_batch_size(wildcards, input):
     return get_index_metadata(wildcards, input)[0]
 
 
-def get_xz_decompress_RAM(wildcards, input):
-    return get_index_metadata(wildcards, input)[1]
+def get_xz_decompress_RAM_in_MB(wildcards, input):
+    xz_decompression_RAM_usage_in_bytes = get_index_metadata(wildcards, input)[1]
+    xz_decompression_RAM_usage_in_MB = int(xz_decompression_RAM_usage_in_bytes / 1024 / 1024) + 1
+    return xz_decompression_RAM_usage_in_MB
 
 
 def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming):
@@ -68,10 +70,7 @@ def get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming):
         return 0
     if streaming:
         # then we are decompressing and running cobs at the same time
-        xz_decompression_RAM_usage_in_bytes = get_xz_decompress_RAM(wildcards, input)
-        xz_decompression_RAM_usage_in_MB = (
-            int(xz_decompression_RAM_usage_in_bytes / 1024 / 1024) + 1
-        )
+        xz_decompression_RAM_usage_in_MB = get_xz_decompress_RAM_in_MB(wildcards, input)
     else:
         xz_decompression_RAM_usage_in_MB = 0
     size_in_bytes = get_uncompressed_batch_size(wildcards, input)
@@ -249,6 +248,7 @@ rule download_asm_batch:
         url=asms_url,
     resources:
         max_download_threads=1,
+        mem_mb=200
     threads: 1
     shell:
         """
@@ -266,6 +266,7 @@ rule download_cobs_batch:
         url=cobs_url_fct,
     resources:
         max_download_threads=1,
+        mem_mb=200
     threads: 1
     shell:
         """
@@ -291,6 +292,8 @@ rule fix_query:
     input:
         original_query=get_query_file,
     threads: 1
+    resources:
+        mem_mb=200
     conda:
         "envs/seqtk.yaml"
     params:
@@ -313,6 +316,8 @@ rule concatenate_queries:
             "intermediate/fixed_queries/{qfile}.fa", qfile=get_all_query_filenames()
         ),
     threads: 1
+    resources:
+        mem_mb=200
     shell:
         """
         cat {input} > {output}
@@ -329,6 +334,7 @@ rule decompress_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=1,
+        mem_mb=lambda wildcards, input: get_xz_decompress_RAM_in_MB(wildcards, input)
     params:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     threads:
@@ -356,6 +362,9 @@ rule run_cobs:
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
+            wildcards, input, ignore_RAM, streaming
+        ),
+        mem_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
     threads:
@@ -397,6 +406,9 @@ rule decompress_and_run_cobs:
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
+            wildcards, input, ignore_RAM, streaming
+        ),
+        mem_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
     threads:
@@ -460,6 +472,8 @@ rule translate_matches:
     conda:
         "envs/minimap2.yaml"
     threads: 1
+    resources:
+        mem_mb=lambda wildcards, attempt: 4000 * 2**(attempt)  # 4GB, 8GB, 16GB, 32GB...
     log:
         "logs/translate_matches/{qfile}.log",
     params:
@@ -491,6 +505,8 @@ rule batch_align_minimap2:
     conda:
         "envs/minimap2.yaml"
     threads: config["minimap_threads"]
+    resources:
+        mem_mb=lambda wildcards, attempt: 1000 * 2**(attempt)  # 1GB, 2GB, 4GB, 8GB...
     shell:
         """
         xzcat data/661k_batches.txt.xz \\
@@ -521,6 +537,9 @@ rule aggregate_sams:
         pseudosam="output/{qfile}.sam_summary.gz",
     input:
         sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam.gz" for batch in batches],
+    threads: 1
+    resources:
+        mem_mb=lambda wildcards, attempt: 1000 * 2**(attempt)  # 1GB, 2GB, 4GB, 8GB...
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/aggregate_sams___{wildcards.qfile}.txt \\
@@ -537,6 +556,9 @@ rule final_stats:
         concatenated_query=f"intermediate/concatenated_query/{get_filename_for_all_queries()}.fa",
     conda:
         "envs/minimap2.yaml"
+    threads: 1
+    resources:
+        mem_mb=lambda wildcards, attempt: 1000 * 2**(attempt)  # 1GB, 2GB, 4GB, 8GB...
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/final_stats___{wildcards.qfile}.txt \\
