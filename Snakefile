@@ -364,7 +364,7 @@ rule run_cobs:
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
-        mem_mb=lambda wildcards, input: int(get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)*1.25),
+        mem_mb=lambda wildcards, input: int(get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)+1024),
     threads:
         # ...
         lambda wildcards, input: get_number_of_COBS_threads(
@@ -406,7 +406,7 @@ rule decompress_and_run_cobs:
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
-        mem_mb=lambda wildcards, input: int(get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)*1.25),
+        mem_mb=lambda wildcards, input: int(get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)+1024),
     threads:
         # ...
         lambda wildcards, input: get_number_of_COBS_threads(
