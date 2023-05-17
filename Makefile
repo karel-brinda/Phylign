@@ -74,9 +74,11 @@ cluster_slurm: ## Submit to a SLURM cluster
         --wrap="make"
 
 cluster_lsf_test: ## Submit the test pipeline to LSF cluster
+	scripts/check_if_config_is_ok_for_cluster_run.py
 	scripts/submit_lsf.sh test
 
 cluster_lsf: ## Submit to LSF cluster
+	scripts/check_if_config_is_ok_for_cluster_run.py
 	scripts/submit_lsf.sh
 
 viewconf: ## View configuration without comments
