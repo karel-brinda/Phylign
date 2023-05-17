@@ -334,7 +334,7 @@ rule decompress_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=1,
-        mem_mb=lambda wildcards, input: get_xz_decompress_RAM_in_MB(wildcards, input)
+        mem_mb=lambda wildcards, input: int(get_xz_decompress_RAM_in_MB(wildcards, input)*1.25)
     params:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     threads:
@@ -364,9 +364,7 @@ rule run_cobs:
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
-        mem_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
-            wildcards, input, ignore_RAM, streaming
-        ),
+        mem_mb=lambda wildcards, input: int(get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)*1.25),
     threads:
         # ...
         lambda wildcards, input: get_number_of_COBS_threads(
@@ -408,9 +406,7 @@ rule decompress_and_run_cobs:
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
-        mem_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
-            wildcards, input, ignore_RAM, streaming
-        ),
+        mem_mb=lambda wildcards, input: int(get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)*1.25),
     threads:
         # ...
         lambda wildcards, input: get_number_of_COBS_threads(
