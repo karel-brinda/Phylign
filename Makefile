@@ -19,9 +19,9 @@ all: ## Run everything
 	make map
 
 test: ## Run everything but just with 3 batches to test full pipeline
-	snakemake $(SMK_PARAMS) -j 99999 --config batches=data/batches_small.txt -- download  # download is not benchmarked
-	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1 -- match"
-	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1 -- map"
+	snakemake download $(SMK_PARAMS) -j 99999 --config batches=data/batches_small.txt  # download is not benchmarked
+	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake match $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
+	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
 	@if diff -q <(gunzip --stdout output/reads_1___reads_2___reads_3___reads_4.sam_summary.gz | cut -f -3) <(xzcat data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz | cut -f -3); then\
 	    echo "Success! Test run produced the expected output.";\
 	else\
@@ -30,13 +30,13 @@ test: ## Run everything but just with 3 batches to test full pipeline
 	fi
 
 download: ## Download the 661k assemblies and COBS indexes, not benchmarked
-	snakemake $(SMK_PARAMS) -j 99999 -- download
+	snakemake download $(SMK_PARAMS) -j 99999
 
 match: ## Match queries using COBS (queries -> candidates)
-	scripts/benchmark.py --log logs/benchmarks/match_$(DATETIME).txt "snakemake $(SMK_PARAMS) -- match"
+	scripts/benchmark.py --log logs/benchmarks/match_$(DATETIME).txt "snakemake match $(SMK_PARAMS)"
 
 map: ## Map candidates to assemblies (candidates -> alignments)
-	scripts/benchmark.py --log logs/benchmarks/map_$(DATETIME).txt   "snakemake $(SMK_PARAMS) -- map"
+	scripts/benchmark.py --log logs/benchmarks/map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS)"
 
 report: ## Generate Snakemake report
 	snakemake --report
