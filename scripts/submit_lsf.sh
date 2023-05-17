@@ -13,6 +13,6 @@ bsub -R "select[mem>$MEMORY] rusage[mem=$MEMORY] span[hosts=1]" \
     -o "$LOG_DIR"/"$JOB_NAME".o \
     -e "$LOG_DIR"/"$JOB_NAME".e \
     -J "$JOB_NAME" \
-      make SMK_ARGS="--profile $PROFILE" "$@"
+      make SMK_CLUSTER_ARGS="--profile $PROFILE" "$@"
 
 exit 0
