@@ -339,8 +339,8 @@ rule decompress_cobs:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
     threads:
         # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
-        lambda wildcards, inp: get_number_of_COBS_threads(
-            wildcards, inp, predefined_cobs_threads, streaming
+        lambda wildcards, input: get_number_of_COBS_threads(
+            wildcards, input, predefined_cobs_threads, streaming
         )
     shell:
         """
