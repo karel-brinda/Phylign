@@ -65,13 +65,19 @@ clean: ## Clean intermediate search files
 cleanall: clean ## Clean all generated and downloaded files
 	rm -f {asms,cobs}/*.xz{,.tmp}
 
-cluster: ## Submit to a SLURM cluster
+cluster_slurm: ## Submit to a SLURM cluster
 	sbatch \
         -c 10 \
         -p priority \
         --mem=80GB \
         -t 0-08:00:00 \
         --wrap="make"
+
+cluster_lsf_test: ## Submit the test pipeline to LSF cluster
+	scripts/submit_lsf.sh test
+
+cluster_lsf: ## Submit to LSF cluster
+	scripts/submit_lsf.sh
 
 viewconf: ## View configuration without comments
 	@cat config.yaml \
