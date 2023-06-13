@@ -47,15 +47,18 @@ minimap_extra_params: "--eqx"
 # general
 
 # overall number of threads to use in the pipeline, an integer number (e.g. 8 for 8 threads) or "all" (to use all threads)
+# WARNING: this parameter is ignored when running on a cluster
 threads: all
 
 # maximum RAM to use in GB - this should be at most 80% of your max RAM
 # note: if you use more than your available RAM, constant page swapping will happen and the pipeline will severely
 # slow down.
 # if index_load_mode == mmap-disk, then this parameter is ignored as the OS will manage RAM usage
+# WARNING: this parameter is ignored when running on a cluster
 max_ram_gb: 12
 
 # maximum number of download threads at a time (note: too many might slow down download speed)
+# WARNING: this parameter is ignored when running on a cluster
 max_download_threads: 8
 ##################################################
 
@@ -67,6 +70,7 @@ max_download_threads: 8
 # auto: sets cobs_threads automatically, proportional to the amount of RAM used
 # auto(N): same as auto, but the maximum number of threads is N, where N is an integer > 0
 # N: sets cobs_threads to a fixed value N, where N is an integer > 0 (note: too many might limit the pipeline parallelism)
+# WARNING: this parameter MUST BE SET to a fixed int value when running on a cluster
 cobs_threads: auto
 
 # specify how to load the kmer index. Options are:
@@ -90,6 +94,7 @@ index_load_mode: mem-stream
 # I/O-heavy threads include:
 #     * 1 thread for xz-decompression of COBS kmer indexes;
 #     * 1 thread for each COBS process if index_load_mode is mmap-disk
+# WARNING: this parameter is ignored when running on a cluster
 max_io_heavy_threads: 8
 ##################################################
 

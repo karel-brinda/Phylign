@@ -72,7 +72,15 @@ This is our recommended steps to run `mof-search`:
 * `make clean`      Clean intermediate search files
 * `make cleanall`   Clean all generated and downloaded file
 
+## Running on a cluster
 
+Running on a cluster is much faster as the jobs produced by this pipeline are quite light and usually start running as
+soon as they are scheduled.
+
+### Running on a LSF cluster
+
+1. Test if the pipeline is working on a LSF cluster: `make cluster_lsf_test`;
+2. Configure you queries and run the full pipeline: `make cluster_lsf`;
 
 ## Directories
 
