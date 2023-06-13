@@ -1,6 +1,25 @@
-# MOF-search
+# MOF-Search
 
-This is the pipeline for BLAST-like search within the 661k collection.
+MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)).
+
+<!-- vim-markdown-toc GFM -->
+
+* [Dependencies](#dependencies)
+  * [Non-standard](#non-standard)
+  * [Standard](#standard)
+  * [Benchmarking](#benchmarking)
+* [Walkthrough](#walkthrough)
+* [Commands](#commands)
+* [Running on a cluster](#running-on-a-cluster)
+  * [Running on a LSF cluster](#running-on-a-lsf-cluster)
+* [Directories](#directories)
+* [Notes](#notes)
+  * [Non-`ACGT` bases](#non-acgt-bases)
+  * [Query files](#query-files)
+  * [Query names](#query-names)
+* [Contacts](#contacts)
+
+<!-- vim-markdown-toc -->
 
 
 ## Dependencies
