@@ -1,59 +1,126 @@
 # MOF-Search
 
-MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)).
-
 <!-- vim-markdown-toc GFM -->
 
-* [Dependencies](#dependencies)
-* [Walkthrough](#walkthrough)
-* [Commands](#commands)
-* [Running on a cluster](#running-on-a-cluster)
-  * [Running on a LSF cluster](#running-on-a-lsf-cluster)
-* [Directories](#directories)
-* [Notes](#notes)
-  * [Non-`ACGT` bases](#non-acgt-bases)
-  * [Query files](#query-files)
-  * [Query names](#query-names)
+* [Introduction](#introduction)
+  * [Citation](#citation)
+* [Installation](#installation)
+  * [Step 1: Installing dependencies](#step-1-installing-dependencies)
+  * [Step 2: Cloning the repository](#step-2-cloning-the-repository)
+  * [Step 3: Running a simple test](#step-3-running-a-simple-test)
+  * [Step 4: Downloading the remaining database files](#step-4-downloading-the-remaining-database-files)
+* [Usage](#usage)
+  * [Step 1: Provide your queries](#step-1-provide-your-queries)
+  * [Step 2: Adjust configuration for your type of search](#step-2-adjust-configuration-for-your-type-of-search)
+  * [Step 3: Clean up intermediate files](#step-3-clean-up-intermediate-files)
+  * [Step 4: Run the pipeline](#step-4-run-the-pipeline)
+  * [Step 5: Analyze your results](#step-5-analyze-your-results)
+* [Additional information](#additional-information)
+  * [Commands](#commands)
+  * [Directories](#directories)
+  * [Running on a cluster](#running-on-a-cluster)
+  * [Known limitations](#known-limitations)
+* [License](#license)
 * [Contacts](#contacts)
 
 <!-- vim-markdown-toc -->
 
 
-## Dependencies
+## Introduction
+
+MOF-Search implements BLAST-like search across all pre-2019 bacteria
+from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)) for standard desktop and laptops computers.
+
+The tool is uses the technique called phylogenetic compression, which uses the estimated evolutionary history of microbes to compress data using existing algorithms and data structures. For more information about the technique, see the [corresponding paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (and its [supplementary](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf) and the associated website for the [MOF framework](http://karel-brinda.github.io/mof).
+
+
+### Citation
+
+> K. Břinda, L. Lima, S. Pignotti, N. Quinones-Olvera, K. Salikhov, R. Chikhi, G. Kucherov, Z. Iqbal, and M. Baym. Efficient and Robust Search of Microbial Genomes via Phylogenetic Compression. bioRxiv 2023.04.15.536996, 2023. https://doi.org/10.1101/2023.04.15.536996
+
+
+## Installation
+
+### Step 1: Installing dependencies
 
 MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
-pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having
-correctly, it requires the following pre-installed packages:
-
-* `python >= 3.7`
-* `snakemake >= 6.2.0`
-* [Conda](https://docs.conda.io/en/latest/miniconda.html) and preferentially also `mamba >= 0.20.0`
-*  OSX: GNU time (can be installed by `brew install gnu-time`).
+pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having Conda with the following packages:
 
 
-## Walkthrough
+* [Conda](https://docs.conda.io/en/latest/miniconda.html)
+* [GNU time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by `brew install gnu-time`).
+* [Python](https://www.python.org/) (>=3.7)
+* [Snakemake](https://snakemake.github.io) (>=6.2.0)
+* [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, recommended
 
-This is our recommended steps to run `mof-search`:
-
-1. Run `make test` to ensure the pipeline works for the sample queries and just 3 batches. This will also setup `COBS`;
-    * Note: `make test` should return 0 (success) and you should have the following message at the end of the execution,
-    to ensure the test produced the expected output:
-    ```
-    Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
-    ```
-    If the test did not produce the expected output, you should get this error message:
-    ```
-    Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ
-    make: *** [Makefile:21: test] Error 1
-    ```
-2. Run `make download` to download all the assemblies and batches for the 661k;
-3. Run `make clean` to clean the intermediate files from the previous run;
-4. Add your desired queries to the `queries` directory and remove the sample ones;
-5. Run `make` to run align your queries to the 661k.
+The last three packages can be installed using Conda by
+```bash
+    conda install -y python>=3.7 snakemake>=6.2.0 mamba>=0.20.0
+```
 
 
+### Step 2: Cloning the repository
 
-## Commands
+```bash
+   git https://github.com/karel-brinda/mof-search
+   cd mof-search
+```
+
+### Step 3: Running a simple test
+
+Run `make test` to ensure the pipeline works for the sample queries and just
+   3 batches. This will also install additional dependencies using Conda or Mamba, such as COBS, SeqTK, and Minimap 2.
+
+**Notes:**
+* `make test` should return 0 (success) and you should have the following
+message at the end of the execution, to ensure the test produced the expected
+output:
+  ```bash
+     Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
+  ```
+
+* If the test did not produce the expected output and you obtained an error message such as
+  ```bash
+     Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ make: *** [Makefile:21: test] Error 1
+  ```
+you should verify why.
+
+
+### Step 4: Downloading the remaining database files
+
+Run `make download` to download all the remaining assemblies and COBS *k*-mer
+indexes for the 661k-HQ collection.
+
+
+## Usage
+
+### Step 1: Provide your queries
+
+Remove the default test files in the `queries/` directory and copy or symlink
+your queries. The supported input formats are FASTA and FASTQ, possibly gzipped.
+
+### Step 2: Adjust configuration for your type of search
+
+Edit the `config.yaml` file. All the options are documented directly there.
+
+### Step 3: Clean up intermediate files
+
+Run `make clean` to clean the intermediate files from the previous runs. This includes COBS matching files, alignments, and various statistics
+
+### Step 4: Run the pipeline
+
+Simply run `make`, which will execute Snakemake with the corresponding parameters. If you want to run the pipeline step by step, run `make match` followed by `make map`.
+
+### Step 5: Analyze your results
+
+Check the output files in `results/`.
+
+If the results don't correspond to what you expected and you need to adjust parameters, go to Step 2. If only the mapping part is to be affected, after changing the configuration, remove only the files in `intermediate/03_map` and `output/` and go directly to Step 4.
+
+
+## Additional information
+
+### Commands
 
 * `make`            Run everything
 * `make test`       Run the queries on 3 batches, to test the pipeline completely
@@ -67,17 +134,7 @@ This is our recommended steps to run `mof-search`:
 * `make clean`      Clean intermediate search files
 * `make cleanall`   Clean all generated and downloaded file
 
-## Running on a cluster
-
-Running on a cluster is much faster as the jobs produced by this pipeline are quite light and usually start running as
-soon as they are scheduled.
-
-### Running on a LSF cluster
-
-1. Test if the pipeline is working on a LSF cluster: `make cluster_lsf_test`;
-2. Configure you queries and run the full pipeline: `make cluster_lsf`;
-
-## Directories
+### Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
 * `queries/` Queries, to be provided within one or more FASTA files (`.fa`)
@@ -90,26 +147,36 @@ soon as they are scheduled.
 * `output/` Results
 
 
+### Running on a cluster
 
-## Notes
+Running on a cluster is much faster as the jobs produced by this pipeline are quite light and usually start running as
+soon as they are scheduled.
 
-### Non-`ACGT` bases
+**For LSF clusters:**
 
-All non-`ACGT` bases in your queries are transformed into `A`.
+1. Test if the pipeline is working on a LSF cluster: `make cluster_lsf_test`;
+2. Configure you queries and run the full pipeline: `make cluster_lsf`;
 
-### Query files
 
-Try to keep the number of query files low or their name short.
-If you have tens or hundreds or more query files, concatenate them all into one before running `mof-search`.
 
-### Query names
+### Known limitations
 
-For now, all query names have to be unique among all query files.
+
+* All methods rely on the ACGT alphabet, and all non-`ACGT` characters in your query files are transformed into `A`.
+
+* When the number of queries is too high, the auxiliary Python scripts start to use too much memory, which may result in swapping. Try to keep the number of queries moderate and ideally their names short. If you have tens or hundreds or more query files, concatenate them all into one before running `mof-search`.
+
+* All query names have to be unique among all query files.
+
+
+
+## License
+
+[MIT](https://github.com/karel-brinda/ococo/blob/master/LICENSE)
 
 
 
 ## Contacts
 
-[Karel Brinda](http://karel-brinda.github.io) \<karel.brinda@inria.fr\>
-
-[Leandro Lima](https://github.com/leoisl) \<leandro@ebi.ac.uk\>
+* [Karel Brinda](http://karel-brinda.github.io) \<karel.brinda@inria.fr\>
+* [Leandro Lima](https://github.com/leoisl) \<leandro@ebi.ac.uk\>
