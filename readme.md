@@ -9,12 +9,15 @@
   * [Step 3: Running a simple test](#step-3-running-a-simple-test)
   * [Step 4: Downloading the remaining database files](#step-4-downloading-the-remaining-database-files)
 * [Usage](#usage)
-  * [Running](#running)
+  * [Step 1: Provide your queries](#step-1-provide-your-queries)
+  * [Step 2: Adjust configuration of your type of search](#step-2-adjust-configuration-of-your-type-of-search)
+  * [Step 3: Clean up intermediate files](#step-3-clean-up-intermediate-files)
+  * [Step 4: Run the pipeline](#step-4-run-the-pipeline)
+  * [Step 5: Analyze your results](#step-5-analyze-your-results)
   * [Commands](#commands)
-  * [Running on a cluster](#running-on-a-cluster)
-    * [LSF](#lsf)
 * [Files and outputs](#files-and-outputs)
   * [Directories](#directories)
+* [Running on a cluster](#running-on-a-cluster)
 * [Known limitations](#known-limitations)
 * [Contacts](#contacts)
 
@@ -42,36 +45,35 @@ pipeline, using the Conda system to manage all non-standard dependencies. To fun
 * [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, recommended
 
 The last three packages can be installed using Conda by
-```
+```bash
     conda install -y python>=3.7 snakemake>=6.2.0 mamba>=0.20.0
 ```
 
 
 ### Step 2: Cloning the repository
 
-**Quick example:**
-
-```
-   git clone --recursive https://github.com/karel-brinda/mof-search
+```bash
+   git https://github.com/karel-brinda/mof-search
    cd mof-search
 ```
 
 ### Step 3: Running a simple test
 
 Run `make test` to ensure the pipeline works for the sample queries and just
-   3 batches. This will also setup `COBS`;
+   3 batches. This will also install additional dependencies using Conda or Mamba, such as COBS, SeqTK, and Minimap 2.
 
-`make test` should return 0 (success) and you should have the following
+**Notes:**
+* `make test` should return 0 (success) and you should have the following
 message at the end of the execution, to ensure the test produced the expected
 output:
-```
-   Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
-```
+  ```bash
+     Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
+  ```
 
-If the test did not produce the expected output and you obtained an error message such as
-```
-   Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ make: *** [Makefile:21: test] Error 1
-```
+* If the test did not produce the expected output and you obtained an error message such as
+  ```bash
+     Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ make: *** [Makefile:21: test] Error 1
+  ```
 you should verify why.
 
 
@@ -83,14 +85,28 @@ indexes for the 661k-HQ collection.
 
 ## Usage
 
-### Running
+### Step 1: Provide your queries
 
-This is our recommended steps to run `mof-search`:
+Remove the default test files in the `queries/` directory and copy or symlink
+your queries. The supported input formats are FASTA and FASTQ, possibly gzipped.
 
-1. Run `make clean` to clean the intermediate files from the previous run;
-2. Add your desired queries to the `queries` directory and remove the sample
-   ones;
-3. Run `make` to run align your queries to the 661k.
+### Step 2: Adjust configuration of your type of search
+
+Edit the `config.yaml` file. All the options are documented directly there.
+
+### Step 3: Clean up intermediate files
+
+Run `make clean` to clean the intermediate files from the previous runs. This includes COBS matching files, alignments, and various statistics
+
+### Step 4: Run the pipeline
+
+Simply run `make`, which will execute Snakemake with the corresponding parameters. If you want to run the pipeline step by step, run `make match` followed by `make map`.
+
+### Step 5: Analyze your results
+
+Check the output files in `results/`.
+
+If the results don't correspond to what you expected and you need to adjust parameters, go to Step 2. If only the mapping part is to be affected, after changing the configuration, remove only the files in `intermediate/03_map` and `output/` and go directly to Step 4.
 
 
 ### Commands
@@ -107,16 +123,6 @@ This is our recommended steps to run `mof-search`:
 * `make clean`      Clean intermediate search files
 * `make cleanall`   Clean all generated and downloaded file
 
-### Running on a cluster
-
-Running on a cluster is much faster as the jobs produced by this pipeline are quite light and usually start running as
-soon as they are scheduled.
-
-#### LSF
-
-1. Test if the pipeline is working on a LSF cluster: `make cluster_lsf_test`;
-2. Configure you queries and run the full pipeline: `make cluster_lsf`;
-
 
 
 ## Files and outputs
@@ -132,6 +138,18 @@ soon as they are scheduled.
    * `03_map` Minimap2 alignments
    * `fixed_queries` Sanitized queries
 * `output/` Results
+
+
+
+## Running on a cluster
+
+Running on a cluster is much faster as the jobs produced by this pipeline are quite light and usually start running as
+soon as they are scheduled.
+
+**For LSF clusters:**
+
+1. Test if the pipeline is working on a LSF cluster: `make cluster_lsf_test`;
+2. Configure you queries and run the full pipeline: `make cluster_lsf`;
 
 
 
