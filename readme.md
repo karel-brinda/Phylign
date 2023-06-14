@@ -55,7 +55,7 @@ pipeline, using the Conda system to manage all non-standard dependencies. To fun
 
 The last three packages can be installed using Conda by
 ```bash
-    conda install -y python>=3.7 snakemake>=6.2.0 mamba>=0.20.0
+    conda install -y "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
 ```
 
 
