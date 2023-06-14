@@ -4,10 +4,12 @@
 
 * [Introduction](#introduction)
 * [Installation](#installation)
-  * [Quick example](#quick-example)
-  * [Dependencies](#dependencies)
+  * [Step 1: Installing dependencies](#step-1-installing-dependencies)
+  * [Step 2: Cloning the repository](#step-2-cloning-the-repository)
+  * [Step 3: Running a simple test](#step-3-running-a-simple-test)
+  * [Step 4: Downloading the remaining database files](#step-4-downloading-the-remaining-database-files)
 * [Usage](#usage)
-  * [Walkthrough](#walkthrough)
+  * [Running](#running)
   * [Commands](#commands)
   * [Running on a cluster](#running-on-a-cluster)
     * [LSF](#lsf)
@@ -21,61 +23,74 @@
 
 ## Introduction
 
-MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
-from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)).
+MOF-Search implements BLAST-like search across all pre-2019 bacteria
+from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)) for standard desktop and laptops computers.
 
 
 ## Installation
 
-### Quick example
-
-
-```
-   git clone --recursive https://github.com/karel-brinda/mof-search
-   cd mof-search
-   make test
-```
-
-
-### Dependencies
+### Step 1: Installing dependencies
 
 MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
 pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having Conda with the following packages:
 
 
 * [Conda](https://docs.conda.io/en/latest/miniconda.html)
+* [GNU time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by `brew install gnu-time`).
 * [Python](https://www.python.org/) (>=3.7)
 * [Snakemake](https://snakemake.github.io) (>=6.2.0)
-* Preferably also [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0)
+* [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, recommended
 
-Note that the latter three can be installed by `conda install -y python>=3.7 snakemake>=6.2.0 mamba>=0.20.0`
+The last three packages can be installed using Conda by
+```
+    conda install -y python>=3.7 snakemake>=6.2.0 mamba>=0.20.0
+```
 
-Additional dependendy for OS X:
-*  [GNU time](https://www.gnu.org/software/time/) (can be installed by `brew install gnu-time`).
 
+### Step 2: Cloning the repository
+
+**Quick example:**
+
+```
+   git clone --recursive https://github.com/karel-brinda/mof-search
+   cd mof-search
+```
+
+### Step 3: Running a simple test
+
+Run `make test` to ensure the pipeline works for the sample queries and just
+   3 batches. This will also setup `COBS`;
+
+`make test` should return 0 (success) and you should have the following
+message at the end of the execution, to ensure the test produced the expected
+output:
+```
+   Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
+```
+
+If the test did not produce the expected output and you obtained an error message such as
+```
+   Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ make: *** [Makefile:21: test] Error 1
+```
+you should verify why.
+
+
+### Step 4: Downloading the remaining database files
+
+Run `make download` to download all the remaining assemblies and COBS *k*-mer
+indexes for the 661k-HQ collection.
 
 
 ## Usage
 
-### Walkthrough
+### Running
 
 This is our recommended steps to run `mof-search`:
 
-1. Run `make test` to ensure the pipeline works for the sample queries and just 3 batches. This will also setup `COBS`;
-    * Note: `make test` should return 0 (success) and you should have the following message at the end of the execution,
-    to ensure the test produced the expected output:
-    ```
-    Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
-    ```
-    If the test did not produce the expected output, you should get this error message:
-    ```
-    Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ
-    make: *** [Makefile:21: test] Error 1
-    ```
-2. Run `make download` to download all the assemblies and batches for the 661k;
-3. Run `make clean` to clean the intermediate files from the previous run;
-4. Add your desired queries to the `queries` directory and remove the sample ones;
-5. Run `make` to run align your queries to the 661k.
+1. Run `make clean` to clean the intermediate files from the previous run;
+2. Add your desired queries to the `queries` directory and remove the sample
+   ones;
+3. Run `make` to run align your queries to the 661k.
 
 
 ### Commands
