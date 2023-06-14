@@ -31,7 +31,7 @@
 MOF-Search implements BLAST-like search across all pre-2019 bacteria
 from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)) for standard desktop and laptops computers.
 
-The tool is uses the technique called phylogenetic compression, which uses the estimated evolutionary history of microbes to compress data using existing algorithms and data structures. For more information about the technique, see the [corresponding paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (and its [supplementary](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf) and the associated website for the [MOF framework](http://karel-brinda.github.io/mof).
+The tool is uses the technique called phylogenetic compression, which uses the estimated evolutionary history of microbes to compress data using existing algorithms and data structures. For more information about the technique, see the [corresponding paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (and its [supplementary](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf) and the associated website for the whole [MOF framework](http://karel-brinda.github.io/mof)).
 
 
 ### Citation
