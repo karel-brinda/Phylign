@@ -192,7 +192,7 @@ soon as they are scheduled.
 
 ## License
 
-[MIT](https://github.com/karel-brinda/ococo/blob/master/LICENSE)
+[MIT](https://github.com/karel-brinda/mof-search/blob/master/LICENSE)
 
 
 
