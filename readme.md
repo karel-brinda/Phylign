@@ -3,6 +3,7 @@
 <!-- vim-markdown-toc GFM -->
 
 * [Introduction](#introduction)
+  * [Citation](#citation)
 * [Installation](#installation)
   * [Step 1: Installing dependencies](#step-1-installing-dependencies)
   * [Step 2: Cloning the repository](#step-2-cloning-the-repository)
@@ -10,15 +11,16 @@
   * [Step 4: Downloading the remaining database files](#step-4-downloading-the-remaining-database-files)
 * [Usage](#usage)
   * [Step 1: Provide your queries](#step-1-provide-your-queries)
-  * [Step 2: Adjust configuration of your type of search](#step-2-adjust-configuration-of-your-type-of-search)
+  * [Step 2: Adjust configuration for your type of search](#step-2-adjust-configuration-for-your-type-of-search)
   * [Step 3: Clean up intermediate files](#step-3-clean-up-intermediate-files)
   * [Step 4: Run the pipeline](#step-4-run-the-pipeline)
   * [Step 5: Analyze your results](#step-5-analyze-your-results)
+* [Additional information](#additional-information)
   * [Commands](#commands)
-* [Files and outputs](#files-and-outputs)
   * [Directories](#directories)
-* [Running on a cluster](#running-on-a-cluster)
-* [Known limitations](#known-limitations)
+  * [Running on a cluster](#running-on-a-cluster)
+  * [Known limitations](#known-limitations)
+* [License](#license)
 * [Contacts](#contacts)
 
 <!-- vim-markdown-toc -->
@@ -28,6 +30,13 @@
 
 MOF-Search implements BLAST-like search across all pre-2019 bacteria
 from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)) for standard desktop and laptops computers.
+
+The tool is uses the technique called phylogenetic compression, which uses the estimated evolutionary history of microbes to compress data using existing algorithms and data structures. For more information about the technique, see the [corresponding paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (and its [supplementary](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf) and the associated website for the [MOF framework](http://karel-brinda.github.io/mof).
+
+
+### Citation
+
+> K. Břinda, L. Lima, S. Pignotti, N. Quinones-Olvera, K. Salikhov, R. Chikhi, G. Kucherov, Z. Iqbal, and M. Baym, “Efficient and robust search of microbial genomes via Phylogenetic Compression,” bioRxiv 2023.04.15.536996, 2023. https://doi.org/10.1101/2023.04.15.536996
 
 
 ## Installation
@@ -90,7 +99,7 @@ indexes for the 661k-HQ collection.
 Remove the default test files in the `queries/` directory and copy or symlink
 your queries. The supported input formats are FASTA and FASTQ, possibly gzipped.
 
-### Step 2: Adjust configuration of your type of search
+### Step 2: Adjust configuration for your type of search
 
 Edit the `config.yaml` file. All the options are documented directly there.
 
@@ -109,6 +118,8 @@ Check the output files in `results/`.
 If the results don't correspond to what you expected and you need to adjust parameters, go to Step 2. If only the mapping part is to be affected, after changing the configuration, remove only the files in `intermediate/03_map` and `output/` and go directly to Step 4.
 
 
+## Additional information
+
 ### Commands
 
 * `make`            Run everything
@@ -123,10 +134,6 @@ If the results don't correspond to what you expected and you need to adjust para
 * `make clean`      Clean intermediate search files
 * `make cleanall`   Clean all generated and downloaded file
 
-
-
-## Files and outputs
-
 ### Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
@@ -140,8 +147,7 @@ If the results don't correspond to what you expected and you need to adjust para
 * `output/` Results
 
 
-
-## Running on a cluster
+### Running on a cluster
 
 Running on a cluster is much faster as the jobs produced by this pipeline are quite light and usually start running as
 soon as they are scheduled.
@@ -153,7 +159,7 @@ soon as they are scheduled.
 
 
 
-## Known limitations
+### Known limitations
 
 
 * All methods rely on the ACGT alphabet, and all non-`ACGT` characters in your query files are transformed into `A`.
@@ -164,8 +170,13 @@ soon as they are scheduled.
 
 
 
+## License
+
+[MIT](https://github.com/karel-brinda/ococo/blob/master/LICENSE)
+
+
+
 ## Contacts
 
-[Karel Brinda](http://karel-brinda.github.io) \<karel.brinda@inria.fr\>
-
-[Leandro Lima](https://github.com/leoisl) \<leandro@ebi.ac.uk\>
+* [Karel Brinda](http://karel-brinda.github.io) \<karel.brinda@inria.fr\>
+* [Leandro Lima](https://github.com/leoisl) \<leandro@ebi.ac.uk\>
