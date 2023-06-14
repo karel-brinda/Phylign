@@ -20,12 +20,16 @@ else
     SMK_PARAMS=--cores all --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_download_threads=10000000 max_io_heavy_threads=10000000 max_ram_mb=1000000000 $(SMK_CLUSTER_ARGS)
 endif
 
-all: ## Run everything
+
+######################
+## General commands ##
+######################
+all: ## Run everything (the default rule)
 	make download
 	make match
 	make map
 
-test: ## Run everything but just with 3 batches to test full pipeline
+test: ## Quick test using 3 batches
 	snakemake download $(SMK_PARAMS) -j 99999 --config batches=data/batches_small.txt  # download is not benchmarked
 	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake match $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
 	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
@@ -36,24 +40,10 @@ test: ## Run everything but just with 3 batches to test full pipeline
 	    exit 1;\
 	fi
 
-download: ## Download the 661k assemblies and COBS indexes, not benchmarked
-	snakemake download $(SMK_PARAMS) -j 99999
-
-match: ## Match queries using COBS (queries -> candidates)
-	scripts/benchmark.py --log logs/benchmarks/match_$(DATETIME).txt "snakemake match $(SMK_PARAMS)"
-
-map: ## Map candidates to assemblies (candidates -> alignments)
-	scripts/benchmark.py --log logs/benchmarks/map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS)"
-
-report: ## Generate Snakemake report
-	snakemake --report
-
-format: ## Reformat Python and Snakemake files
-	yapf -i */*.py
-	snakefmt Snakefile
-
-help: ## Print help message
-	@echo "$$(grep -hE '^\S+:.*##' $(MAKEFILE_LIST) | sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' | column -c2 -t -s : | sort)"
+help: ## Print help messages
+	@echo "$$(grep -hE '^\S*(:.*)?##' $(MAKEFILE_LIST) \
+		| sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' -e 's/^\([^#]\)/    \1/g'\
+		| column -c2 -t -s : )"
 
 clean: ## Clean intermediate search files
 	rm -fv intermediate/*/*
@@ -65,6 +55,40 @@ clean: ## Clean intermediate search files
 cleanall: clean ## Clean all generated and downloaded files
 	rm -f {asms,cobs}/*.xz{,.tmp}
 
+####################
+## Pipeline steps ##
+####################
+
+conda: ## Create the conda environments
+	snakemake $(SMK_PARAMS) --conda-create-envs-only
+
+download: ## Download the assemblies and COBS indexes
+	snakemake download $(SMK_PARAMS) -j 99999
+
+match: ## Match queries using COBS (queries -> candidates)
+	scripts/benchmark.py --log logs/benchmarks/match_$(DATETIME).txt "snakemake match $(SMK_PARAMS)"
+
+map: ## Map candidates to assemblies (candidates -> alignments)
+	scripts/benchmark.py --log logs/benchmarks/map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS)"
+
+###############
+## Reporting ##
+###############
+
+viewconf: ## View configuration without comments
+	@cat config.yaml \
+		| perl -pe 's/ *#.*//g' \
+		| grep --color='auto' -E '.*\:'
+	@#| grep -Ev ^$$
+
+report: ## Generate Snakemake report
+	snakemake --report
+
+
+
+##########
+## Misc ##
+##########
 cluster_slurm: ## Submit to a SLURM cluster
 	sbatch \
         -c 10 \
@@ -81,11 +105,6 @@ cluster_lsf: ## Submit to LSF cluster
 	scripts/check_if_config_is_ok_for_cluster_run.py
 	scripts/submit_lsf.sh
 
-viewconf: ## View configuration without comments
-	@cat config.yaml \
-		| perl -pe 's/ *#.*//g' \
-		| grep --color='auto' -E '.*\:'
-	@#| grep -Ev ^$$
-
-conda: ## Create the conda environments
-	snakemake $(SMK_PARAMS) --conda-create-envs-only
+format: ## Reformat Python and Snakemake files
+	yapf -i */*.py
+	snakefmt Snakefile
