@@ -5,13 +5,13 @@
 * [Introduction](#introduction)
   * [Citation](#citation)
 * [Installation](#installation)
-  * [Step 1: Installing dependencies](#step-1-installing-dependencies)
-  * [Step 2: Cloning the repository](#step-2-cloning-the-repository)
-  * [Step 3: Running a simple test](#step-3-running-a-simple-test)
-  * [Step 4: Downloading the remaining database files](#step-4-downloading-the-remaining-database-files)
+  * [Step 1: Install dependencies](#step-1-install-dependencies)
+  * [Step 2: Clone the repository](#step-2-clone-the-repository)
+  * [Step 3: Run a simple test](#step-3-run-a-simple-test)
+  * [Step 4: Download the the database files](#step-4-download-the-the-database-files)
 * [Usage](#usage)
-  * [Step 1: Provide your queries](#step-1-provide-your-queries)
-  * [Step 2: Adjust configuration for your type of search](#step-2-adjust-configuration-for-your-type-of-search)
+  * [Step 1: Copy or symlink your queries](#step-1-copy-or-symlink-your-queries)
+  * [Step 2: Adjust configuration](#step-2-adjust-configuration)
   * [Step 3: Clean up intermediate files](#step-3-clean-up-intermediate-files)
   * [Step 4: Run the pipeline](#step-4-run-the-pipeline)
   * [Step 5: Analyze your results](#step-5-analyze-your-results)
@@ -41,7 +41,7 @@ The tool is uses the technique called phylogenetic compression, which uses the e
 
 ## Installation
 
-### Step 1: Installing dependencies
+### Step 1: Install dependencies
 
 MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
 pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having Conda with the following packages:
@@ -59,14 +59,14 @@ The last three packages can be installed using Conda by
 ```
 
 
-### Step 2: Cloning the repository
+### Step 2: Clone the repository
 
 ```bash
    git https://github.com/karel-brinda/mof-search
    cd mof-search
 ```
 
-### Step 3: Running a simple test
+### Step 3: Run a simple test
 
 Run `make test` to ensure the pipeline works for the sample queries and just
    3 batches. This will also install additional dependencies using Conda or Mamba, such as COBS, SeqTK, and Minimap 2.
@@ -86,26 +86,28 @@ output:
 you should verify why.
 
 
-### Step 4: Downloading the remaining database files
+### Step 4: Download the the database files
 
-Run `make download` to download all the remaining assemblies and COBS *k*-mer
-indexes for the 661k-HQ collection.
+Run `make download` to download all the remaining phylogenetically compressed
+assemblies and COBS *k*-mer indexes for the 661k-HQ collection.
 
 
 ## Usage
 
-### Step 1: Provide your queries
+### Step 1: Copy or symlink your queries
 
-Remove the default test files in the `queries/` directory and copy or symlink
-your queries. The supported input formats are FASTA and FASTQ, possibly gzipped.
+Remove the default test files or you old files in the `queries/` directory and
+copy or symlink (recommended) your queries. The supported input formats are
+FASTA and FASTQ, possibly gzipped.
 
-### Step 2: Adjust configuration for your type of search
+### Step 2: Adjust configuration
 
-Edit the `config.yaml` file. All the options are documented directly there.
+Edit the `config.yaml` file for your desired search. All the options are
+documented directly there.
 
 ### Step 3: Clean up intermediate files
 
-Run `make clean` to clean the intermediate files from the previous runs. This includes COBS matching files, alignments, and various statistics
+Run `make clean` to clean the intermediate files from the previous runs. This includes COBS matching files, alignment files, and various reports.
 
 ### Step 4: Run the pipeline
 
@@ -115,7 +117,7 @@ Simply run `make`, which will execute Snakemake with the corresponding parameter
 
 Check the output files in `results/`.
 
-If the results don't correspond to what you expected and you need to adjust parameters, go to Step 2. If only the mapping part is to be affected, after changing the configuration, remove only the files in `intermediate/03_map` and `output/` and go directly to Step 4.
+If the results don't correspond to what you expected and you need to re-adjust your parameters, go to Step 2. If only the mapping part is affected by the changes, you proceed more rapidly, by manually removing the files in `intermediate/03_map` and `output/` and running directly `make map`.
 
 
 ## Additional information
