@@ -25,7 +25,6 @@ MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
 from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)).
 
 
-
 ## Installation
 
 ### Quick example
@@ -44,10 +43,15 @@ MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
 pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having Conda with the following packages:
 
 
-* `python >= 3.7`
-* `snakemake >= 6.2.0`
-* [Conda](https://docs.conda.io/en/latest/miniconda.html) and preferentially also `mamba >= 0.20.0`
-*  OSX: GNU time (can be installed by `brew install gnu-time`).
+* [Conda](https://docs.conda.io/en/latest/miniconda.html)
+* [Python](https://www.python.org/) (>=3.7)
+* [Snakemake](https://snakemake.github.io) (>=6.2.0)
+* Preferably also [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0)
+
+Note that the latter three can be installed by `conda install -y python>=3.7 snakemake>=6.2.0 mamba>=0.20.0`
+
+Additional dependendy for OS X:
+*  [GNU time](https://www.gnu.org/software/time/) (can be installed by `brew install gnu-time`).
 
 
 
