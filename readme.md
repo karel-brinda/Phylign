@@ -1,29 +1,48 @@
 # MOF-Search
 
-MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)).
-
 <!-- vim-markdown-toc GFM -->
 
-* [Dependencies](#dependencies)
-* [Walkthrough](#walkthrough)
-* [Commands](#commands)
-* [Running on a cluster](#running-on-a-cluster)
-  * [Running on a LSF cluster](#running-on-a-lsf-cluster)
-* [Directories](#directories)
-* [Notes](#notes)
-  * [Non-`ACGT` bases](#non-acgt-bases)
-  * [Query files](#query-files)
-  * [Query names](#query-names)
+* [Introduction](#introduction)
+* [Installation](#installation)
+  * [Quick example](#quick-example)
+  * [Dependencies](#dependencies)
+* [Usage](#usage)
+  * [Walkthrough](#walkthrough)
+  * [Commands](#commands)
+  * [Running on a cluster](#running-on-a-cluster)
+    * [LSF](#lsf)
+* [Files and outputs](#files-and-outputs)
+  * [Directories](#directories)
+* [Known limitations](#known-limitations)
 * [Contacts](#contacts)
 
 <!-- vim-markdown-toc -->
 
 
-## Dependencies
+## Introduction
+
+MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
+from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)).
+
+
+
+## Installation
+
+### Quick example
+
+
+```
+   git clone --recursive https://github.com/karel-brinda/mof-search
+   cd mof-search
+   make test
+```
+
+
+### Dependencies
 
 MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
-pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having
-correctly, it requires the following pre-installed packages:
+pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having Conda with the following packages:
+
 
 * `python >= 3.7`
 * `snakemake >= 6.2.0`
@@ -31,7 +50,10 @@ correctly, it requires the following pre-installed packages:
 *  OSX: GNU time (can be installed by `brew install gnu-time`).
 
 
-## Walkthrough
+
+## Usage
+
+### Walkthrough
 
 This is our recommended steps to run `mof-search`:
 
@@ -52,8 +74,7 @@ This is our recommended steps to run `mof-search`:
 5. Run `make` to run align your queries to the 661k.
 
 
-
-## Commands
+### Commands
 
 * `make`            Run everything
 * `make test`       Run the queries on 3 batches, to test the pipeline completely
@@ -67,17 +88,21 @@ This is our recommended steps to run `mof-search`:
 * `make clean`      Clean intermediate search files
 * `make cleanall`   Clean all generated and downloaded file
 
-## Running on a cluster
+### Running on a cluster
 
 Running on a cluster is much faster as the jobs produced by this pipeline are quite light and usually start running as
 soon as they are scheduled.
 
-### Running on a LSF cluster
+#### LSF
 
 1. Test if the pipeline is working on a LSF cluster: `make cluster_lsf_test`;
 2. Configure you queries and run the full pipeline: `make cluster_lsf`;
 
-## Directories
+
+
+## Files and outputs
+
+### Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
 * `queries/` Queries, to be provided within one or more FASTA files (`.fa`)
@@ -91,20 +116,14 @@ soon as they are scheduled.
 
 
 
-## Notes
+## Known limitations
 
-### Non-`ACGT` bases
 
-All non-`ACGT` bases in your queries are transformed into `A`.
+* All methods rely on the ACGT alphabet, and all non-`ACGT` characters in your query files are transformed into `A`.
 
-### Query files
+* When the number of queries is too high, the auxiliary Python scripts start to use too much memory, which may result in swapping. Try to keep the number of queries moderate and ideally their names short. If you have tens or hundreds or more query files, concatenate them all into one before running `mof-search`.
 
-Try to keep the number of query files low or their name short.
-If you have tens or hundreds or more query files, concatenate them all into one before running `mof-search`.
-
-### Query names
-
-For now, all query names have to be unique among all query files.
+* All query names have to be unique among all query files.
 
 
 
