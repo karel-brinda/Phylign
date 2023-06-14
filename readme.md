@@ -122,17 +122,35 @@ If the results don't correspond to what you expected and you need to adjust para
 
 ### Commands
 
-* `make`            Run everything
-* `make test`       Run the queries on 3 batches, to test the pipeline completely
-* `make download`   Download the 661k assemblies and COBS indexes
-* `make match`      Match queries using COBS (queries -> candidates)
-* `make map`        Map candidates to the assemblies (candidates -> alignments)
-* `make benchmark`  Benchmarks the pipeline. Benchmark logs are stored in `logs/benchmarks`
-* `make report`     Generate Snakemake report
-* `make viewconf`   View configuration without comments
-* `make conda`      Just create the required `conda` environments
-* `make clean`      Clean intermediate search files
-* `make cleanall`   Clean all generated and downloaded file
+```
+######################
+## General commands ##
+######################
+    all                  Run everything (the default rule)
+    test                 Quick test using 3 batches
+    help                 Print help messages
+    clean                Clean intermediate search files
+    cleanall             Clean all generated and downloaded files
+####################
+## Pipeline steps ##
+####################
+    conda                Create the conda environments
+    download             Download the assemblies and COBS indexes
+    match                Match queries using COBS (queries -> candidates)
+    map                  Map candidates to assemblies (candidates -> alignments)
+###############
+## Reporting ##
+###############
+    viewconf             View configuration without comments
+    report               Generate Snakemake report
+##########
+## Misc ##
+##########
+    cluster_slurm        Submit to a SLURM cluster
+    cluster_lsf_test     Submit the test pipeline to LSF cluster
+    cluster_lsf          Submit to LSF cluster
+    format               Reformat Python and Snakemake files
+```
 
 ### Directories
 
