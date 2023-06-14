@@ -1,40 +1,35 @@
-# MOF-search
+# MOF-Search
 
-This is the pipeline for BLAST-like search within the 661k collection.
+MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421)).
+
+<!-- vim-markdown-toc GFM -->
+
+* [Dependencies](#dependencies)
+* [Walkthrough](#walkthrough)
+* [Commands](#commands)
+* [Running on a cluster](#running-on-a-cluster)
+  * [Running on a LSF cluster](#running-on-a-lsf-cluster)
+* [Directories](#directories)
+* [Notes](#notes)
+  * [Non-`ACGT` bases](#non-acgt-bases)
+  * [Query files](#query-files)
+  * [Query names](#query-names)
+* [Contacts](#contacts)
+
+<!-- vim-markdown-toc -->
 
 
 ## Dependencies
 
-Some dependencies are packaged into `conda` environments that `snakemake` will automatically create.
-Others are non-standard (which you might need to install) and standard (which you probably have).
+MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
+pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having
+correctly, it requires the following pre-installed packages:
 
-
-### Non-standard
 * `python >= 3.7`
 * `snakemake >= 6.2.0`
-* `mamba >= 0.20.0`
+* [Conda](https://docs.conda.io/en/latest/miniconda.html) and preferentially also `mamba >= 0.20.0`
+*  OSX: GNU time (can be installed by `brew install gnu-time`).
 
-### Standard
-* `bash`
-* `make`
-* `curl`
-* `xz`
-* `head`
-* `grep`
-* `awk`
-* `diff`
-* `cat`
-* `gzip`
-* `cut`
-
-### Benchmarking
-
-If you want to benchmark the pipeline and is on `Mac OS X`, you need to install `gnu-time`:
-```
-brew install gnu-time
-```
-
-You will also get more benchmarking stats if `psutil` is installed.
 
 ## Walkthrough
 
