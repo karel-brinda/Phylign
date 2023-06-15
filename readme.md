@@ -108,8 +108,16 @@ output:
 ### Step 4: Download the database
 
 Run `make download` to download from Zenodo all the remaining phylogenetically
-compressed assemblies and COBS *k*-mer indexes for the 661k-HQ collection.
-These will then be present in the `asms/` and `cobs/` directories.
+compressed assemblies and COBS *k*-mer indexes for the [661k-HQ
+collection](https://doi.org/10.1371/journal.pbio.3001421). The downloaded files
+will then be located in the `asms/` and `cobs/` directories.
+
+*Notes:*
+* The compressed assemblies comprise *all* the genomes from the 661k
+  collection.The COBS indexes comprise only those genomes that passed quality
+  control.
+* For file accessions, see the [MOF
+  website](http://karel-brinda.githbub.io/mof).
 
 
 ## Usage
