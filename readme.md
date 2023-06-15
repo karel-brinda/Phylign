@@ -8,7 +8,7 @@
   * [Step 1: Install dependencies](#step-1-install-dependencies)
   * [Step 2: Clone the repository](#step-2-clone-the-repository)
   * [Step 3: Run a simple test](#step-3-run-a-simple-test)
-  * [Step 4: Download the the database files](#step-4-download-the-the-database-files)
+  * [Step 4: Download the database](#step-4-download-the-database)
 * [Usage](#usage)
   * [Step 1: Copy or symlink your queries](#step-1-copy-or-symlink-your-queries)
   * [Step 2: Adjust configuration](#step-2-adjust-configuration)
@@ -102,13 +102,14 @@ output:
   ```bash
      Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ make: *** [Makefile:21: test] Error 1
   ```
-you should verify why.
+  you should verify why.
 
 
-### Step 4: Download the the database files
+### Step 4: Download the database
 
-Run `make download` to download all the remaining phylogenetically compressed
-assemblies and COBS *k*-mer indexes for the 661k-HQ collection.
+Run `make download` to download from Zenodo all the remaining phylogenetically
+compressed assemblies and COBS *k*-mer indexes for the 661k-HQ collection.
+These will then be present in the `asms/` and `cobs/` directories.
 
 
 ## Usage
@@ -116,12 +117,18 @@ assemblies and COBS *k*-mer indexes for the 661k-HQ collection.
 ### Step 1: Copy or symlink your queries
 
 Remove the default test files or you old files in the `queries/` directory and
-copy or symlink (recommended) your queries. The supported input formats are
-FASTA and FASTQ, possibly gzipped.
+copy or symlink (recommended) your query files. The supported input formats are
+FASTA and FASTQ, possibly gzipped. All query files will be preprocessed and
+merged together.
+
+*Notes:*
+* All query names have to be unique among all query files.
+* All non-`ACGT` characters in your query sequences will be translated to `A`.
+
 
 ### Step 2: Adjust configuration
 
-Edit the `config.yaml` file for your desired search. All the options are
+Edit the [`config.yaml`](config.yaml) file for your desired search. All available options are
 documented directly there.
 
 ### Step 3: Clean up intermediate files
@@ -202,16 +209,10 @@ soon as they are scheduled.
 2. Configure you queries and run the full pipeline: `make cluster_lsf`;
 
 
-
 ### Known limitations
 
 
-* All methods rely on the ACGT alphabet, and all non-`ACGT` characters in your query files are transformed into `A`.
-
 * When the number of queries is too high, the auxiliary Python scripts start to use too much memory, which may result in swapping. Try to keep the number of queries moderate and ideally their names short. If you have tens or hundreds or more query files, concatenate them all into one before running `mof-search`.
-
-* All query names have to be unique among all query files.
-
 
 
 ## License
