@@ -16,7 +16,7 @@
   * [Step 4: Run the pipeline](#step-4-run-the-pipeline)
   * [Step 5: Analyze your results](#step-5-analyze-your-results)
 * [Additional information](#additional-information)
-  * [List of make commands](#list-of-make-commands)
+  * [List of workflow commands](#list-of-workflow-commands)
   * [Directories](#directories)
   * [Running on a cluster](#running-on-a-cluster)
   * [Known limitations](#known-limitations)
@@ -32,16 +32,17 @@ MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
 from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421))
 on ordinary standard desktop and laptops computers.
 
-The central idea enabling search at such a scale is **phylogenetic
-compression** - a technique based on estimating evolutionary history to
-compress data using existing algorithms and data structures. In short, input
-data are reorganized according to the topology of the estimated phylogenies,
-which makes data highly locally compressible even using basic techniques.
-Existing software packages for compression and indexing are then used as
-low-level tools. The resulting performance gains come from a wide range of
-benefits of phylogenetic compression, including easy parallelization, small
-memory requirements, small database size, better memory locality, and better
-branch prediction.
+The central idea enabling search at such a scale is [**phylogenetic
+compression**](https://doi.org/10.1101/2023.04.15.536996) - a technique based
+on using estimated evolutionary history to to guide compression and efficiently
+search large collections of microbial genomes using existing algorithms and
+data structures. In short, input data are reorganized according to the topology
+of the estimated phylogenies, which makes data highly locally compressible even
+using basic techniques. Existing software packages for compression and indexing
+are then used as low-level tools. The resulting performance gains come from
+a wide range of benefits of phylogenetic compression, including easy
+parallelization, small memory requirements, small database size, better memory
+locality, and better branch prediction.
 
 For more information about phylogenetic compression and implementation details
 of MOF-Search, see the [corresponding
@@ -65,7 +66,8 @@ pipeline, using the Conda system to manage all non-standard dependencies. To fun
 
 
 * [Conda](https://docs.conda.io/en/latest/miniconda.html)
-* [GNU time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by `brew install gnu-time`).
+* [GNU Make](https://www.gnu.org/software/make/)
+* [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by `brew install gnu-time`).
 * [Python](https://www.python.org/) (>=3.7)
 * [Snakemake](https://snakemake.github.io) (>=6.2.0)
 * [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, recommended
@@ -139,7 +141,7 @@ If the results don't correspond to what you expected and you need to re-adjust y
 
 ## Additional information
 
-### List of make commands
+### List of workflow commands
 
 MOF-Search is executed via [GNU Make](https://www.gnu.org/software/make/), which handles all parameters and passes them to Snakemake.
 
