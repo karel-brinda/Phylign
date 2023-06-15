@@ -32,17 +32,20 @@ MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
 from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421))
 on ordinary standard desktop and laptops computers.
 
-The central idea enabling search at such a scale is [**phylogenetic
+The central idea behind, enabling search at such a scale, is [**phylogenetic
 compression**](https://doi.org/10.1101/2023.04.15.536996) - a technique based
-on using estimated evolutionary history to to guide compression and efficiently
+on using estimated evolutionary history to guide compression and efficiently
 search large collections of microbial genomes using existing algorithms and
 data structures. In short, input data are reorganized according to the topology
 of the estimated phylogenies, which makes data highly locally compressible even
-using basic techniques. Existing software packages for compression and indexing
-are then used as low-level tools. The resulting performance gains come from
-a wide range of benefits of phylogenetic compression, including easy
-parallelization, small memory requirements, small database size, better memory
-locality, and better branch prediction.
+using basic techniques. Existing software packages for compression, indexing,
+and search - in this case [XZ](https://tukaani.org/xz/),
+[COBS](https://github.com/iqbal-lab-org/cobs), and
+[Minimap2](https://github.com/lh3/minimap2) - are then used as low-level tools.
+The resulting performance gains come from a wide range of benefits of
+phylogenetic compression, including easy parallelization, small memory
+requirements, small database size, better memory locality, and better branch
+prediction.
 
 For more information about phylogenetic compression and implementation details
 of MOF-Search, see the [corresponding
