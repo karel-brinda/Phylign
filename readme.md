@@ -84,7 +84,7 @@ The last three packages can be installed using Conda by
 ### Step 2: Clone the repository
 
 ```bash
-   git https://github.com/karel-brinda/mof-search
+   git clone https://github.com/karel-brinda/mof-search
    cd mof-search
 ```
 
