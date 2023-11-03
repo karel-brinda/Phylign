@@ -4,15 +4,17 @@
 <a href="https://brinda.eu/mof">
     <img src="docs/logo_wbg.svg" align="left" style="width:100px;" />
 </a>
-MOF-Search is a pipeline for BLAST-like search across *all pre-2019 bacteria
-from ENA* (the
-<a href="https://doi.org/10.1371/journal.pbio.3001421">661k collection</a>)
+MOF-Search is a pipeline for BLAST-like search across
+<b>all pre-2019 bacteria from ENA</b>
+(the <a href="https://doi.org/10.1371/journal.pbio.3001421">661k collection</a>)
 on ordinary standard desktop and laptops computers.
 MOF-Search uses
 <a href="https://brinda.eu/mof">
-phylogenetically compressed assemblies and <i>k</i>-mer
+phylogenetically compressed assemblies and their <i>k</i>-mer
 indexes</a>
-to align batches queries to them by Minimap within only several hours.
+to align batches of queries to them by
+<a href="https://github.com/lh3/minimap2">Minimap 2</a>,
+all within only several hours.
 </p><br/>
 
 <!-- vim-markdown-toc GFM -->
@@ -47,9 +49,9 @@ to align batches queries to them by Minimap within only several hours.
 The central idea behind MOF-Search,
 enabling alignment locally at such a large scale,
 is
-[**phylogenetic compression**](https://brinda.eu/mof) (paper
-[paper](https://doi.org/10.1101/2023.04.15.536996))
-- a technique based
+[**phylogenetic compression**](https://brinda.eu/mof)
+([paper](https://doi.org/10.1101/2023.04.15.536996)) -
+a technique based
 on using estimated evolutionary history to guide compression and
 search of large genome collections using existing algorithms and
 data structures.
