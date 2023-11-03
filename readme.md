@@ -1,5 +1,16 @@
 # MOF-Search
 
+<p>
+<a href="https://brinda.eu/mof">
+    <img src="docs/logo_wbg.svg" align="left" style="width:100px;" />
+</a>
+MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
+from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421))
+on ordinary standard desktop and laptops computers.
+MOF-Search uses phylogenetically compressed assemblies and k-mer
+indexes to batch search them in a highly efficient manner.
+</p><br/>
+
 <!-- vim-markdown-toc GFM -->
 
 * [Introduction](#introduction)
@@ -28,9 +39,6 @@
 
 ## Introduction
 
-MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
-from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421))
-on ordinary standard desktop and laptops computers.
 
 The central idea behind, enabling search at such a scale, is [**phylogenetic
 compression**](https://doi.org/10.1101/2023.04.15.536996) - a technique based
@@ -51,8 +59,7 @@ For more information about phylogenetic compression and implementation details
 of MOF-Search, see the [corresponding
 paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (and its
 [supplementary](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf)
-and the associated website for the whole [MOF
-framework](http://karel-brinda.github.io/mof)).
+and the associated website [phylogenetic compression and MOF](https://brinda.eu/mof).
 
 
 ### Citation
