@@ -44,11 +44,17 @@ to align batches queries to them by Minimap within only several hours.
 ## Introduction
 
 
-The central idea behind, enabling search at such a scale, is [**phylogenetic
-compression**](https://doi.org/10.1101/2023.04.15.536996) - a technique based
-on using estimated evolutionary history to guide compression and efficiently
-search large collections of microbial genomes using existing algorithms and
-data structures. In short, input data are reorganized according to the topology
+The central idea behind MOF-Search,
+enabling alignment locally at such a large scale,
+is
+[**phylogenetic compression**](https://brinda.eu/mof) (paper
+[paper](https://doi.org/10.1101/2023.04.15.536996))
+- a technique based
+on using estimated evolutionary history to guide compression and
+search of large genome collections using existing algorithms and
+data structures.
+
+In short, input data are reorganized according to the topology
 of the estimated phylogenies, which makes data highly locally compressible even
 using basic techniques. Existing software packages for compression, indexing,
 and search - in this case [XZ](https://tukaani.org/xz/),
