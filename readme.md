@@ -1,5 +1,21 @@
 # MOF-Search
 
+<p>
+<a href="https://brinda.eu/mof">
+    <img src="docs/logo_wbg.svg" align="left" style="width:100px;" />
+</a>
+MOF-Search is a pipeline for BLAST-like search across
+<a href="https://doi.org/10.1371/journal.pbio.3001421">all pre-2019 bacteria from ENA</a>
+on standard desktop and laptops computers.
+MOF-Search uses
+<a href="https://brinda.eu/mof">
+phylogenetically compressed assemblies and their <i>k</i>-mer
+indexes</a>
+to align batches of queries to them by
+<a href="https://github.com/lh3/minimap2">Minimap 2</a>,
+all within only several hours.
+</p><br/>
+
 <!-- vim-markdown-toc GFM -->
 
 * [Introduction](#introduction)
@@ -28,15 +44,17 @@
 
 ## Introduction
 
-MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
-from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421))
-on ordinary standard desktop and laptops computers.
+The central idea behind MOF-Search,
+enabling alignment locally at such a large scale,
+is
+[**phylogenetic compression**](https://brinda.eu/mof)
+([paper](https://doi.org/10.1101/2023.04.15.536996)) -
+a technique based
+on using estimated evolutionary history to guide compression and
+search of large genome collections using existing algorithms and
+data structures.
 
-The central idea behind, enabling search at such a scale, is [**phylogenetic
-compression**](https://doi.org/10.1101/2023.04.15.536996) - a technique based
-on using estimated evolutionary history to guide compression and efficiently
-search large collections of microbial genomes using existing algorithms and
-data structures. In short, input data are reorganized according to the topology
+In short, input data are reorganized according to the topology
 of the estimated phylogenies, which makes data highly locally compressible even
 using basic techniques. Existing software packages for compression, indexing,
 and search - in this case [XZ](https://tukaani.org/xz/),
@@ -51,16 +69,17 @@ For more information about phylogenetic compression and implementation details
 of MOF-Search, see the [corresponding
 paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (and its
 [supplementary](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf)
-and the associated website for the whole [MOF
-framework](http://karel-brinda.github.io/mof)).
+and the associated website [phylogenetic compression and MOF](https://brinda.eu/mof).
 
 
 ### Citation
 
-> K. Břinda, L. Lima, S. Pignotti, N. Quinones-Olvera, K. Salikhov, R. Chikhi, G. Kucherov, Z. Iqbal, and M. Baym. **Efficient and Robust Search of Microbial Genomes via Phylogenetic Compression.** bioRxiv 2023.04.15.536996, 2023. https://doi.org/10.1101/2023.04.15.536996
+> K. Břinda, L. Lima, S. Pignotti, N. Quinones-Olvera, K. Salikhov, R. Chikhi, G. Kucherov, Z. Iqbal, and M. Baym. **[Efficient and Robust Search of Microbial Genomes via Phylogenetic Compression.](https://doi.org/10.1101/2023.04.15.536996)** *bioRxiv* 2023.04.15.536996, 2023. https://doi.org/10.1101/2023.04.15.536996
 
 
 ## Installation
+
+MOF-Search requires a standard desktop or laptop computer and can be run also on a cluster. The minimal hardware requirements are
 
 ### Step 1: Install dependencies
 
@@ -234,5 +253,5 @@ soon as they are scheduled.
 
 ## Contacts
 
-* [Karel Brinda](http://karel-brinda.github.io) \<karel.brinda@inria.fr\>
+* [Karel Brinda](https://brinda.eu) \<karel.brinda@inria.fr\>
 * [Leandro Lima](https://github.com/leoisl) \<leandro@ebi.ac.uk\>
