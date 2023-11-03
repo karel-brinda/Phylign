@@ -13,7 +13,7 @@ phylogenetically compressed assemblies and their <i>k</i>-mer
 indexes</a>
 to align batches of queries to them by
 <a href="https://github.com/lh3/minimap2">Minimap 2</a>,
-all within several hours.
+all within only several hours.
 </p><br/>
 
 <!-- vim-markdown-toc GFM -->
@@ -43,7 +43,6 @@ all within several hours.
 
 
 ## Introduction
-
 
 The central idea behind MOF-Search,
 enabling alignment locally at such a large scale,
@@ -75,10 +74,12 @@ and the associated website [phylogenetic compression and MOF](https://brinda.eu/
 
 ### Citation
 
-> K. Břinda, L. Lima, S. Pignotti, N. Quinones-Olvera, K. Salikhov, R. Chikhi, G. Kucherov, Z. Iqbal, and M. Baym. **Efficient and Robust Search of Microbial Genomes via Phylogenetic Compression.** bioRxiv 2023.04.15.536996, 2023. https://doi.org/10.1101/2023.04.15.536996
+> K. Břinda, L. Lima, S. Pignotti, N. Quinones-Olvera, K. Salikhov, R. Chikhi, G. Kucherov, Z. Iqbal, and M. Baym. **[Efficient and Robust Search of Microbial Genomes via Phylogenetic Compression.](https://doi.org/10.1101/2023.04.15.536996)** *bioRxiv* 2023.04.15.536996, 2023. https://doi.org/10.1101/2023.04.15.536996
 
 
 ## Installation
+
+MOF-Search requires a standard desktop or laptop computer and can be run also on a cluster. The minimal hardware requirements are
 
 ### Step 1: Install dependencies
 
@@ -252,5 +253,5 @@ soon as they are scheduled.
 
 ## Contacts
 
-* [Karel Brinda](http://karel-brinda.github.io) \<karel.brinda@inria.fr\>
+* [Karel Brinda](https://brinda.eu) \<karel.brinda@inria.fr\>
 * [Leandro Lima](https://github.com/leoisl) \<leandro@ebi.ac.uk\>
