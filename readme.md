@@ -5,10 +5,11 @@
     <img src="docs/logo_wbg.svg" align="left" style="width:100px;" />
 </a>
 MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
-from ENA (the [661k collection](https://doi.org/10.1371/journal.pbio.3001421))
+from ENA (the
+[661k collection](https://doi.org/10.1371/journal.pbio.3001421) )
 on ordinary standard desktop and laptops computers.
 MOF-Search uses phylogenetically compressed assemblies and k-mer
-indexes to batch search them in a highly efficient manner.
+indexes to batch-search them in a highly efficient manner.
 </p><br/>
 
 <!-- vim-markdown-toc GFM -->
