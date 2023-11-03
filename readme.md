@@ -4,12 +4,15 @@
 <a href="https://brinda.eu/mof">
     <img src="docs/logo_wbg.svg" align="left" style="width:100px;" />
 </a>
-MOF-Search is a pipeline for BLAST-like search across all pre-2019 bacteria
-from ENA (the
-<a href="https://doi.org/10.1371/journal.pbio.3001421">661k collection</a>
+MOF-Search is a pipeline for BLAST-like search across *all pre-2019 bacteria
+from ENA* (the
+<a href="https://doi.org/10.1371/journal.pbio.3001421">661k collection</a>)
 on ordinary standard desktop and laptops computers.
-MOF-Search uses phylogenetically compressed assemblies and <i>k</i>-mer
-indexes to align batches queries to them within only several hours.
+MOF-Search uses
+<a href="https://brinda.eu/mof">
+phylogenetically compressed assemblies and <i>k</i>-mer
+indexes</a>
+to align batches queries to them by Minimap within only several hours.
 </p><br/>
 
 <!-- vim-markdown-toc GFM -->
