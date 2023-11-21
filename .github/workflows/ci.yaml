@@ -1,0 +1,53 @@
+name: mof-search test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  main:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest]
+        python-version: [ 3.8, 3.9, "3.10", 3.11 ]
+    steps:
+    - uses: mamba-org/setup-micromamba@v1
+      name: Install dependencies
+      with:
+        micromamba-version: '1.5.3-0'
+        environment-name: ci
+        condarc: |
+          channels:
+            - conda-forge
+            - bioconda
+            - defaults
+        create-args: >-
+          python=${{ matrix.python-version }}
+          snakemake=7.32.4
+          mamba=1.5.3
+        init-shell: >-
+          bash
+        cache-environment: true
+        post-cleanup: 'all'
+
+    # installs gnu-time on macos
+    - name: Install gnu-time
+      if: matrix.os == 'macos-latest'
+      run: brew install gnu-time
+
+    - name: Check out code for the build
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Test
+      run: |
+        micromamba activate ci
+        make test
+      shell: bash -eol pipefail {0}
