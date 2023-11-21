@@ -252,7 +252,7 @@ rule download_asm_batch:
     threads: 1
     shell:
         """
-        curl "{params.url}/{wildcards.batch}.tar.xz"  > {output.xz}
+        curl -L "{params.url}/{wildcards.batch}.tar.xz"  > {output.xz}
         scripts/test_xz.py {output.xz}
         """
 
@@ -270,7 +270,7 @@ rule download_cobs_batch:
     threads: 1
     shell:
         """
-        curl "{params.url}"  > {output.xz}
+        curl -L "{params.url}"  > {output.xz}
         scripts/test_xz.py {output.xz}
         """
 
