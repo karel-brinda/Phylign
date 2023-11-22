@@ -63,7 +63,7 @@ conda: ## Create the conda environments
 	snakemake $(SMK_PARAMS) --conda-create-envs-only
 
 download: ## Download the assemblies and COBS indexes
-	snakemake download $(SMK_PARAMS) -j 99999
+	snakemake download $(SMK_PARAMS) --restart-times 3 -j 99999
 
 match: ## Match queries using COBS (queries -> candidates)
 	scripts/benchmark.py --log logs/benchmarks/match_$(DATETIME).txt "snakemake match $(SMK_PARAMS)"
