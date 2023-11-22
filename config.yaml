@@ -59,7 +59,7 @@ max_ram_gb: 12
 
 # maximum number of download threads at a time (note: too many might slow down download speed)
 # WARNING: this parameter is ignored when running on a cluster
-max_download_threads: 8
+max_download_threads: 4
 ##################################################
 
 ##################################################
