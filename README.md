@@ -104,7 +104,6 @@ Additionally, MOF-Search uses standard Unix tools like
 [cURL](https://curl.se/),
 [XZ Utils](https://tukaani.org/xz/), and
 [GNU Gzip](https://www.gnu.org/software/gzip/).
-
 These tools are typically included in standard \*nix installations. However, in minimal setups (e.g., virtualization, continuous integration), you might need to install them using the corresponding package managers.
 
 
@@ -114,19 +113,19 @@ These tools are typically included in standard \*nix installations. However, in 
 
 Make sure you have Conda and GNU Time installed. On Linux:
 ```bash
-    sudo apt-get install conda
+sudo apt-get install conda
 ```
 
 On OS X (using Homebrew):
 ```bash
-   brew install conda
-   brew install gnu-time
+brew install conda
+brew install gnu-time
 ```
 
 Install Python (>=3.7), Snakemake (>=6.2.0), and Mamba (optional but recommended) using Conda:
 ```bash
-    conda install -y -c bioconda -c conda-forge \
-        "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
+conda install -y -c bioconda -c conda-forge \
+    "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
 ```
 
 
@@ -135,8 +134,8 @@ Install Python (>=3.7), Snakemake (>=6.2.0), and Mamba (optional but recommended
 Clone the MOF-Search repository from GitHub and navigate into the directory:
 
 ```bash
-   git clone https://github.com/karel-brinda/mof-search
-   cd mof-search
+ git clone https://github.com/karel-brinda/mof-search
+ cd mof-search
 ```
 
 
@@ -145,13 +144,13 @@ Clone the MOF-Search repository from GitHub and navigate into the directory:
 Run the following command to ensure the pipeline works for sample queries and 3 batches (this will also install all additional dependencies using Conda):
 
 ```bash
-  make test
+make test
 ```
 
 Make sure the test returns 0 (success) and that you see the expected output message:
 
 ```bash
-   Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
+ Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
 ```
 
 
@@ -161,7 +160,7 @@ Download all phylogenetically compressed assemblies and COBS *k*-mer
 indexes for the [661k-HQ
 collection](https://doi.org/10.1371/journal.pbio.3001421) by:
 ```bash
-  make download
+make download
 ```
 
 The downloaded files will be located in the `asms/` and `cobs/` directories.
