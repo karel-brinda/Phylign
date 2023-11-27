@@ -150,7 +150,7 @@ make test
 Make sure the test returns 0 (success) and that you see the expected output message:
 
 ```bash
- Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
+ Success! Test run produced the expected output.
 ```
 
 
@@ -274,12 +274,13 @@ soon as they are scheduled.
 
 ### Known limitations
 
-
 * When the number of queries is too high, the auxiliary Python scripts start to
   use too much memory, which may result in swapping. Try to keep the number of
   queries moderate and ideally their names short. If you have tens or hundreds
   or more query files, concatenate them all into one before running
   `mof-search`.
+
+
 
 
 ## License
