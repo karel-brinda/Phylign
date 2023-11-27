@@ -201,12 +201,12 @@ Simply run `make`, which will execute Snakemake with the corresponding parameter
 
 ### Step 5: Analyze your results
 
-Check the output files in `results/`.
+Check the output files in `output/`. The `.sam_summary.gz` files contain output alignments in a headerless SAM format. The `.sam_summary.stats` files contain statistics about your computed alignments.
 
 If the results do not correspond to what you expected and you need to re-adjust
-your parameters, go to Step 2. If only the mapping part is affected by the
+your search parameters, go to Step 2. If only the mapping part is affected by the
 changes, you proceed more rapidly by manually removing the files in
-`intermediate/03_map` and `output/` and running directly `make map`.
+`intermediate/05_map` and `output/` and running directly `make map`.
 
 
 ## Additional information
@@ -260,7 +260,7 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
    * `04_filter` Filtered candidates
    * `05_map` Minimap2 alignments
 * `logs/` Logs and benchmarks
-* `output/` Results
+* `output/` The resulting files (in a headerless SAM format)
 
 
 ### Running on a cluster
