@@ -4,7 +4,7 @@
 <a href="https://brinda.eu/mof">
     <img src="docs/logo_wbg.svg" align="left" style="width:100px;" />
 </a>
-MOF-Search is a pipeline for BLAST-like search across
+Pipeline for BLAST-like search across
 <a href="https://doi.org/10.1371/journal.pbio.3001421">all pre-2019 bacteria from ENA</a>
 on standard desktop and laptops computers.
 MOF-Search uses
@@ -20,6 +20,9 @@ all within only several hours.
 
 * [Introduction](#introduction)
   * [Citation](#citation)
+* [Requirements](#requirements)
+  * [Hardware](#hardware)
+  * [Dependencies](#dependencies)
 * [Installation](#installation)
   * [Step 1: Install dependencies](#step-1-install-dependencies)
   * [Step 2: Clone the repository](#step-2-clone-the-repository)
@@ -65,11 +68,10 @@ phylogenetic compression, including easy parallelization, small memory
 requirements, small database size, better memory locality, and better branch
 prediction.
 
-For more information about phylogenetic compression and implementation details
-of MOF-Search, see the [corresponding
-paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (and its
-[supplementary](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf)
-and the associated website [phylogenetic compression and MOF](https://brinda.eu/mof).
+For more information about phylogenetic compression and the implementation details of MOF-Search, see the [corresponding
+paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (including its
+[supplementary material](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf)
+and visit the [associated website](https://brinda.eu/mof).
 
 
 ### Citation
@@ -77,77 +79,104 @@ and the associated website [phylogenetic compression and MOF](https://brinda.eu/
 > K. Břinda, L. Lima, S. Pignotti, N. Quinones-Olvera, K. Salikhov, R. Chikhi, G. Kucherov, Z. Iqbal, and M. Baym. **[Efficient and Robust Search of Microbial Genomes via Phylogenetic Compression.](https://doi.org/10.1101/2023.04.15.536996)** *bioRxiv* 2023.04.15.536996, 2023. https://doi.org/10.1101/2023.04.15.536996
 
 
-## Installation
+## Requirements
 
-MOF-Search requires a standard desktop or laptop computer and can be run also on a cluster. The minimal hardware requirements are
+### Hardware
+
+MOF-Search requires a standard desktop or laptop computer with an \*nix system,
+and it can also run on a cluster. The minimal hardware requirements are **12 GB
+RAM** and approximately **120 GB of disk space** (102 GB for the database and
+a margin for intermediate files).
+
+
+### Dependencies
+
+MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
+pipeline, using the Conda system to manage non-standard dependencies. Ensure you have [Conda](https://docs.conda.io/en/latest/miniconda.html) installed with the following packages:
+
+* [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default; on OS X, install with `brew install gnu-time`).
+* [Python](https://www.python.org/) (>=3.7)
+* [Snakemake](https://snakemake.github.io) (>=6.2.0)
+* [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, but recommended
+
+Additionally, MOF-Search uses standard Unix tools like
+[GNU Make](https://www.gnu.org/software/make/),
+[cURL](https://curl.se/),
+[XZ Utils](https://tukaani.org/xz/), and
+[GNU Gzip](https://www.gnu.org/software/gzip/).
+These tools are typically included in standard \*nix installations. However, in minimal setups (e.g., virtualization, continuous integration), you might need to install them using the corresponding package managers.
+
+
+## Installation
 
 ### Step 1: Install dependencies
 
-MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
-pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having Conda with the following packages:
-
-
-* [Conda](https://docs.conda.io/en/latest/miniconda.html)
-* [GNU Make](https://www.gnu.org/software/make/)
-* [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by `brew install gnu-time`).
-* [Python](https://www.python.org/) (>=3.7)
-* [Snakemake](https://snakemake.github.io) (>=6.2.0)
-* [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, recommended
-
-The last three packages can be installed using Conda by
+Make sure you have Conda and GNU Time installed. On Linux:
 ```bash
-    conda install -y -c bioconda -c conda-forge \
-        "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
+sudo apt-get install conda
+```
+
+On OS X (using Homebrew):
+```bash
+brew install conda
+brew install gnu-time
+```
+
+Install Python (>=3.7), Snakemake (>=6.2.0), and Mamba (optional but recommended) using Conda:
+```bash
+conda install -y -c bioconda -c conda-forge \
+    "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
 ```
 
 
 ### Step 2: Clone the repository
 
+Clone the MOF-Search repository from GitHub and navigate into the directory:
+
 ```bash
-   git clone https://github.com/karel-brinda/mof-search
-   cd mof-search
+ git clone https://github.com/karel-brinda/mof-search
+ cd mof-search
 ```
+
 
 ### Step 3: Run a simple test
 
-Run `make test` to ensure the pipeline works for the sample queries and just
-   3 batches. This will also install additional dependencies using Conda or Mamba, such as COBS, SeqTK, and Minimap 2.
+Run the following command to ensure the pipeline works for sample queries and 3 batches (this will also install all additional dependencies using Conda):
 
-**Notes:**
-* `make test` should return 0 (success) and you should have the following
-message at the end of the execution, to ensure the test produced the expected
-output:
-  ```bash
-     Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
-  ```
+```bash
+make test
+```
 
-* If the test did not produce the expected output and you obtained an error message such as
-  ```bash
-     Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ make: *** [Makefile:21: test] Error 1
-  ```
-  you should verify why.
+Make sure the test returns 0 (success) and that you see the expected output message:
+
+```bash
+ Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
+```
 
 
 ### Step 4: Download the database
 
-Run `make download` to download from Zenodo all the remaining phylogenetically
-compressed assemblies and COBS *k*-mer indexes for the [661k-HQ
-collection](https://doi.org/10.1371/journal.pbio.3001421). The downloaded files
-will then be located in the `asms/` and `cobs/` directories.
+Download all phylogenetically compressed assemblies and COBS *k*-mer
+indexes for the [661k-HQ
+collection](https://doi.org/10.1371/journal.pbio.3001421) by:
+```bash
+make download
+```
+
+The downloaded files will be located in the `asms/` and `cobs/` directories.
+
 
 *Notes:*
 * The compressed assemblies comprise *all* the genomes from the 661k
   collection.The COBS indexes comprise only those genomes that passed quality
   control.
-* For file accessions, see the [MOF
-  website](http://karel-brinda.githbub.io/mof).
 
 
 ## Usage
 
 ### Step 1: Copy or symlink your queries
 
-Remove the default test files or you old files in the `queries/` directory and
+Remove the default test files or your old files in the `queries/` directory and
 copy or symlink (recommended) your query files. The supported input formats are
 FASTA and FASTQ, possibly gzipped. All query files will be preprocessed and
 merged together.
@@ -164,7 +193,7 @@ documented directly there.
 
 ### Step 3: Clean up intermediate files
 
-Run `make clean` to clean the intermediate files from the previous runs. This includes COBS matching files, alignment files, and various reports.
+Run `make clean` to clean intermediate files from the previous runs. This includes COBS matching files, alignment files, and various reports.
 
 ### Step 4: Run the pipeline
 
@@ -174,7 +203,10 @@ Simply run `make`, which will execute Snakemake with the corresponding parameter
 
 Check the output files in `results/`.
 
-If the results don't correspond to what you expected and you need to re-adjust your parameters, go to Step 2. If only the mapping part is affected by the changes, you proceed more rapidly, by manually removing the files in `intermediate/03_map` and `output/` and running directly `make map`.
+If the results do not correspond to what you expected and you need to re-adjust
+your parameters, go to Step 2. If only the mapping part is affected by the
+changes, you proceed more rapidly by manually removing the files in
+`intermediate/03_map` and `output/` and running directly `make map`.
 
 
 ## Additional information
@@ -219,13 +251,13 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 ### Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
-* `queries/` Queries, to be provided within one or more FASTA files (`.fa`)
+* `input/` Queries, to be provided within one or more FASTA/FASTQ files, possibly gzipped (`.fa`)
 * `intermediate/` Intermediate files
    * `00_cobs` Decompressed COBS indexes (tmp)
    * `01_match` COBS matches
    * `02_filter` Filtered candidates
    * `03_map` Minimap2 alignments
-   * `fixed_queries` Sanitized queries
+   * `fixed_queries` Preprocessed queries
 * `output/` Results
 
 
@@ -243,7 +275,11 @@ soon as they are scheduled.
 ### Known limitations
 
 
-* When the number of queries is too high, the auxiliary Python scripts start to use too much memory, which may result in swapping. Try to keep the number of queries moderate and ideally their names short. If you have tens or hundreds or more query files, concatenate them all into one before running `mof-search`.
+* When the number of queries is too high, the auxiliary Python scripts start to
+  use too much memory, which may result in swapping. Try to keep the number of
+  queries moderate and ideally their names short. If you have tens or hundreds
+  or more query files, concatenate them all into one before running
+  `mof-search`.
 
 
 ## License
