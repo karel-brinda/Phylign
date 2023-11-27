@@ -276,13 +276,14 @@ soon as they are scheduled.
 
 ### Known limitations
 
-* When the number of queries is too high, the auxiliary Python scripts start to
-  use too much memory, which may result in swapping. Try to keep the number of
-  queries moderate and ideally their names short. If you have tens or hundreds
-  or more query files, concatenate them all into one before running
-  `mof-search`.
+* **Swapping if the number of queries too high.** If the number of queries is
+  too   high, the auxiliary Python scripts start to use too much memory, which
+  may result in swapping. Try to keep the number of queries moderate and
+  ideally their names short.
 
-
+* **No support for ambiguous characters in queries.** As the tools used
+  internally by MOF-Search support only the nucleotide alphabet, all non-ACGT
+  characters in queries are first converted to A.
 
 
 ## License
