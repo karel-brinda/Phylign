@@ -37,8 +37,9 @@ all within only several hours.
 * [5. Additional information](#5-additional-information)
   * [5a) List of workflow commands](#5a-list-of-workflow-commands)
   * [5b) Directories](#5b-directories)
-  * [5c) Running on a cluster](#5c-running-on-a-cluster)
-  * [5d) Known limitations](#5d-known-limitations)
+  * [5c) File formats](#5c-file-formats)
+  * [5d) Running on a cluster](#5d-running-on-a-cluster)
+  * [5e) Known limitations](#5e-known-limitations)
 * [6. License](#6-license)
 * [7. Contacts](#7-contacts)
 
@@ -212,9 +213,8 @@ followed by `make map`.
 
 ### 4e) Step 5: Analyze your results
 
-Check the output files in `output/`. The `.sam_summary.gz` files contain output
-alignments in a headerless SAM format. The `.sam_summary.stats` files contain
-statistics about your computed alignments.
+Check the output files in `output/` (for more info about formats, see
+[5c) File formats](#5c-file-formats)).
 
 If the results do not correspond to what you expected and you need to re-adjust
 your search parameters, go to Step 2. If only the mapping part is affected by
@@ -265,11 +265,13 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 ### 5b) Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
-* `input/` Queries, to be provided within one or more FASTA/FASTQ files, possibly gzipped (`.fa`)
+* `input/` Queries, to be provided within one or more FASTA/FASTQ files,
+  possibly gzipped (`.fa`)
 * `intermediate/` Intermediate files
    * `00_queries_preprocessed/` Preprocessed queries
    * `01_queries_merged/` Merged queries
-   * `02_cobs_decompressed/` Decompressed COBS indexes (temporary, used only in the disk mode is used)
+   * `02_cobs_decompressed/` Decompressed COBS indexes (temporary, used only in
+     the disk mode is used)
    * `03_match/` COBS matches
    * `04_filter/` Filtered candidates
    * `05_map/` Minimap2 alignments
@@ -277,7 +279,21 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 * `output/` The resulting files (in a headerless SAM format)
 
 
-### 5c) Running on a cluster
+
+### 5c) File formats
+
+**Input files:** FASTA or FASTQ files possibly compressed by gzipped. The files
+are searched in the `input/` directory, as files with the following suffixes:
+`.fa`, `.fasta`, `.fq`, `.fastq` (possibly with `.gz` at the end).
+
+**Output files:**
+
+* `output/{name}.sam_summary.gz`: output alignments in a headerless SAM format
+* `output/{name}.sam_summary.stats`: statistics about your computed alignments
+  in TSV
+
+
+### 5d) Running on a cluster
 
 Running on a cluster is much faster as the jobs produced by this pipeline are
 quite light and usually start running as soon as they are scheduled.
@@ -288,7 +304,7 @@ quite light and usually start running as soon as they are scheduled.
 2. Configure you queries and run the full pipeline: `make cluster_lsf`;
 
 
-### 5d) Known limitations
+### 5e) Known limitations
 
 * **Swapping if the number of queries too high.** If the number of queries is
   too   high, the auxiliary Python scripts start to use too much memory, which
