@@ -253,11 +253,13 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
 * `input/` Queries, to be provided within one or more FASTA/FASTQ files, possibly gzipped (`.fa`)
 * `intermediate/` Intermediate files
-   * `00_cobs` Decompressed COBS indexes (tmp)
-   * `01_match` COBS matches
-   * `02_filter` Filtered candidates
-   * `03_map` Minimap2 alignments
-   * `fixed_queries` Preprocessed queries
+   * `00_queries_preprocessed` Preprocessed queries
+   * `01_queries_merged` Merged queries
+   * `02_cobs_decompressed` Decompressed COBS indexes (temporary, used only in the disk mode is used)
+   * `03_match` COBS matches
+   * `04_filter` Filtered candidates
+   * `05_map` Minimap2 alignments
+* `logs/` Logs and benchmarks
 * `output/` Results
 
 
