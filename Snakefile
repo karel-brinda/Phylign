@@ -148,7 +148,7 @@ print(f"Query files: {list(map(str, qfiles))}")
 
 assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
-decompression_dir = Path(config.get("decompression_dir", "intermediate/02_cobs"))
+decompression_dir = Path(config.get("decompression_dir", "intermediate/02_cobs_decompressed"))
 keep_cobs_indexes = config["keep_cobs_indexes"]
 predefined_cobs_threads = str(config["cobs_threads"])
 ignore_RAM = False
@@ -290,7 +290,7 @@ rule fix_query:
     """Fix query to expected COBS format: single line fastas composed of ACGT bases only
     """
     output:
-        fixed_query="intermediate/00_preprocessed_queries/{qfile}.fa",
+        fixed_query="intermediate/00_queries_preprocessed/{qfile}.fa",
     input:
         original_query=get_query_file,
     threads: 1
@@ -312,10 +312,10 @@ rule concatenate_queries:
     """Concatenate all queries into a single file, so we just need to run COBS/minimap2 just once per batch
     """
     output:
-        concatenated_query=f"intermediate/01_merged_queries/{get_filename_for_all_queries()}.fa",
+        concatenated_query=f"intermediate/01_queries_merged/{get_filename_for_all_queries()}.fa",
     input:
         all_queries=expand(
-            "intermediate/00_preprocessed_queries/{qfile}.fa",
+            "intermediate/00_queries_preprocessed/{qfile}.fa",
             qfile=get_all_query_filenames(),
         ),
     threads: 1
@@ -369,7 +369,7 @@ rule run_cobs:
         match="intermediate/03_match/{batch}____{qfile}.gz",
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
-        fa="intermediate/01_merged_queries/{qfile}.fa",
+        fa="intermediate/01_queries_merged/{qfile}.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
@@ -410,7 +410,7 @@ rule decompress_and_run_cobs:
         match="intermediate/03_match/{batch}____{qfile}.gz",
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
-        fa="intermediate/01_merged_queries/{qfile}.fa",
+        fa="intermediate/01_queries_merged/{qfile}.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
@@ -471,7 +471,7 @@ rule translate_matches:
     output:
         fa="intermediate/04_filter/{qfile}.fa",
     input:
-        fa="intermediate/01_merged_queries/{qfile}.fa",
+        fa="intermediate/01_queries_merged/{qfile}.fa",
         all_matches=[
             f"intermediate/03_match/{batch}____{{qfile}}.gz" for batch in batches
         ],
@@ -559,7 +559,7 @@ rule final_stats:
         stats="output/{qfile}.sam_summary.stats",
     input:
         pseudosam="output/{qfile}.sam_summary.gz",
-        concatenated_query=f"intermediate/01_merged_queries/{get_filename_for_all_queries()}.fa",
+        concatenated_query=f"intermediate/01_queries_merged/{get_filename_for_all_queries()}.fa",
     conda:
         "envs/minimap2.yaml"
     threads: 1
