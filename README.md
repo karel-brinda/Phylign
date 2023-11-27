@@ -47,20 +47,16 @@ all within only several hours.
 
 ## 1. Introduction
 
-The central idea behind MOF-Search,
-enabling alignment locally at such a large scale,
-is
-[**phylogenetic compression**](https://brinda.eu/mof)
-([paper](https://doi.org/10.1101/2023.04.15.536996)) -
-a technique based
-on using estimated evolutionary history to guide compression and
-search of large genome collections using existing algorithms and
-data structures.
+The central idea behind MOF-Search, enabling alignment locally at such a large
+scale, is [**phylogenetic compression**](https://brinda.eu/mof)
+([paper](https://doi.org/10.1101/2023.04.15.536996)) - a technique based on
+using estimated evolutionary history to guide compression and search of large
+genome collections using existing algorithms and data structures.
 
-In short, input data are reorganized according to the topology
-of the estimated phylogenies, which makes data highly locally compressible even
-using basic techniques. Existing software packages for compression, indexing,
-and search - in this case [XZ](https://tukaani.org/xz/),
+In short, input data are reorganized according to the topology of the estimated
+phylogenies, which makes data highly locally compressible even using basic
+techniques. Existing software packages for compression, indexing, and search
+- in this case [XZ](https://tukaani.org/xz/),
 [COBS](https://github.com/iqbal-lab-org/cobs), and
 [Minimap2](https://github.com/lh3/minimap2) - are then used as low-level tools.
 The resulting performance gains come from a wide range of benefits of
@@ -68,9 +64,11 @@ phylogenetic compression, including easy parallelization, small memory
 requirements, small database size, better memory locality, and better branch
 prediction.
 
-For more information about phylogenetic compression and the implementation details of MOF-Search, see the [corresponding
-paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (including its
-[supplementary material](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf)
+For more information about phylogenetic compression and the implementation
+details of MOF-Search, see the [corresponding
+paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (including
+its [supplementary
+material](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf)
 and visit the [associated website](https://brinda.eu/mof).
 
 
@@ -92,7 +90,9 @@ a margin for intermediate files).
 ### 2b) Dependencies
 
 MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
-pipeline, using the Conda system to manage non-standard dependencies. Ensure you have [Conda](https://docs.conda.io/en/latest/miniconda.html) installed with the following packages:
+pipeline, using the Conda system to manage non-standard dependencies. Ensure
+you have [Conda](https://docs.conda.io/en/latest/miniconda.html) installed with
+the following packages:
 
 * [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default; on OS X, install with `brew install gnu-time`).
 * [Python](https://www.python.org/) (>=3.7)
@@ -104,7 +104,9 @@ Additionally, MOF-Search uses standard Unix tools like
 [cURL](https://curl.se/),
 [XZ Utils](https://tukaani.org/xz/), and
 [GNU Gzip](https://www.gnu.org/software/gzip/).
-These tools are typically included in standard \*nix installations. However, in minimal setups (e.g., virtualization, continuous integration), you might need to install them using the corresponding package managers.
+These tools are typically included in standard \*nix installations. However, in
+minimal setups (e.g., virtualization, continuous integration), you might need
+to install them using the corresponding package managers.
 
 
 ## 3. Installation
@@ -112,17 +114,21 @@ These tools are typically included in standard \*nix installations. However, in 
 ### 3a) Step 1: Install dependencies
 
 Make sure you have Conda and GNU Time installed. On Linux:
+
 ```bash
 sudo apt-get install conda
 ```
 
 On OS X (using Homebrew):
+
 ```bash
 brew install conda
 brew install gnu-time
 ```
 
-Install Python (>=3.7), Snakemake (>=6.2.0), and Mamba (optional but recommended) using Conda:
+Install Python (>=3.7), Snakemake (>=6.2.0), and Mamba (optional but
+recommended) using Conda:
+
 ```bash
 conda install -y -c bioconda -c conda-forge \
     "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
@@ -141,13 +147,15 @@ Clone the MOF-Search repository from GitHub and navigate into the directory:
 
 ### 3c) Step 3: Run a simple test
 
-Run the following command to ensure the pipeline works for sample queries and 3 batches (this will also install all additional dependencies using Conda):
+Run the following command to ensure the pipeline works for sample queries and
+3 batches (this will also install all additional dependencies using Conda):
 
 ```bash
 make test
 ```
 
-Make sure the test returns 0 (success) and that you see the expected output message:
+Make sure the test returns 0 (success) and that you see the expected output
+message:
 
 ```bash
  Success! Test run produced the expected output.
@@ -156,9 +164,9 @@ Make sure the test returns 0 (success) and that you see the expected output mess
 
 ### 3d) Step 4: Download the database
 
-Download all phylogenetically compressed assemblies and COBS *k*-mer
-indexes for the [661k-HQ
-collection](https://doi.org/10.1371/journal.pbio.3001421) by:
+Download all phylogenetically compressed assemblies and COBS *k*-mer indexes
+for the [661k-HQ collection](https://doi.org/10.1371/journal.pbio.3001421) by:
+
 ```bash
 make download
 ```
@@ -188,24 +196,29 @@ merged together.
 
 ### 4b) Step 2: Adjust configuration
 
-Edit the [`config.yaml`](config.yaml) file for your desired search. All available options are
-documented directly there.
+Edit the [`config.yaml`](config.yaml) file for your desired search. All
+available options are documented directly there.
 
 ### 4c) Step 3: Clean up intermediate files
 
-Run `make clean` to clean intermediate files from the previous runs. This includes COBS matching files, alignment files, and various reports.
+Run `make clean` to clean intermediate files from the previous runs. This
+includes COBS matching files, alignment files, and various reports.
 
 ### 4d) Step 4: Run the pipeline
 
-Simply run `make`, which will execute Snakemake with the corresponding parameters. If you want to run the pipeline step by step, run `make match` followed by `make map`.
+Simply run `make`, which will execute Snakemake with the corresponding
+parameters. If you want to run the pipeline step by step, run `make match`
+followed by `make map`.
 
 ### 4e) Step 5: Analyze your results
 
-Check the output files in `output/`. The `.sam_summary.gz` files contain output alignments in a headerless SAM format. The `.sam_summary.stats` files contain statistics about your computed alignments.
+Check the output files in `output/`. The `.sam_summary.gz` files contain output
+alignments in a headerless SAM format. The `.sam_summary.stats` files contain
+statistics about your computed alignments.
 
 If the results do not correspond to what you expected and you need to re-adjust
-your search parameters, go to Step 2. If only the mapping part is affected by the
-changes, you proceed more rapidly by manually removing the files in
+your search parameters, go to Step 2. If only the mapping part is affected by
+the changes, you proceed more rapidly by manually removing the files in
 `intermediate/05_map` and `output/` and running directly `make map`.
 
 
@@ -213,7 +226,8 @@ changes, you proceed more rapidly by manually removing the files in
 
 ### 5a) List of workflow commands
 
-MOF-Search is executed via [GNU Make](https://www.gnu.org/software/make/), which handles all parameters and passes them to Snakemake.
+MOF-Search is executed via [GNU Make](https://www.gnu.org/software/make/),
+which handles all parameters and passes them to Snakemake.
 
 Here's a list of all implemented commands (to be executed as `make {command}`):
 
@@ -253,20 +267,20 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
 * `input/` Queries, to be provided within one or more FASTA/FASTQ files, possibly gzipped (`.fa`)
 * `intermediate/` Intermediate files
-   * `00_queries_preprocessed` Preprocessed queries
-   * `01_queries_merged` Merged queries
-   * `02_cobs_decompressed` Decompressed COBS indexes (temporary, used only in the disk mode is used)
-   * `03_match` COBS matches
-   * `04_filter` Filtered candidates
-   * `05_map` Minimap2 alignments
+   * `00_queries_preprocessed/` Preprocessed queries
+   * `01_queries_merged/` Merged queries
+   * `02_cobs_decompressed/` Decompressed COBS indexes (temporary, used only in the disk mode is used)
+   * `03_match/` COBS matches
+   * `04_filter/` Filtered candidates
+   * `05_map/` Minimap2 alignments
 * `logs/` Logs and benchmarks
 * `output/` The resulting files (in a headerless SAM format)
 
 
 ### 5c) Running on a cluster
 
-Running on a cluster is much faster as the jobs produced by this pipeline are quite light and usually start running as
-soon as they are scheduled.
+Running on a cluster is much faster as the jobs produced by this pipeline are
+quite light and usually start running as soon as they are scheduled.
 
 **For LSF clusters:**
 
@@ -280,7 +294,6 @@ soon as they are scheduled.
   too   high, the auxiliary Python scripts start to use too much memory, which
   may result in swapping. Try to keep the number of queries moderate and
   ideally their names short.
-
 * **No support for ambiguous characters in queries.** As the tools used
   internally by MOF-Search support only the nucleotide alphabet, all non-ACGT
   characters in queries are first converted to A.
