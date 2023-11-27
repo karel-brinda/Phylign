@@ -20,7 +20,9 @@ all within only several hours.
 
 * [Introduction](#introduction)
   * [Citation](#citation)
-* [Dependencies](#dependencies)
+* [Requirements](#requirements)
+  * [Hardware](#hardware)
+  * [Dependencies](#dependencies)
 * [Installation](#installation)
   * [Step 1: Install dependencies](#step-1-install-dependencies)
   * [Step 2: Clone the repository](#step-2-clone-the-repository)
@@ -78,20 +80,19 @@ and the associated website [phylogenetic compression and MOF](https://brinda.eu/
 > K. Břinda, L. Lima, S. Pignotti, N. Quinones-Olvera, K. Salikhov, R. Chikhi, G. Kucherov, Z. Iqbal, and M. Baym. **[Efficient and Robust Search of Microbial Genomes via Phylogenetic Compression.](https://doi.org/10.1101/2023.04.15.536996)** *bioRxiv* 2023.04.15.536996, 2023. https://doi.org/10.1101/2023.04.15.536996
 
 
-## Dependencies
+## Requirements
+
+### Hardware
 
 MOF-Search requires a standard desktop or laptop computer with an \*nix system, and can be run also on a
 cluster. The minimal hardware requirements are *12 GB RAM* and approximately *120 GB of disk space* (102 GB
 for the database and a margin for the intermediate files).
 
 
-## Installation
-
-### Step 1: Install dependencies
+### Dependencies
 
 MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
 pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having Conda with the following packages:
-
 
 * [Conda](https://docs.conda.io/en/latest/miniconda.html)
 * [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by
@@ -99,12 +100,6 @@ pipeline, using the Conda system to manage all non-standard dependencies. To fun
 * [Python](https://www.python.org/) (>=3.7)
 * [Snakemake](https://snakemake.github.io) (>=6.2.0)
 * [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, recommended
-
-The last three packages can be installed using Conda by
-```bash
-    conda install -y -c bioconda -c conda-forge \
-        "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
-```
 
 Besides that, MOF-Search uses a multitude of standard Unix tools, such as
 [GNU Make](https://www.gnu.org/software/make/),
@@ -114,46 +109,75 @@ Besides that, MOF-Search uses a multitude of standard Unix tools, such as
 
 
 
+## Installation
+
+### Step 1: Install dependencies
+
+Make sure you have Conda installed. If not, install Conda.
+
+On Linux:
+```bash
+    sudo apt-get install conda
+```
+
+On OS X (using Homebrew):
+```bash
+   brew install conda
+```
+
+On OS X, install GNU Time:
+```bash
+  brew install gnu-time
+```
+
+Install Python (>=3.7), Snakemake (>=6.2.0), and Mamba (optional but recommended) using Conda:
+```bash
+    conda install -y -c bioconda -c conda-forge \
+        "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
+```
+
+
 ### Step 2: Clone the repository
+
+Clone the MOF-Search repository from GitHub and navigate into the directory:
 
 ```bash
    git clone https://github.com/karel-brinda/mof-search
    cd mof-search
 ```
 
+
 ### Step 3: Run a simple test
 
-Run `make test` to ensure the pipeline works for the sample queries and just
-   3 batches. This will also install additional dependencies using Conda or Mamba, such as COBS, SeqTK, and Minimap 2.
+Run the following command to ensure the pipeline works for sample queries and 3 batches (this will also install all additional dependencies using Conda):
 
-**Notes:**
-* `make test` should return 0 (success) and you should have the following
-message at the end of the execution, to ensure the test produced the expected
-output:
-  ```bash
-     Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
-  ```
+```bash
+  make test
+```
 
-* If the test did not produce the expected output and you obtained an error message such as
-  ```bash
-     Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp.fa differ make: *** [Makefile:21: test] Error 1
-  ```
-  you should verify why.
+Make sure the test returns 0 (success) and that you see the expected output message:
+
+```bash
+   Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
+```
 
 
 ### Step 4: Download the database
 
-Run `make download` to download from Zenodo all the remaining phylogenetically
-compressed assemblies and COBS *k*-mer indexes for the [661k-HQ
-collection](https://doi.org/10.1371/journal.pbio.3001421). The downloaded files
-will then be located in the `asms/` and `cobs/` directories.
+Download all phylogenetically compressed assemblies and COBS *k*-mer
+indexes for the [661k-HQ
+collection](https://doi.org/10.1371/journal.pbio.3001421) by:
+```bash
+  make download
+```
+
+The downloaded files will be located in the `asms/` and `cobs/` directories.
+
 
 *Notes:*
 * The compressed assemblies comprise *all* the genomes from the 661k
   collection.The COBS indexes comprise only those genomes that passed quality
   control.
-* For file accessions, see the [MOF
-  website](http://karel-brinda.githbub.io/mof).
 
 
 ## Usage
