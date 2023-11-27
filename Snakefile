@@ -1,3 +1,4 @@
+import functools
 import glob
 from pathlib import Path
 from snakemake.utils import min_version
@@ -343,8 +344,7 @@ rule decompress_cobs:
         ),
     params:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
-    threads:
-        lambda wildcards, input: get_number_of_COBS_threads(wildcards, input, predefined_cobs_threads, streaming),
+    threads: functools.partial(get_number_of_COBS_threads, predefined_cobs_threads=predefined_cobs_threads, streaming=streaming)
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
@@ -371,10 +371,7 @@ rule run_cobs:
             get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)
             + 1024
         ),
-    # ...
-    threads: lambda wildcards, input: get_number_of_COBS_threads(
-    wildcards, input, predefined_cobs_threads, streaming
-)
+    threads: functools.partial(get_number_of_COBS_threads, predefined_cobs_threads=predefined_cobs_threads, streaming=streaming)
     params:
         kmer_thres=config["cobs_kmer_thres"],
         load_complete="--load-complete" if load_complete else "",
@@ -416,9 +413,7 @@ rule decompress_and_run_cobs:
             + 1024
         ),
     # ...
-    threads: lambda wildcards, input: get_number_of_COBS_threads(
-    wildcards, input, predefined_cobs_threads, streaming
-)
+    threads: functools.partial(get_number_of_COBS_threads, predefined_cobs_threads=predefined_cobs_threads, streaming=streaming)
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
