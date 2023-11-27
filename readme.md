@@ -20,6 +20,7 @@ all within only several hours.
 
 * [Introduction](#introduction)
   * [Citation](#citation)
+* [Dependencies](#dependencies)
 * [Installation](#installation)
   * [Step 1: Install dependencies](#step-1-install-dependencies)
   * [Step 2: Clone the repository](#step-2-clone-the-repository)
