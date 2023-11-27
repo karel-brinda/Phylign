@@ -21,24 +21,24 @@ all within only several hours.
 * [1. Introduction](#1-introduction)
   * [Citation](#citation)
 * [2. Requirements](#2-requirements)
-  * [2a. Hardware](#2a-hardware)
-  * [2b. Dependencies](#2b-dependencies)
+  * [2a) Hardware](#2a-hardware)
+  * [2b) Dependencies](#2b-dependencies)
 * [3. Installation](#3-installation)
-  * [3a. Step 1: Install dependencies](#3a-step-1-install-dependencies)
-  * [3b. Step 2: Clone the repository](#3b-step-2-clone-the-repository)
-  * [3c. Step 3: Run a simple test](#3c-step-3-run-a-simple-test)
-  * [3d. Step 4: Download the database](#3d-step-4-download-the-database)
+  * [3a) Step 1: Install dependencies](#3a-step-1-install-dependencies)
+  * [3b) Step 2: Clone the repository](#3b-step-2-clone-the-repository)
+  * [3c) Step 3: Run a simple test](#3c-step-3-run-a-simple-test)
+  * [3d) Step 4: Download the database](#3d-step-4-download-the-database)
 * [4. Usage](#4-usage)
-  * [4a. Step 1: Copy or symlink your queries](#4a-step-1-copy-or-symlink-your-queries)
-  * [4b. Step 2: Adjust configuration](#4b-step-2-adjust-configuration)
-  * [4c. Step 3: Clean up intermediate files](#4c-step-3-clean-up-intermediate-files)
-  * [4d. Step 4: Run the pipeline](#4d-step-4-run-the-pipeline)
-  * [4e. Step 5: Analyze your results](#4e-step-5-analyze-your-results)
+  * [4a) Step 1: Copy or symlink your queries](#4a-step-1-copy-or-symlink-your-queries)
+  * [4b) Step 2: Adjust configuration](#4b-step-2-adjust-configuration)
+  * [4c) Step 3: Clean up intermediate files](#4c-step-3-clean-up-intermediate-files)
+  * [4d) Step 4: Run the pipeline](#4d-step-4-run-the-pipeline)
+  * [4e) Step 5: Analyze your results](#4e-step-5-analyze-your-results)
 * [5. Additional information](#5-additional-information)
-  * [5a. List of workflow commands](#5a-list-of-workflow-commands)
-  * [5b. Directories](#5b-directories)
-  * [5c. Running on a cluster](#5c-running-on-a-cluster)
-  * [5d. Known limitations](#5d-known-limitations)
+  * [5a) List of workflow commands](#5a-list-of-workflow-commands)
+  * [5b) Directories](#5b-directories)
+  * [5c) Running on a cluster](#5c-running-on-a-cluster)
+  * [5d) Known limitations](#5d-known-limitations)
 * [6. License](#6-license)
 * [7. Contacts](#7-contacts)
 
@@ -81,7 +81,7 @@ and visit the [associated website](https://brinda.eu/mof).
 
 ## 2. Requirements
 
-### 2a. Hardware
+### 2a) Hardware
 
 MOF-Search requires a standard desktop or laptop computer with an \*nix system,
 and it can also run on a cluster. The minimal hardware requirements are **12 GB
@@ -89,7 +89,7 @@ RAM** and approximately **120 GB of disk space** (102 GB for the database and
 a margin for intermediate files).
 
 
-### 2b. Dependencies
+### 2b) Dependencies
 
 MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
 pipeline, using the Conda system to manage non-standard dependencies. Ensure you have [Conda](https://docs.conda.io/en/latest/miniconda.html) installed with the following packages:
@@ -109,7 +109,7 @@ These tools are typically included in standard \*nix installations. However, in 
 
 ## 3. Installation
 
-### 3a. Step 1: Install dependencies
+### 3a) Step 1: Install dependencies
 
 Make sure you have Conda and GNU Time installed. On Linux:
 ```bash
@@ -129,7 +129,7 @@ conda install -y -c bioconda -c conda-forge \
 ```
 
 
-### 3b. Step 2: Clone the repository
+### 3b) Step 2: Clone the repository
 
 Clone the MOF-Search repository from GitHub and navigate into the directory:
 
@@ -139,7 +139,7 @@ Clone the MOF-Search repository from GitHub and navigate into the directory:
 ```
 
 
-### 3c. Step 3: Run a simple test
+### 3c) Step 3: Run a simple test
 
 Run the following command to ensure the pipeline works for sample queries and 3 batches (this will also install all additional dependencies using Conda):
 
@@ -154,7 +154,7 @@ Make sure the test returns 0 (success) and that you see the expected output mess
 ```
 
 
-### 3d. Step 4: Download the database
+### 3d) Step 4: Download the database
 
 Download all phylogenetically compressed assemblies and COBS *k*-mer
 indexes for the [661k-HQ
@@ -174,7 +174,7 @@ The downloaded files will be located in the `asms/` and `cobs/` directories.
 
 ## 4. Usage
 
-### 4a. Step 1: Copy or symlink your queries
+### 4a) Step 1: Copy or symlink your queries
 
 Remove the default test files or your old files in the `queries/` directory and
 copy or symlink (recommended) your query files. The supported input formats are
@@ -186,20 +186,20 @@ merged together.
 * All non-`ACGT` characters in your query sequences will be translated to `A`.
 
 
-### 4b. Step 2: Adjust configuration
+### 4b) Step 2: Adjust configuration
 
 Edit the [`config.yaml`](config.yaml) file for your desired search. All available options are
 documented directly there.
 
-### 4c. Step 3: Clean up intermediate files
+### 4c) Step 3: Clean up intermediate files
 
 Run `make clean` to clean intermediate files from the previous runs. This includes COBS matching files, alignment files, and various reports.
 
-### 4d. Step 4: Run the pipeline
+### 4d) Step 4: Run the pipeline
 
 Simply run `make`, which will execute Snakemake with the corresponding parameters. If you want to run the pipeline step by step, run `make match` followed by `make map`.
 
-### 4e. Step 5: Analyze your results
+### 4e) Step 5: Analyze your results
 
 Check the output files in `output/`. The `.sam_summary.gz` files contain output alignments in a headerless SAM format. The `.sam_summary.stats` files contain statistics about your computed alignments.
 
@@ -211,7 +211,7 @@ changes, you proceed more rapidly by manually removing the files in
 
 ## 5. Additional information
 
-### 5a. List of workflow commands
+### 5a) List of workflow commands
 
 MOF-Search is executed via [GNU Make](https://www.gnu.org/software/make/), which handles all parameters and passes them to Snakemake.
 
@@ -248,7 +248,7 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
     format               Reformat Python and Snakemake files
 ```
 
-### 5b. Directories
+### 5b) Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
 * `input/` Queries, to be provided within one or more FASTA/FASTQ files, possibly gzipped (`.fa`)
@@ -263,7 +263,7 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 * `output/` The resulting files (in a headerless SAM format)
 
 
-### 5c. Running on a cluster
+### 5c) Running on a cluster
 
 Running on a cluster is much faster as the jobs produced by this pipeline are quite light and usually start running as
 soon as they are scheduled.
@@ -274,7 +274,7 @@ soon as they are scheduled.
 2. Configure you queries and run the full pipeline: `make cluster_lsf`;
 
 
-### 5d. Known limitations
+### 5d) Known limitations
 
 * **Swapping if the number of queries too high.** If the number of queries is
   too   high, the auxiliary Python scripts start to use too much memory, which
