@@ -68,11 +68,10 @@ phylogenetic compression, including easy parallelization, small memory
 requirements, small database size, better memory locality, and better branch
 prediction.
 
-For more information about phylogenetic compression and implementation details
-of MOF-Search, see the [corresponding
-paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (and its
-[supplementary](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf)
-and the associated website [phylogenetic compression and MOF](https://brinda.eu/mof).
+For more information about phylogenetic compression and the implementation details of MOF-Search, see the [corresponding
+paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (including its
+[supplementary material](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf)
+and visit the [associated website](https://brinda.eu/mof).
 
 
 ### Citation
@@ -84,38 +83,36 @@ and the associated website [phylogenetic compression and MOF](https://brinda.eu/
 
 ### Hardware
 
-MOF-Search requires a standard desktop or laptop computer with an \*nix system, and can be run also on a
-cluster. The minimal hardware requirements are *12 GB RAM* and approximately *120 GB of disk space* (102 GB
-for the database and a margin for the intermediate files).
+MOF-Search requires a standard desktop or laptop computer with an \*nix system,
+and it can also run on a cluster. The minimal hardware requirements are **12 GB
+RAM** and approximately **120 GB of disk space** (102 GB for the database and
+a margin for intermediate files).
 
 
 ### Dependencies
 
 MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
-pipeline, using the Conda system to manage all non-standard dependencies. To function smoothly, we recommend having Conda with the following packages:
+pipeline, using the Conda system to manage non-standard dependencies. Ensure you have [Conda](https://docs.conda.io/en/latest/miniconda.html) installed with the following packages:
 
-* [Conda](https://docs.conda.io/en/latest/miniconda.html)
-* [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by
-  `brew install gnu-time`).
+* [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default; on OS X, install with `brew install gnu-time`).
 * [Python](https://www.python.org/) (>=3.7)
 * [Snakemake](https://snakemake.github.io) (>=6.2.0)
-* [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, recommended
+* [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, but recommended
 
-Besides that, MOF-Search uses a multitude of standard Unix tools, such as
+Additionally, MOF-Search uses standard Unix tools like
 [GNU Make](https://www.gnu.org/software/make/),
 [cURL](https://curl.se/),
 [XZ Utils](https://tukaani.org/xz/), and
-[GNU Gzip](https://www.gnu.org/software/gzip/). These tools are usually present in standard \*nix installations, but they might be missing in minimal image setups, such as those used for virtualization, contiguous integration, etc. In such as case, install the missing tools by the corresponding package managers.:w
+[GNU Gzip](https://www.gnu.org/software/gzip/).
 
+These tools are typically included in standard \*nix installations. However, in minimal setups (e.g., virtualization, continuous integration), you might need to install them using the corresponding package managers.
 
 
 ## Installation
 
 ### Step 1: Install dependencies
 
-Make sure you have Conda installed. If not, install Conda.
-
-On Linux:
+Make sure you have Conda and GNU Time installed. On Linux:
 ```bash
     sudo apt-get install conda
 ```
@@ -123,11 +120,7 @@ On Linux:
 On OS X (using Homebrew):
 ```bash
    brew install conda
-```
-
-On OS X, install GNU Time:
-```bash
-  brew install gnu-time
+   brew install gnu-time
 ```
 
 Install Python (>=3.7), Snakemake (>=6.2.0), and Mamba (optional but recommended) using Conda:
@@ -184,7 +177,7 @@ The downloaded files will be located in the `asms/` and `cobs/` directories.
 
 ### Step 1: Copy or symlink your queries
 
-Remove the default test files or you old files in the `queries/` directory and
+Remove the default test files or your old files in the `queries/` directory and
 copy or symlink (recommended) your query files. The supported input formats are
 FASTA and FASTQ, possibly gzipped. All query files will be preprocessed and
 merged together.
@@ -201,7 +194,7 @@ documented directly there.
 
 ### Step 3: Clean up intermediate files
 
-Run `make clean` to clean the intermediate files from the previous runs. This includes COBS matching files, alignment files, and various reports.
+Run `make clean` to clean intermediate files from the previous runs. This includes COBS matching files, alignment files, and various reports.
 
 ### Step 4: Run the pipeline
 
@@ -211,7 +204,10 @@ Simply run `make`, which will execute Snakemake with the corresponding parameter
 
 Check the output files in `results/`.
 
-If the results don't correspond to what you expected and you need to re-adjust your parameters, go to Step 2. If only the mapping part is affected by the changes, you proceed more rapidly, by manually removing the files in `intermediate/03_map` and `output/` and running directly `make map`.
+If the results do not correspond to what you expected and you need to re-adjust
+your parameters, go to Step 2. If only the mapping part is affected by the
+changes, you proceed more rapidly by manually removing the files in
+`intermediate/03_map` and `output/` and running directly `make map`.
 
 
 ## Additional information
@@ -256,13 +252,13 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 ### Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
-* `queries/` Queries, to be provided within one or more FASTA files (`.fa`)
+* `input/` Queries, to be provided within one or more FASTA/FASTQ files, possibly gzipped (`.fa`)
 * `intermediate/` Intermediate files
    * `00_cobs` Decompressed COBS indexes (tmp)
    * `01_match` COBS matches
    * `02_filter` Filtered candidates
    * `03_map` Minimap2 alignments
-   * `fixed_queries` Sanitized queries
+   * `fixed_queries` Preprocessed queries
 * `output/` Results
 
 
