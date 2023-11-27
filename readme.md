@@ -4,7 +4,7 @@
 <a href="https://brinda.eu/mof">
     <img src="docs/logo_wbg.svg" align="left" style="width:100px;" />
 </a>
-MOF-Search is a pipeline for BLAST-like search across
+Pipeline for BLAST-like search across
 <a href="https://doi.org/10.1371/journal.pbio.3001421">all pre-2019 bacteria from ENA</a>
 on standard desktop and laptops computers.
 MOF-Search uses
@@ -77,9 +77,14 @@ and the associated website [phylogenetic compression and MOF](https://brinda.eu/
 > K. Břinda, L. Lima, S. Pignotti, N. Quinones-Olvera, K. Salikhov, R. Chikhi, G. Kucherov, Z. Iqbal, and M. Baym. **[Efficient and Robust Search of Microbial Genomes via Phylogenetic Compression.](https://doi.org/10.1101/2023.04.15.536996)** *bioRxiv* 2023.04.15.536996, 2023. https://doi.org/10.1101/2023.04.15.536996
 
 
-## Installation
+## Dependencies
 
-MOF-Search requires a standard desktop or laptop computer and can be run also on a cluster. The minimal hardware requirements are
+
+MOF-Search requires a standard desktop or laptop computer with an \*nix system, and can be run also on a
+cluster. The minimal hardware requirements are *12 GB RAM* and approximately *120 GB of disk space* (102 GB
+for the database and a margin for the intermediate files).
+
+## Installation
 
 ### Step 1: Install dependencies
 
@@ -89,7 +94,8 @@ pipeline, using the Conda system to manage all non-standard dependencies. To fun
 
 * [Conda](https://docs.conda.io/en/latest/miniconda.html)
 * [GNU Make](https://www.gnu.org/software/make/)
-* [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by `brew install gnu-time`).
+* [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by
+  `brew install gnu-time`).
 * [Python](https://www.python.org/) (>=3.7)
 * [Snakemake](https://snakemake.github.io) (>=6.2.0)
 * [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, recommended
