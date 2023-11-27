@@ -148,7 +148,9 @@ print(f"Query files: {list(map(str, qfiles))}")
 
 assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
-decompression_dir = Path(config.get("decompression_dir", "intermediate/02_cobs_decompressed"))
+decompression_dir = Path(
+    config.get("decompression_dir", "intermediate/02_cobs_decompressed")
+)
 keep_cobs_indexes = config["keep_cobs_indexes"]
 predefined_cobs_threads = str(config["cobs_threads"])
 ignore_RAM = False
@@ -327,7 +329,7 @@ rule concatenate_queries:
         """
 
 
-# note: snakefmt makes incorrect breaks and spacing for threads; to keep the lines 
+# note: snakefmt makes incorrect breaks and spacing for threads; to keep the lines
 #       short to prevent this behaviour, we use the following function
 partial_cobs_threads = functools.partial(
     get_number_of_COBS_threads,
