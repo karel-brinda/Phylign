@@ -80,10 +80,10 @@ and the associated website [phylogenetic compression and MOF](https://brinda.eu/
 
 ## Dependencies
 
-
 MOF-Search requires a standard desktop or laptop computer with an \*nix system, and can be run also on a
 cluster. The minimal hardware requirements are *12 GB RAM* and approximately *120 GB of disk space* (102 GB
 for the database and a margin for the intermediate files).
+
 
 ## Installation
 
@@ -94,7 +94,6 @@ pipeline, using the Conda system to manage all non-standard dependencies. To fun
 
 
 * [Conda](https://docs.conda.io/en/latest/miniconda.html)
-* [GNU Make](https://www.gnu.org/software/make/)
 * [GNU Time](https://www.gnu.org/software/time/) (on Linux present by default, on OS X can be installed by
   `brew install gnu-time`).
 * [Python](https://www.python.org/) (>=3.7)
@@ -106,6 +105,13 @@ The last three packages can be installed using Conda by
     conda install -y -c bioconda -c conda-forge \
         "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
 ```
+
+Besides that, MOF-Search uses a multitude of standard Unix tools, such as
+[GNU Make](https://www.gnu.org/software/make/),
+[cURL](https://curl.se/),
+[XZ Utils](https://tukaani.org/xz/), and
+[GNU Gzip](https://www.gnu.org/software/gzip/). These tools are usually present in standard \*nix installations, but they might be missing in minimal image setups, such as those used for virtualization, contiguous integration, etc. In such as case, install the missing tools by the corresponding package managers.:w
+
 
 
 ### Step 2: Clone the repository
@@ -250,7 +256,11 @@ soon as they are scheduled.
 ### Known limitations
 
 
-* When the number of queries is too high, the auxiliary Python scripts start to use too much memory, which may result in swapping. Try to keep the number of queries moderate and ideally their names short. If you have tens or hundreds or more query files, concatenate them all into one before running `mof-search`.
+* When the number of queries is too high, the auxiliary Python scripts start to
+  use too much memory, which may result in swapping. Try to keep the number of
+  queries moderate and ideally their names short. If you have tens or hundreds
+  or more query files, concatenate them all into one before running
+  `mof-search`.
 
 
 ## License
