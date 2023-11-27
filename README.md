@@ -150,7 +150,7 @@ make test
 Make sure the test returns 0 (success) and that you see the expected output message:
 
 ```bash
- Files output/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz and data/backbone19Kbp___ecoli_reads_1___ecoli_reads_2___gc01_1kl.sam_summary.xz are identical
+ Success! Test run produced the expected output.
 ```
 
 
@@ -201,12 +201,12 @@ Simply run `make`, which will execute Snakemake with the corresponding parameter
 
 ### Step 5: Analyze your results
 
-Check the output files in `results/`.
+Check the output files in `output/`. The `.sam_summary.gz` files contain output alignments in a headerless SAM format. The `.sam_summary.stats` files contain statistics about your computed alignments.
 
 If the results do not correspond to what you expected and you need to re-adjust
-your parameters, go to Step 2. If only the mapping part is affected by the
+your search parameters, go to Step 2. If only the mapping part is affected by the
 changes, you proceed more rapidly by manually removing the files in
-`intermediate/03_map` and `output/` and running directly `make map`.
+`intermediate/05_map` and `output/` and running directly `make map`.
 
 
 ## Additional information
@@ -253,12 +253,14 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
 * `input/` Queries, to be provided within one or more FASTA/FASTQ files, possibly gzipped (`.fa`)
 * `intermediate/` Intermediate files
-   * `00_cobs` Decompressed COBS indexes (tmp)
-   * `01_match` COBS matches
-   * `02_filter` Filtered candidates
-   * `03_map` Minimap2 alignments
-   * `fixed_queries` Preprocessed queries
-* `output/` Results
+   * `00_queries_preprocessed` Preprocessed queries
+   * `01_queries_merged` Merged queries
+   * `02_cobs_decompressed` Decompressed COBS indexes (temporary, used only in the disk mode is used)
+   * `03_match` COBS matches
+   * `04_filter` Filtered candidates
+   * `05_map` Minimap2 alignments
+* `logs/` Logs and benchmarks
+* `output/` The resulting files (in a headerless SAM format)
 
 
 ### Running on a cluster
@@ -274,12 +276,14 @@ soon as they are scheduled.
 
 ### Known limitations
 
+* **Swapping if the number of queries too high.** If the number of queries is
+  too   high, the auxiliary Python scripts start to use too much memory, which
+  may result in swapping. Try to keep the number of queries moderate and
+  ideally their names short.
 
-* When the number of queries is too high, the auxiliary Python scripts start to
-  use too much memory, which may result in swapping. Try to keep the number of
-  queries moderate and ideally their names short. If you have tens or hundreds
-  or more query files, concatenate them all into one before running
-  `mof-search`.
+* **No support for ambiguous characters in queries.** As the tools used
+  internally by MOF-Search support only the nucleotide alphabet, all non-ACGT
+  characters in queries are first converted to A.
 
 
 ## License
