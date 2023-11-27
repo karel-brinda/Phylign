@@ -481,7 +481,7 @@ rule translate_matches:
     resources:
         mem_mb=lambda wildcards, attempt: 4000 * 2 ** (attempt),  # 4GB, 8GB, 16GB, 32GB...
     log:
-        "logs/translate_matches/{qfile}.log",
+        "logs/04_filter/{qfile}.log",
     params:
         nb_best_hits=config["nb_best_hits"],
     shell:
