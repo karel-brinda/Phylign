@@ -52,7 +52,8 @@ def readfq(fp):
                 if l[0] in '>@':  # fasta/q header line
                     last = l[:-1]  # save this line
                     break
-        if not last: break
+        if not last:
+            break
 
         ####
         # modified to include comments
@@ -72,7 +73,8 @@ def readfq(fp):
             seqs.append(l[:-1])
         if not last or last[0] != '+':  # this is a fasta record
             yield name, comment, ''.join(seqs), None  # yield a fasta record
-            if not last: break
+            if not last:
+                break
         else:  # this is a fastq record
             seq, leng, seqs = ''.join(seqs), 0, []
             for l in fp:  # read the quality
