@@ -1,4 +1,4 @@
-.PHONY: all test help clean cleanall cluster download match map format report viewconf conda
+.PHONY: all test help clean cleanall cluster download match map format checkformat report viewconf conda
 
 SHELL=/usr/bin/env bash -eo pipefail
 DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
@@ -117,3 +117,7 @@ cluster_lsf: ## Submit to LSF cluster
 format: ## Reformat Python and Snakemake files
 	yapf -i */*.py
 	snakefmt Snakefile
+
+checkformat: ## Check source code format
+	snakefmt --check Snakefile
+	yapf --diff --recursive scripts/
