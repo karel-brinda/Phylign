@@ -92,9 +92,9 @@ report: ## Generate Snakemake report
 
 
 
-##########
-## Misc ##
-##########
+#############
+## Cluster ##
+#############
 cluster_slurm: ## Submit to a SLURM cluster
 	sbatch \
         -c 10 \
@@ -111,6 +111,9 @@ cluster_lsf: ## Submit to LSF cluster
 	scripts/check_if_config_is_ok_for_cluster_run.py
 	scripts/submit_lsf.sh
 
+####################
+## For developers ##
+####################
 format: ## Reformat Python and Snakemake files
 	yapf -i */*.py
 	snakefmt Snakefile
