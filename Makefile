@@ -120,4 +120,4 @@ format: ## Reformat Python and Snakemake files
 
 checkformat: ## Check source code format
 	snakefmt --check Snakefile
-	yapf --diff --recursive scripts/
+	yapf --diff */*.py
