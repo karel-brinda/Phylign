@@ -1,4 +1,3 @@
-import functools
 import glob
 from pathlib import Path
 from snakemake.utils import min_version
@@ -21,7 +20,7 @@ def multiglob(patterns):
 
 
 def get_all_query_filepaths():
-    return multiglob(expand("input/*.{ext}", ext=extensions))
+    return multiglob(expand("queries/*.{ext}", ext=extensions))
 
 
 def get_all_query_filenames():
@@ -62,9 +61,7 @@ def get_uncompressed_batch_size(wildcards, input):
 
 def get_xz_decompress_RAM_in_MB(wildcards, input):
     xz_decompression_RAM_usage_in_bytes = get_index_metadata(wildcards, input)[1]
-    xz_decompression_RAM_usage_in_MB = (
-        int(xz_decompression_RAM_usage_in_bytes / 1024 / 1024) + 1
-    )
+    xz_decompression_RAM_usage_in_MB = int(xz_decompression_RAM_usage_in_bytes / 1024 / 1024) + 1
     return xz_decompression_RAM_usage_in_MB
 
 
@@ -148,9 +145,7 @@ print(f"Query files: {list(map(str, qfiles))}")
 
 assemblies_dir = Path(f"{config['download_dir']}/asms")
 cobs_dir = Path(f"{config['download_dir']}/cobs")
-decompression_dir = Path(
-    config.get("decompression_dir", "intermediate/02_cobs_decompressed")
-)
+decompression_dir = Path(config.get("decompression_dir", "intermediate/00_cobs"))
 keep_cobs_indexes = config["keep_cobs_indexes"]
 predefined_cobs_threads = str(config["cobs_threads"])
 ignore_RAM = False
@@ -181,6 +176,7 @@ wildcard_constraints:
 if keep_cobs_indexes:
 
     ruleorder: decompress_cobs > run_cobs > decompress_and_run_cobs
+
 
 else:
 
@@ -224,12 +220,23 @@ rule download:
         [f"{assemblies_dir}/{x}.tar.xz" for x in batches],
         [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
 
+rule download_asms_f:
+    """Download assemblies
+    """
+    input:
+        [f"{assemblies_dir}/{x}.tar.xz" for x in batches],
+        
+rule download_cobs_f:
+    """Download COBS indexes.
+    """
+    input:
+        [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
 
 rule match:
     """Match reads to the COBS indexes.
     """
     input:
-        f"intermediate/04_filter/{get_filename_for_all_queries()}.fa",
+        f"intermediate/02_filter/{get_filename_for_all_queries()}.fa",
 
 
 rule map:
@@ -252,7 +259,7 @@ rule download_asm_batch:
         url=asms_url,
     resources:
         max_download_threads=1,
-        mem_mb=200,
+        mem_mb=200
     threads: 1
     shell:
         """
@@ -270,7 +277,7 @@ rule download_cobs_batch:
         url=cobs_url_fct,
     resources:
         max_download_threads=1,
-        mem_mb=200,
+        mem_mb=200
     threads: 1
     shell:
         """
@@ -283,7 +290,7 @@ rule download_cobs_batch:
 ## Processing rules
 ##################################
 def get_query_file(wildcards):
-    query_file = multiglob(expand(f"input/{wildcards.qfile}.{{ext}}", ext=extensions))
+    query_file = multiglob(expand(f"queries/{wildcards.qfile}.{{ext}}", ext=extensions))
     assert len(query_file) == 1
     return query_file[0]
 
@@ -292,12 +299,12 @@ rule fix_query:
     """Fix query to expected COBS format: single line fastas composed of ACGT bases only
     """
     output:
-        fixed_query="intermediate/00_queries_preprocessed/{qfile}.fa",
+        fixed_query="intermediate/fixed_queries/{qfile}.fa",
     input:
         original_query=get_query_file,
     threads: 1
     resources:
-        mem_mb=200,
+        mem_mb=200
     conda:
         "envs/seqtk.yaml"
     params:
@@ -314,34 +321,22 @@ rule concatenate_queries:
     """Concatenate all queries into a single file, so we just need to run COBS/minimap2 just once per batch
     """
     output:
-        concatenated_query=f"intermediate/01_queries_merged/{get_filename_for_all_queries()}.fa",
+        concatenated_query=f"intermediate/concatenated_query/{get_filename_for_all_queries()}.fa",
     input:
         all_queries=expand(
-            "intermediate/00_queries_preprocessed/{qfile}.fa",
-            qfile=get_all_query_filenames(),
+            "intermediate/fixed_queries/{qfile}.fa", qfile=get_all_query_filenames()
         ),
     threads: 1
     resources:
-        mem_mb=200,
+        mem_mb=200
     shell:
         """
         cat {input} > {output}
         """
 
 
-# note: snakefmt makes incorrect breaks and spacing for threads; to keep the lines
-#       short to prevent this behaviour, we use the following function
-partial_cobs_threads = functools.partial(
-    get_number_of_COBS_threads,
-    predefined_cobs_threads=predefined_cobs_threads,
-    streaming=streaming,
-)
-
-
 rule decompress_cobs:
     """Decompress cobs indexes
-
-    Note threads: The same number as of COBS threads to ensure that COBS is executed immediately after decompression
     """
     output:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
@@ -350,12 +345,14 @@ rule decompress_cobs:
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=1,
-        mem_mb=lambda wildcards, input: int(
-            get_xz_decompress_RAM_in_MB(wildcards, input) * 1.25
-        ),
+        mem_mb=lambda wildcards, input: int(get_xz_decompress_RAM_in_MB(wildcards, input)*1.25)
     params:
         cobs_index_tmp=f"{decompression_dir}/{{batch}}.cobs_classic.tmp",
-    threads: partial_cobs_threads
+    threads:
+        # The same number as of COBS threads to ensure that COBS is executed immediately after decompression
+        lambda wildcards, input: get_number_of_COBS_threads(
+            wildcards, input, predefined_cobs_threads, streaming
+        )
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}.txt \\
@@ -368,21 +365,22 @@ rule run_cobs:
     """Cobs matching
     """
     output:
-        match="intermediate/03_match/{batch}____{qfile}.gz",
+        match="intermediate/01_match/{batch}____{qfile}.gz",
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
-        fa="intermediate/01_queries_merged/{qfile}.fa",
+        fa="intermediate/concatenated_query/{qfile}.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
-        mem_mb=lambda wildcards, input: int(
-            get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)
-            + 1024
-        ),
-    threads: partial_cobs_threads
+        mem_mb=lambda wildcards, input: int(get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)+1024),
+    threads:
+        # ...
+        lambda wildcards, input: get_number_of_COBS_threads(
+            wildcards, input, predefined_cobs_threads, streaming
+        )
     params:
         kmer_thres=config["cobs_kmer_thres"],
         load_complete="--load-complete" if load_complete else "",
@@ -409,21 +407,22 @@ rule decompress_and_run_cobs:
     """Decompress Cobs index and run Cobs matching
     """
     output:
-        match="intermediate/03_match/{batch}____{qfile}.gz",
+        match="intermediate/01_match/{batch}____{qfile}.gz",
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
-        fa="intermediate/01_queries_merged/{qfile}.fa",
+        fa="intermediate/concatenated_query/{qfile}.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
         max_ram_mb=lambda wildcards, input: get_uncompressed_batch_size_in_MB(
             wildcards, input, ignore_RAM, streaming
         ),
-        mem_mb=lambda wildcards, input: int(
-            get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)
-            + 1024
-        ),
-    threads: partial_cobs_threads
+        mem_mb=lambda wildcards, input: int(get_uncompressed_batch_size_in_MB(wildcards, input, ignore_RAM, streaming)+1024),
+    threads:
+        # ...
+        lambda wildcards, input: get_number_of_COBS_threads(
+            wildcards, input, predefined_cobs_threads, streaming
+        )
     params:
         kmer_thres=config["cobs_kmer_thres"],
         decompression_dir=decompression_dir,
@@ -471,19 +470,19 @@ rule translate_matches:
         ref - read - matches
     """
     output:
-        fa="intermediate/04_filter/{qfile}.fa",
+        fa="intermediate/02_filter/{qfile}.fa",
     input:
-        fa="intermediate/01_queries_merged/{qfile}.fa",
+        fa="intermediate/concatenated_query/{qfile}.fa",
         all_matches=[
-            f"intermediate/03_match/{batch}____{{qfile}}.gz" for batch in batches
+            f"intermediate/01_match/{batch}____{{qfile}}.gz" for batch in batches
         ],
     conda:
         "envs/minimap2.yaml"
     threads: 1
     resources:
-        mem_mb=lambda wildcards, attempt: 4000 * 2 ** (attempt),  # 4GB, 8GB, 16GB, 32GB...
+        mem_mb=lambda wildcards, attempt: 4000 * 2**(attempt)  # 4GB, 8GB, 16GB, 32GB...
     log:
-        "logs/04_filter/{qfile}.log",
+        "logs/translate_matches/{qfile}.log",
     params:
         nb_best_hits=config["nb_best_hits"],
     shell:
@@ -499,22 +498,22 @@ rule translate_matches:
 
 rule batch_align_minimap2:
     output:
-        sam="intermediate/05_map/{batch}____{qfile}.sam.gz",
+        sam="intermediate/03_map/{batch}____{qfile}.sam.gz",
     input:
-        qfa="intermediate/04_filter/{qfile}.fa",
+        qfa="intermediate/02_filter/{qfile}.fa",
         asm=f"{assemblies_dir}/{{batch}}.tar.xz",
     log:
-        log="logs/05_map/{batch}____{qfile}.log",
+        log="logs/03_map/{batch}____{qfile}.log",
     params:
         minimap_preset=config["minimap_preset"],
         minimap_extra_params=config["minimap_extra_params"],
         pipe="--pipe" if config["prefer_pipe"] else "",
-        refs_tmp="intermediate/05_map/{batch}____{qfile}.refs.tmp",
+        refs_tmp="intermediate/03_map/{batch}____{qfile}.refs.tmp",
     conda:
         "envs/minimap2.yaml"
     threads: config["minimap_threads"]
     resources:
-        mem_mb=lambda wildcards, attempt: 1000 * 2 ** (attempt),  # 1GB, 2GB, 4GB, 8GB...
+        mem_mb=lambda wildcards, attempt: 1000 * 2**(attempt)  # 1GB, 2GB, 4GB, 8GB...
     shell:
         """
         xzcat data/661k_batches.txt.xz \\
@@ -544,10 +543,10 @@ rule aggregate_sams:
     output:
         pseudosam="output/{qfile}.sam_summary.gz",
     input:
-        sam=[f"intermediate/05_map/{batch}____{{qfile}}.sam.gz" for batch in batches],
+        sam=[f"intermediate/03_map/{batch}____{{qfile}}.sam.gz" for batch in batches],
     threads: 1
     resources:
-        mem_mb=lambda wildcards, attempt: 1000 * 2 ** (attempt),  # 1GB, 2GB, 4GB, 8GB...
+        mem_mb=lambda wildcards, attempt: 1000 * 2**(attempt)  # 1GB, 2GB, 4GB, 8GB...
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/aggregate_sams___{wildcards.qfile}.txt \\
@@ -561,12 +560,12 @@ rule final_stats:
         stats="output/{qfile}.sam_summary.stats",
     input:
         pseudosam="output/{qfile}.sam_summary.gz",
-        concatenated_query=f"intermediate/01_queries_merged/{get_filename_for_all_queries()}.fa",
+        concatenated_query=f"intermediate/concatenated_query/{get_filename_for_all_queries()}.fa",
     conda:
         "envs/minimap2.yaml"
     threads: 1
     resources:
-        mem_mb=lambda wildcards, attempt: 1000 * 2 ** (attempt),  # 1GB, 2GB, 4GB, 8GB...
+        mem_mb=lambda wildcards, attempt: 1000 * 2**(attempt)  # 1GB, 2GB, 4GB, 8GB...
     shell:
         """
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/final_stats___{wildcards.qfile}.txt \\

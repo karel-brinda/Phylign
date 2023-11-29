@@ -29,20 +29,14 @@ all: ## Run everything (the default rule)
 	make match
 	make map
 
-DIFF_CMD=diff -q <(gunzip --stdout output/reads_1___reads_2___reads_3___reads_4.sam_summary.gz | cut -f -3) <(xzcat data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz | cut -f -3)
-
 test: ## Quick test using 3 batches
 	snakemake download $(SMK_PARAMS) -j 99999 --config batches=data/batches_small.txt  # download is not benchmarked
 	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake match $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
 	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
-	@if $(DIFF_CMD); then \
-	    echo "Success! Test run produced the expected output."; \
-	else \
-		echo ""; \
-		echo "ERROR. Test run DID NOT produce the expected output. Failed command:"; \
-		echo ""; \
-		echo "    $(DIFF_CMD)"; \
-		echo ""; \
+	@if diff -q <(gunzip --stdout output/reads_1___reads_2___reads_3___reads_4.sam_summary.gz | cut -f -3) <(xzcat data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz | cut -f -3); then\
+	    echo "Success! Test run produced the expected output.";\
+	else\
+	    echo "WARNING: FAIL. Test run DID NOT produce the expected output.";\
 	    exit 1;\
 	fi
 
@@ -50,6 +44,7 @@ help: ## Print help messages
 	@echo "$$(grep -hE '^\S*(:.*)?##' $(MAKEFILE_LIST) \
 		| sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' -e 's/^\([^#]\)/    \1/g'\
 		| column -c2 -t -s : )"
+
 
 clean: ## Clean intermediate search files
 	rm -fv intermediate/*/*
@@ -70,6 +65,12 @@ conda: ## Create the conda environments
 
 download: ## Download the assemblies and COBS indexes
 	snakemake download $(SMK_PARAMS) -j 99999
+
+download_asms: ## Download the assemblies
+	snakemake download_asms_f $(SMK_PARAMS) -j 99999
+
+download_cobs: ## Download the COBS indexes
+	snakemake download_cobs_f $(SMK_PARAMS) -j 99999
 
 match: ## Match queries using COBS (queries -> candidates)
 	scripts/benchmark.py --log logs/benchmarks/match_$(DATETIME).txt "snakemake match $(SMK_PARAMS)"
