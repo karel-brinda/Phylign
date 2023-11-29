@@ -1,4 +1,4 @@
-.PHONY: all test help clean cleanall cluster download match map format report viewconf conda
+.PHONY: all test help clean cleanall cluster download download_asms download_cobs match map format report viewconf conda
 
 SHELL=/usr/bin/env bash -eo pipefail
 DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
@@ -71,10 +71,10 @@ conda: ## Create the conda environments
 download: ## Download the assemblies and COBS indexes
 	snakemake download $(SMK_PARAMS) -j 99999
 
-download_asms: ## Download the assemblies
+download_asms: ## Download only the assemblies
 	snakemake download_asms_batches $(SMK_PARAMS) -j 99999
 
-download_cobs: ## Download the COBS indexes
+download_cobs: ## Download only the COBS indexes
 	snakemake download_cobs_batches $(SMK_PARAMS) -j 99999
 
 match: ## Match queries using COBS (queries -> candidates)
