@@ -225,6 +225,19 @@ rule download:
         [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
 
 
+rule download_asms_batches:
+    """Download assemblies.
+    """
+    input:
+        [f"{assemblies_dir}/{x}.tar.xz" for x in batches],
+
+
+rule download_cobs_batches:
+    """Download COBS indexes.
+    """
+    input:
+        [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
+
 rule match:
     """Match reads to the COBS indexes.
     """

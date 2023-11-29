@@ -246,6 +246,8 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 ####################
     conda                Create the conda environments
     download             Download the assemblies and COBS indexes
+    download_asms        Download only the assemblies
+    download_cobs        Download only the COBS indexes
     match                Match queries using COBS (queries -> candidates)
     map                  Map candidates to assemblies (candidates -> alignments)
 ###############
