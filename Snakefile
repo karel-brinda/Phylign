@@ -205,11 +205,11 @@ def asms_url_fct(wildcards):
     asm_url = f"https://zenodo.org/record/{asm_zenodo}/files/{wildcards.batch}.tar.xz"
     return asm_url
 
-def get_sleep_amount(resources):
-    if resources.download_attempt == 1:
+def get_sleep_amount(attempt):
+    if attempt == 1:
         return 0
     else:
-        return random.randint(0, (resources.download_attempt-1)*60)  # adds a random sleep time between 0 and (attempt-1) minutes
+        return random.randint(0, (attempt-1)*60)  # adds a random sleep time between 0 and (attempt-1) minutes
 
 ##################################
 ## Top-level rules
@@ -272,14 +272,14 @@ rule download_asm_batch:
     resources:
         max_download_threads=1,
         mem_mb=200,
-        # note: this hack is required to route attempt to params, see https://github.com/snakemake/snakemake/issues/499
-        download_attempt=lambda wildcards, attempt: attempt
+        # note: sleep_amount has to be defined as a resource
+        # note: I tried a hack to route it to params, but it did not work, see https://github.com/snakemake/snakemake/issues/499
+        sleep_amount=lambda wildcards, attempt: get_sleep_amount(attempt)
     params:
-        url=asms_url_fct,
-        sleep_amount = lambda wildcards, resources: get_sleep_amount(resources)
+        url=asms_url_fct
     shell:
         """
-        scripts/download.sh {params.url} {output.xz} {params.sleep_amount}
+        scripts/download.sh {params.url} {output.xz} {resources.sleep_amount}
         """
 
 rule download_cobs_batch:
@@ -291,14 +291,12 @@ rule download_cobs_batch:
     resources:
         max_download_threads=1,
         mem_mb=200,
-        # note: this hack is required to route attempt to params, see https://github.com/snakemake/snakemake/issues/499
-        download_attempt=lambda wildcards, attempt: attempt
+        sleep_amount=lambda wildcards, attempt: get_sleep_amount(attempt)
     params:
-        url=cobs_url_fct,
-        sleep_amount = lambda wildcards, resources: get_sleep_amount(resources)
+        url=cobs_url_fct
     shell:
         """
-        scripts/download.sh {params.url} {output.xz} {params.sleep_amount}
+        scripts/download.sh {params.url} {output.xz} {resources.sleep_amount}
         """
 
 
