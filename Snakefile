@@ -2,6 +2,7 @@ import functools
 import glob
 from pathlib import Path
 from snakemake.utils import min_version
+import random
 import re
 
 ##################################
@@ -199,10 +200,16 @@ def cobs_url_fct(wildcards):
     else:
         return f"https://zenodo.org/record/6845083/files/{x}.cobs_classic.xz"
 
+def asms_url_fct(wildcards):
+    asm_zenodo = 4602622
+    asm_url = f"https://zenodo.org/record/{asm_zenodo}/files/{wildcards.batch}.tar.xz"
+    return asm_url
 
-asm_zenodo = 4602622
-asms_url = f"https://zenodo.org/record/{asm_zenodo}/files"
-
+def get_sleep_amount(resources):
+    if resources.download_attempt == 1:
+        return 0
+    else:
+        return random.randint(0, (resources.download_attempt-1)*60)  # adds a random sleep time between 0 and (attempt-1) minutes
 
 ##################################
 ## Top-level rules
@@ -261,34 +268,37 @@ rule download_asm_batch:
     """
     output:
         xz=f"{assemblies_dir}/{{batch}}.tar.xz",
-    params:
-        url=asms_url,
+    threads: 1
     resources:
         max_download_threads=1,
         mem_mb=200,
-    threads: 1
+        # note: this hack is required to route attempt to params, see https://github.com/snakemake/snakemake/issues/499
+        download_attempt=lambda wildcards, attempt: attempt
+    params:
+        url=asms_url_fct,
+        sleep_amount = lambda wildcards, resources: get_sleep_amount(resources)
     shell:
         """
-        curl -L "{params.url}/{wildcards.batch}.tar.xz"  > {output.xz}
-        scripts/test_xz.py {output.xz}
+        scripts/download.sh {params.url} {output.xz} {params.sleep_amount}
         """
-
 
 rule download_cobs_batch:
     """Download compressed cobs indexes
     """
     output:
         xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
-    params:
-        url=cobs_url_fct,
+    threads: 1
     resources:
         max_download_threads=1,
         mem_mb=200,
-    threads: 1
+        # note: this hack is required to route attempt to params, see https://github.com/snakemake/snakemake/issues/499
+        download_attempt=lambda wildcards, attempt: attempt
+    params:
+        url=cobs_url_fct,
+        sleep_amount = lambda wildcards, resources: get_sleep_amount(resources)
     shell:
         """
-        curl -L "{params.url}"  > {output.xz}
-        scripts/test_xz.py {output.xz}
+        scripts/download.sh {params.url} {output.xz} {params.sleep_amount}
         """
 
 
