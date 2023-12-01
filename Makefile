@@ -69,7 +69,7 @@ conda: ## Create the conda environments
 	snakemake $(SMK_PARAMS) --conda-create-envs-only
 
 download: ## Download the assemblies and COBS indexes
-	snakemake download $(SMK_PARAMS) -j 99999
+	snakemake download $(SMK_PARAMS) -j 99999 --restart-times 3
 
 download_asms: ## Download only the assemblies
 	snakemake download_asms_batches $(SMK_PARAMS) -j 99999
