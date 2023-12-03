@@ -264,6 +264,12 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
     format               Reformat Python and Snakemake files
 ```
 
+*Note:* `make format` requires
+[YAPF](https://github.com/google/yapf) and
+[Snakefmt](https://github.com/snakemake/snakefmt), which can be installed by
+`conda install -c conda-forge -c bioconda yapf snakefmt`.
+
+
 ### 5b) Directories
 
 * `asms/`, `cobs/` Downloaded assemblies and COBS indexes
