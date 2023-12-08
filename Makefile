@@ -48,7 +48,7 @@ test: ## Quick test using 3 batches
 
 help: ## Print help messages
 	@echo -e "$$(grep -hE '^\S*(:.*)?##' $(MAKEFILE_LIST) \
-		| sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' -e 's/^\([^#]\)/    \1/g'\
+		| sed -e 's/:.*##\s*/:/' -e 's/^\(.*\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' -e 's/^\([^#]\)/    \1/g'\
 		| column -c2 -t -s : )"
 
 clean: ## Clean intermediate search files
