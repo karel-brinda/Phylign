@@ -56,10 +56,25 @@ threads: all
 # if index_load_mode == mmap-disk, then this parameter is ignored as the OS will manage RAM usage
 # WARNING: this parameter is ignored when running on a cluster
 max_ram_gb: 12
+##################################################
 
-# maximum number of download threads at a time (note: too many might slow down download speed)
+##################################################
+# download
+
+# maximum number of download threads at a time (note: too many might slow down download speed and make Zenodo block your requests)
 # WARNING: this parameter is ignored when running on a cluster
 max_download_threads: 8
+
+# how many times to retry a download if it fails
+download_retries: 3
+
+# how many seconds to wait between retries
+download_retry_wait: 10
+
+# directory to store all downloaded files. This is where an "asms" folder with all assemblies and a "cobs" folder
+# with all COBS indexes will be created. This is a heavy directory, put it in a filesystem that has at least
+# 100 GB free
+download_dir: "."
 ##################################################
 
 ##################################################
@@ -121,9 +136,4 @@ keep_cobs_indexes: False
 # directory to store the COBS decompressed indexes. Can be used to put the decompressed indexes in an external
 # or large filesystem capable of holding them. If not defined, defaults to "intermediate/00_cobs"
 # decompression_dir: cobs_decompressed_indexes
-
-# directory to store all downloaded files. This is where an "asms" folder with all assemblies and a "cobs" folder
-# with all COBS indexes will be created. This is a heavy directory, put it in a filesystem that has at least
-# 100 GB free
-download_dir: "."
 ###################################################################################################
