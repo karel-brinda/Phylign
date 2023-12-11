@@ -206,10 +206,7 @@ def asms_url_fct(wildcards):
     return asm_url
 
 def get_sleep_amount(attempt):
-    if attempt == 1:
-        return 0
-    else:
-        return random.randint(0, (attempt-1)*60)  # adds a random sleep time between 0 and (attempt-1) minutes
+    return int(config["sleep_amount"]) * (attempt - 1)
 
 ##################################
 ## Top-level rules

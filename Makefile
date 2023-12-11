@@ -9,6 +9,7 @@ DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
 
 THREADS=$(shell grep "^threads:" config.yaml | awk '{print $$2}')
 MAX_DOWNLOAD_THREADS=$(shell grep "^max_download_threads" config.yaml | awk '{print $$2}')
+DOWNLOAD_RETRIES=$(shell grep "^download_retries" config.yaml | awk '{print $$2}')
 MAX_IO_HEAVY_THREADS=$(shell grep "^max_io_heavy_threads" config.yaml | awk '{print $$2}')
 MAX_RAM_MB=$(shell grep "^max_ram_gb:" config.yaml | awk '{print $$2*1024}')
 
@@ -69,7 +70,7 @@ conda: ## Create the conda environments
 	snakemake $(SMK_PARAMS) --conda-create-envs-only
 
 download: ## Download the assemblies and COBS indexes
-	snakemake download $(SMK_PARAMS) -j 99999 --restart-times 3
+	snakemake download $(SMK_PARAMS) -j 99999 --restart-times $(DOWNLOAD_RETRIES)
 
 download_asms: ## Download only the assemblies
 	snakemake download_asms_batches $(SMK_PARAMS) -j 99999
