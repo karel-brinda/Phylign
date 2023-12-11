@@ -206,7 +206,7 @@ def asms_url_fct(wildcards):
     return asm_url
 
 def get_sleep_amount(attempt):
-    return int(config["sleep_amount"]) * (attempt - 1)
+    return int(config["download_retry_wait"]) * (attempt - 1)
 
 ##################################
 ## Top-level rules
