@@ -31,7 +31,7 @@ def get_all_query_filenames():
 
 def get_batches():
     with open(config["batches"]) as fin:
-        return sorted([x.strip() for x in fin])
+        return list(sorted(filter(len, map(str.strip, fin))))
 
 
 def get_filename_for_all_queries():
