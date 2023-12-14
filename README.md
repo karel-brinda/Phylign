@@ -253,7 +253,7 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 ###############
 ## Reporting ##
 ###############
-    viewconf             View configuration without comments
+    config               Print configuration without comments
     report               Generate Snakemake report
 ##########
 ## Misc ##

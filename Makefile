@@ -1,4 +1,4 @@
-.PHONY: all test help clean cleanall cluster download download_asms download_cobs match map format report viewconf conda
+.PHONY: all test help clean cleanall cluster download download_asms download_cobs match map format report config conda
 
 SHELL=/usr/bin/env bash -eo pipefail
 DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
@@ -92,7 +92,7 @@ map: ## Map candidates to assemblies (candidates -> alignments)
 ## Reporting ##
 ###############
 
-viewconf: ## View configuration without comments
+config: ## Print configuration without comments
 	@cat config.yaml \
 		| perl -pe 's/ *#.*//g' \
 		| grep --color='auto' -E '.*\:'
