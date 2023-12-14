@@ -21,6 +21,8 @@ else
     SMK_PARAMS=--cores all --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_download_threads=10000000 max_io_heavy_threads=10000000 max_ram_mb=1000000000 $(SMK_CLUSTER_ARGS)
 endif
 
+DOWNLOAD_PARAMS=--cores $(MAX_DOWNLOAD_THREADS) -j $(MAX_DOWNLOAD_THREADS) --restart-times $(DOWNLOAD_RETRIES)
+
 
 ######################
 ## General commands ##
@@ -33,7 +35,7 @@ all: ## Run everything (the default rule)
 DIFF_CMD=diff -q <(gunzip --stdout output/reads_1___reads_2___reads_3___reads_4.sam_summary.gz | cut -f -3) <(xzcat data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz | cut -f -3)
 
 test: ## Quick test using 3 batches
-	snakemake download $(SMK_PARAMS) -j 99999 --config batches=data/batches_small.txt  # download is not benchmarked
+	snakemake download $(SMK_PARAMS) $(DOWNLOAD_PARAMS) --config batches=data/batches_small.txt  # download is not benchmarked
 	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake match $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
 	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
 	@if $(DIFF_CMD); then \
@@ -75,13 +77,13 @@ conda: ## Create the conda environments
 	snakemake $(SMK_PARAMS) --conda-create-envs-only
 
 download: ## Download the assemblies and COBS indexes
-	snakemake download $(SMK_PARAMS) -j 99999 --restart-times $(DOWNLOAD_RETRIES)
+	snakemake download $(SMK_PARAMS) $(DOWNLOAD_PARAMS)
 
 download_asms: ## Download only the assemblies
-	snakemake download_asms_batches $(SMK_PARAMS) -j 99999
+	snakemake download_asms_batches $(SMK_PARAMS) $(DOWNLOAD_PARAMS)
 
 download_cobs: ## Download only the COBS indexes
-	snakemake download_cobs_batches $(SMK_PARAMS) -j 99999
+	snakemake download_cobs_batches $(SMK_PARAMS) $(DOWNLOAD_PARAMS)
 
 match: ## Match queries using COBS (queries -> candidates)
 	scripts/benchmark.py --log logs/benchmarks/match_$(DATETIME).txt "snakemake match $(SMK_PARAMS)"
@@ -110,7 +112,6 @@ report: ## Generate Snakemake report
 cluster_slurm: ## Submit to a SLURM cluster
 	sbatch \
         -c 10 \
-        -p priority \
         --mem=80GB \
         -t 0-08:00:00 \
         --wrap="make"
