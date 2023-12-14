@@ -232,7 +232,7 @@ which handles all parameters and passes them to Snakemake.
 Here's a list of all implemented commands (to be executed as `make {command}`):
 
 
-```
+```bash
 ######################
 ## General commands ##
 ######################
