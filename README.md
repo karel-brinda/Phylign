@@ -18,7 +18,7 @@ all within only several hours.
 
 [![Info](https://img.shields.io/badge/Project-Info-blue)](https://brinda.eu/mof)
 [![Paper DOI](https://zenodo.org/badge/DOI/10.1101/2023.04.15.536996.svg)](https://doi.org/10.1101/2023.04.15.536996)
-[![Test](https://github.com/karel-brinda/mof-search/actions/workflows/main.yaml/badge.svg)](https://github.com/karel-brinda/mof-search/actions/)
+[![Tests](https://github.com/karel-brinda/mof-search/actions/workflows/ci.yaml/badge.svg)](https://github.com/karel-brinda/mof-search/actions/)
 [![GitHub release](https://img.shields.io/github/release/karel-brinda/mof-search.svg)](https://github.com/karel-brinda/mof-search/releases/)
 
 <h2>Contents</h2>
