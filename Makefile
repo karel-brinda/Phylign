@@ -112,7 +112,6 @@ report: ## Generate Snakemake report
 cluster_slurm: ## Submit to a SLURM cluster
 	sbatch \
         -c 10 \
-        -p priority \
         --mem=80GB \
         -t 0-08:00:00 \
         --wrap="make"
