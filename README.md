@@ -19,27 +19,27 @@ all within only several hours.
 <!-- vim-markdown-toc GFM -->
 
 * [1. Introduction](#1-introduction)
-  * [Citation](#citation)
+    * [Citation](#citation)
 * [2. Requirements](#2-requirements)
-  * [2a) Hardware](#2a-hardware)
-  * [2b) Dependencies](#2b-dependencies)
+    * [2a) Hardware](#2a-hardware)
+    * [2b) Dependencies](#2b-dependencies)
 * [3. Installation](#3-installation)
-  * [3a) Step 1: Install dependencies](#3a-step-1-install-dependencies)
-  * [3b) Step 2: Clone the repository](#3b-step-2-clone-the-repository)
-  * [3c) Step 3: Run a simple test](#3c-step-3-run-a-simple-test)
-  * [3d) Step 4: Download the database](#3d-step-4-download-the-database)
+    * [3a) Step 1: Install dependencies](#3a-step-1-install-dependencies)
+    * [3b) Step 2: Clone the repository](#3b-step-2-clone-the-repository)
+    * [3c) Step 3: Run a simple test](#3c-step-3-run-a-simple-test)
+    * [3d) Step 4: Download the database](#3d-step-4-download-the-database)
 * [4. Usage](#4-usage)
-  * [4a) Step 1: Copy or symlink your queries](#4a-step-1-copy-or-symlink-your-queries)
-  * [4b) Step 2: Adjust configuration](#4b-step-2-adjust-configuration)
-  * [4c) Step 3: Clean up intermediate files](#4c-step-3-clean-up-intermediate-files)
-  * [4d) Step 4: Run the pipeline](#4d-step-4-run-the-pipeline)
-  * [4e) Step 5: Analyze your results](#4e-step-5-analyze-your-results)
+    * [4a) Step 1: Copy or symlink your queries](#4a-step-1-copy-or-symlink-your-queries)
+    * [4b) Step 2: Adjust configuration](#4b-step-2-adjust-configuration)
+    * [4c) Step 3: Clean up intermediate files](#4c-step-3-clean-up-intermediate-files)
+    * [4d) Step 4: Run the pipeline](#4d-step-4-run-the-pipeline)
+    * [4e) Step 5: Analyze your results](#4e-step-5-analyze-your-results)
 * [5. Additional information](#5-additional-information)
-  * [5a) List of workflow commands](#5a-list-of-workflow-commands)
-  * [5b) Directories](#5b-directories)
-  * [5c) File formats](#5c-file-formats)
-  * [5d) Running on a cluster](#5d-running-on-a-cluster)
-  * [5e) Known limitations](#5e-known-limitations)
+    * [5a) List of workflow commands](#5a-list-of-workflow-commands)
+    * [5b) Directories](#5b-directories)
+    * [5c) File formats](#5c-file-formats)
+    * [5d) Running on a cluster](#5d-running-on-a-cluster)
+    * [5e) Known limitations](#5e-known-limitations)
 * [6. License](#6-license)
 * [7. Contacts](#7-contacts)
 
@@ -233,35 +233,35 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 
 
 ```bash
-######################
-## General commands ##
-######################
-    all                  Run everything (the default rule)
-    test                 Quick test using 3 batches
-    help                 Print help messages
-    clean                Clean intermediate search files
-    cleanall             Clean all generated and downloaded files
 ####################
-## Pipeline steps ##
+# General commands #
 ####################
-    conda                Create the conda environments
-    download             Download the assemblies and COBS indexes
-    download_asms        Download only the assemblies
-    download_cobs        Download only the COBS indexes
-    match                Match queries using COBS (queries -> candidates)
-    map                  Map candidates to assemblies (candidates -> alignments)
-###############
-## Reporting ##
-###############
-    config               Print configuration without comments
-    report               Generate Snakemake report
-##########
-## Misc ##
-##########
-    cluster_slurm        Submit to a SLURM cluster
-    cluster_lsf_test     Submit the test pipeline to LSF cluster
-    cluster_lsf          Submit to LSF cluster
-    format               Reformat Python and Snakemake files
+   all                Run everything (the default rule)
+   test               Quick test using 3 batches
+   help               Print help messages
+   clean              Clean intermediate search files
+   cleanall           Clean all generated and downloaded files
+##################
+# Pipeline steps #
+##################
+   conda              Create the conda environments
+   download           Download the assemblies and COBS indexes
+   download_asms      Download only the assemblies
+   download_cobs      Download only the COBS indexes
+   match              Match queries using COBS (queries -> candidates)
+   map                Map candidates to assemblies (candidates -> alignments)
+#############
+# Reporting #
+#############
+   config             Print configuration without comments
+   report             Generate Snakemake report
+########
+# Misc #
+########
+   cluster_slurm      Submit to a SLURM cluster
+   cluster_lsf_test   Submit the test pipeline to LSF cluster
+   cluster_lsf        Submit to LSF cluster
+   format             Reformat Python and Snakemake files
 ```
 
 *Note:* `make format` requires
