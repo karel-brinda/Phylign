@@ -1,4 +1,4 @@
-.PHONY: all test help clean cleanall cluster download download_asms download_cobs match map format report viewconf conda
+.PHONY: all test help clean cleanall cluster download download_asms download_cobs match map format report config conda
 
 SHELL=/usr/bin/env bash -eo pipefail
 DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
@@ -51,9 +51,10 @@ help: ## Print help messages
 	@echo -e "$$(grep -hE '^\S*(:.*)?##' $(MAKEFILE_LIST) \
 		| sed \
 			-e 's/:.*##\s*/:/' \
-			-e 's/^\(.*\):\(.*\)/    \\x1b[36m\1\\x1b[m:\2/' \
+			-e 's/^\(.*\):\(.*\)/   \\x1b[36m\1\\x1b[m:\2/' \
 			-e 's/^\([^#]\)/\1/g' \
-			-e 's/^\(#.*#\)/\\x1b[31m\1\\x1b[m/' \
+			-e 's/: /:/g' \
+			-e 's/^#\(.*\)#/\\x1b[90m\1\\x1b[m/' \
 		| column -c2 -t -s : )"
 
 clean: ## Clean intermediate search files
@@ -92,7 +93,7 @@ map: ## Map candidates to assemblies (candidates -> alignments)
 ## Reporting ##
 ###############
 
-viewconf: ## View configuration without comments
+config: ## Print configuration without comments
 	@cat config.yaml \
 		| perl -pe 's/ *#.*//g' \
 		| grep --color='auto' -E '.*\:'
