@@ -256,6 +256,7 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
    download_asms      Download only the assemblies
    download_cobs      Download only the COBS indexes
    match              Match queries using COBS (queries -> candidates)
+   label              Label queries using labels from candidates (candidates -> labels)            *** new command ***
    map                Map candidates to assemblies (candidates -> alignments)
 #############
 # Reporting #
@@ -289,6 +290,7 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
      the disk mode is used)
    * `03_match/` COBS matches
    * `04_filter/` Filtered candidates
+     * `labels/` Labels of the filtered candidates by query
    * `05_map/` Minimap2 alignments
 * `logs/` Logs and benchmarks
 * `output/` The resulting files (in a headerless SAM format)
@@ -303,8 +305,8 @@ are searched in the `input/` directory, as files with the following suffixes:
 
 **Output files:**
 
-* `output/{name}.sam_summary.gz`: output alignments in a headerless SAM format
-* `output/{name}.sam_summary.stats`: statistics about your computed alignments
+* `output/all_queries.sam_summary.gz`: output alignments in a headerless SAM format
+* `output/all_queries.sam_summary.stats`: statistics about your computed alignments
   in TSV
 
 

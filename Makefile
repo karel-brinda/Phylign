@@ -91,6 +91,8 @@ match: ## Match queries using COBS (queries -> candidates)
 map: ## Map candidates to assemblies (candidates -> alignments)
 	scripts/benchmark.py --log logs/benchmarks/map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS)"
 
+label: ## Label assemblies using labels from assemblies retrieved by querying COBS indexes
+	scripts/benchmark.py --log logs/benchmarks/label_$(DATETIME).txt "snakemake label $(SMK_PARAMS)"
 ###############
 ## Reporting ##
 ###############

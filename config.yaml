@@ -4,7 +4,7 @@
 ##################################################
 # general
 # batches to consider during search
-batches: "data/batches_full.txt"
+batches: "data/batches_small.txt"
 ##################################################
 
 ##################################################
@@ -20,7 +20,7 @@ batches: "data/batches_full.txt"
 cobs_kmer_thres: 0.7
 
 # number of best kmer matching hits to keep for each query record (in case of tie, all equivalent hits are included too)
-nb_best_hits: 100
+nb_best_hits: 10
 ##################################################
 
 ##################################################
@@ -32,7 +32,7 @@ nb_best_hits: 100
 # asm5/asm10/asm20: asm-to-ref mapping, for ~0.1/1/5% sequence divergence
 # splice: long-read spliced alignment
 # sr: genomic short-read mapping
-minimap_preset: "sr"
+minimap_preset: "asm20"
 
 # other minimap2 params
 minimap_extra_params: "--eqx"
