@@ -218,6 +218,12 @@ Simply run `make`, which will execute Snakemake with the corresponding
 parameters. If you want to run the pipeline step by step, run `make match`
 followed by `make map`.
 
+
+>    **Optional** 
+>    replace `make match` by `make label` (running `make label` right after `make match` will also work).
+>    This will use the outputs from `make match` to get the labels (at species taxonomic level) of the matches.
+>    Labels are save here: `intermediate/04_filter/labels`
+
 ### 4e) Step 5: Analyze your results
 
 Check the output files in `output/` (for more info about formats, see
@@ -256,7 +262,7 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
    download_asms      Download only the assemblies
    download_cobs      Download only the COBS indexes
    match              Match queries using COBS (queries -> candidates)
-   label              Label queries using labels from candidates (candidates -> labels)            *** new command ***
+   label              Label queries using labels from candidates (candidates -> labels)            *** [new command] ***
    map                Map candidates to assemblies (candidates -> alignments)
 #############
 # Reporting #
@@ -290,7 +296,12 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
      the disk mode is used)
    * `03_match/` COBS matches
    * `04_filter/` Filtered candidates
-     * `labels/` Labels of the filtered candidates by query
+     * `labels/` Labels of the filtered candidates by query.
+        * A CSV: in each row the first element is the query-id,
+          the other values correspond to the labels of the filtered 
+          `intermediate/04_filter/all_queries.fa`, in the same order.
+        * A json: keys are the filenames of files in `input/` (without extension), 
+          for each filename, a list with the id of its sequences.   
    * `05_map/` Minimap2 alignments
 * `logs/` Logs and benchmarks
 * `output/` The resulting files (in a headerless SAM format)
@@ -301,7 +312,7 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 
 **Input files:** FASTA or FASTQ files possibly compressed by gzipped. The files
 are searched in the `input/` directory, as files with the following suffixes:
-`.fa`, `.fasta`, `.fq`, `.fastq` (possibly with `.gz` at the end).
+`.fa`, `.fasta`, `.fna`, `.fq`, `.fastq` (possibly with `.gz` at the end).
 
 **Output files:**
 
