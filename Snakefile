@@ -34,7 +34,7 @@ def get_batches():
 
 
 def get_filename_for_all_queries():
-    return "___".join(get_all_query_filenames())
+    return "all_queries" #"___".join(get_all_query_filenames())
 
 
 def get_index_metadata(wildcards, input):
@@ -244,8 +244,8 @@ rule match:
     """Match reads to the COBS indexes.
     """
     input:
-        # f"intermediate/04_filter/{get_filename_for_all_queries()}.fa",
-        "intermediate/04_filter/all_queries.fa"
+        f"intermediate/04_filter/{get_filename_for_all_queries()}.fa",
+        # "intermediate/04_filter/all_queries.fa"
 
 rule label:
     """Label assemblies using labels from assemblies retrieved by querying COBS indexes
@@ -258,8 +258,8 @@ rule map:
     """Map reads to the assemblies.
     """
     input:
-        f"output/all_queries.sam_summary.gz",
-        f"output/all_queries.sam_summary.stats",
+        f"output/{get_filename_for_all_queries()}.sam_summary.gz",
+        f"output/{get_filename_for_all_queries()}.sam_summary.stats",
 
 
 ##################################
@@ -337,8 +337,7 @@ rule concatenate_queries:
     """Concatenate all queries into a single file, so we just need to run COBS/minimap2 just once per batch
     """
     output:
-        # concatenated_query=f"intermediate/01_queries_merged/{get_filename_for_all_queries()}.fa",
-        concatenated_query=f"intermediate/01_queries_merged/all_queries.fa",
+        concatenated_query=f"intermediate/01_queries_merged/{get_filename_for_all_queries()}.fa",
     input:
         all_queries=expand(
             "intermediate/00_queries_preprocessed/{qfile}.fa",
@@ -392,12 +391,12 @@ rule run_cobs:
     """Cobs matching
     """
     output:
-        # match="intermediate/03_match/{batch}____{qfile}.gz",
-        match="intermediate/03_match/{batch}____all_queries.gz",
+        match="intermediate/03_match/{batch}____{qfile}.gz",
+        # match="intermediate/03_match/{batch}____all_queries.gz",
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
-        # fa="intermediate/01_queries_merged/{qfile}.fa",
-        fa="intermediate/01_queries_merged/all_queries.fa",
+        fa="intermediate/01_queries_merged/{qfile}.fa",
+        # fa="intermediate/01_queries_merged/all_queries.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
@@ -418,7 +417,7 @@ rule run_cobs:
         "envs/cobs.yaml"
     shell:
         """
-        ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____all_queries.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             'cobs query \\
                     {params.load_complete} \\
                     -t {params.kmer_thres} \\
@@ -435,11 +434,11 @@ rule decompress_and_run_cobs:
     """Decompress Cobs index and run Cobs matching
     """
     output:
-        match="intermediate/03_match/{batch}____all_queries.gz",
+        match="intermediate/03_match/{batch}____{qfile}.gz",
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
-        # fa="intermediate/01_queries_merged/{qfile}.fa",
-        fa="intermediate/01_queries_merged/all_queries.fa",
+        fa="intermediate/01_queries_merged/{qfile}.fa",
+        # fa="intermediate/01_queries_merged/all_queries.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
@@ -466,17 +465,17 @@ rule decompress_and_run_cobs:
         """
         if [ {params.streaming} = 1 ]
         then
-            ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____all_queries.txt \\
+            ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/run_cobs_streaming.sh {params.kmer_thres} {threads} "{input.compressed_cobs_index}" {params.uncompressed_batch_size} "{input.fa}" \\
                     | ./scripts/postprocess_cobs.py -n {params.nb_best_hits} \\
                     | gzip --fast\\
                     > {output.match}'
         else
             mkdir -p {params.decompression_dir}
-            ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}____all_queries.txt \\
+            ./scripts/benchmark.py --log logs/benchmarks/decompress_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
                 'xzcat "{input.compressed_cobs_index}" > "{params.cobs_index_tmp}" \\
                 && mv "{params.cobs_index_tmp}" "{params.cobs_index}"'
-            ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____all_queries.txt \\
+            ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
                 'cobs query \\
                         {params.load_complete} \\
                         -t {params.kmer_thres} \\
@@ -498,11 +497,11 @@ rule translate_matches:
         ref - read - matches
     """
     output:
-        fa="intermediate/04_filter/all_queries.fa",
+        fa="intermediate/04_filter/{qfile}.fa",
     input:
-        fa="intermediate/01_queries_merged/all_queries.fa",
+        fa="intermediate/01_queries_merged/{qfile}.fa",
         all_matches=[
-            f"intermediate/03_match/{batch}____all_queries.gz" for batch in batches
+            f"intermediate/03_match/{batch}____{{qfile}}.gz" for batch in batches
         ],
     conda:
         "envs/minimap2.yaml"
@@ -510,12 +509,12 @@ rule translate_matches:
     resources:
         mem_mb=lambda wildcards, attempt: 4000 * 2 ** (attempt),  # 4GB, 8GB, 16GB, 32GB...
     log:
-        "logs/04_filter/all_queries.log",
+        "logs/04_filter/{qfile}.log",
     params:
         nb_best_hits=config["nb_best_hits"],
     shell:
         """
-        ./scripts/benchmark.py --log logs/benchmarks/translate_matches/translate_matches___all_queries.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/translate_matches/translate_matches___{wildcards.qfile}.txt \\
             './scripts/filter_queries.py \\
                     -n {params.nb_best_hits} \\
                     -q {input.fa} \\
@@ -526,17 +525,17 @@ rule translate_matches:
 
 rule batch_align_minimap2:
     output:
-        sam="intermediate/05_map/{batch}____all_queries.sam.gz",
+        sam="intermediate/05_map/{batch}____{qfile}.sam.gz",
     input:
-        qfa="intermediate/04_filter/all_queries.fa",
+        qfa="intermediate/04_filter/{qfile}.fa",
         asm=f"{assemblies_dir}/{{batch}}.tar.xz",
     log:
-        log="logs/05_map/{batch}____all_queries.log",
+        log="logs/05_map/{batch}____{qfile}.log",
     params:
         minimap_preset=config["minimap_preset"],
         minimap_extra_params=config["minimap_extra_params"],
         pipe="--pipe" if config["prefer_pipe"] else "",
-        refs_tmp="intermediate/05_map/{batch}____all_queries.refs.tmp",
+        refs_tmp="intermediate/05_map/{batch}____{qfile}.refs.tmp",
     conda:
         "envs/minimap2.yaml"
     threads: config["minimap_threads"]
@@ -549,7 +548,7 @@ rule batch_align_minimap2:
             | cut -f2 \\
             > {params.refs_tmp}
 
-        ./scripts/benchmark.py --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____all_queries.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/batch_align_minimap2/{wildcards.batch}____{wildcards.qfile}.txt \\
             './scripts/batch_align.py \\
                     --minimap-preset {params.minimap_preset} \\
                     --threads {threads} \\
@@ -569,15 +568,15 @@ rule batch_align_minimap2:
 
 rule aggregate_sams:
     output:
-        pseudosam="output/all_queries.sam_summary.gz",
+        pseudosam="output/{qfile}.sam_summary.gz",
     input:
-        sam=[f"intermediate/05_map/{batch}____all_queries.sam.gz" for batch in batches],
+        sam=[f"intermediate/05_map/{batch}____{{qfile}}.sam.gz" for batch in batches],
     threads: 1
     resources:
         mem_mb=lambda wildcards, attempt: 1000 * 2 ** (attempt),  # 1GB, 2GB, 4GB, 8GB...
     shell:
         """
-        ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/aggregate_sams___all_queries.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/aggregate_sams___{wildcards.qfile}.txt \\
             './scripts/aggregate_sams.sh {input.sam} \\
                 > {output.pseudosam}'
         """
@@ -585,11 +584,11 @@ rule aggregate_sams:
 
 rule final_stats:
     output:
-        stats="output/all_queries.sam_summary.stats",
+        stats="output/{qfile}.sam_summary.stats",
     input:
-        pseudosam="output/all_queries.sam_summary.gz",
-        # concatenated_query=f"intermediate/01_queries_merged/{get_filename_for_all_queries()}.fa",
-        concatenated_query=f"intermediate/01_queries_merged/all_queries.fa",
+        pseudosam="output/{qfile}.sam_summary.gz",
+        concatenated_query="intermediate/01_queries_merged/{qfile}.fa",
+        # concatenated_query=f"intermediate/01_queries_merged/all_queries.fa",
     conda:
         "envs/minimap2.yaml"
     threads: 1
@@ -597,7 +596,7 @@ rule final_stats:
         mem_mb=lambda wildcards, attempt: 1000 * 2 ** (attempt),  # 1GB, 2GB, 4GB, 8GB...
     shell:
         """
-        ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/final_stats___all_queries.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/final_stats___{wildcards.qfile}.txt \\
             './scripts/final_stats.py {input.concatenated_query} {input.pseudosam} \\
                 > {output.stats}'
         """
