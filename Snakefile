@@ -251,8 +251,9 @@ rule label:
     """Label assemblies using labels from assemblies retrieved by querying COBS indexes
     """
     input:
-        "intermediate/04_filter/labels/labels_best_hits.csv",
-        "intermediate/04_filter/labels/queryid_by_input.json",
+        f"intermediate/04_filter/labels/labels_best_hits____{get_filename_for_all_queries()}.csv",
+        f"intermediate/04_filter/labels/queryid_by_input____{get_filename_for_all_queries()}.json",
+        f"intermediate/04_filter/labels/consensus_label____{get_filename_for_all_queries()}.txt",
 
 rule map:
     """Map reads to the assemblies.
@@ -608,17 +609,18 @@ rule final_stats:
 
 rule label_assemblies:
     output:
-        "intermediate/04_filter/labels/labels_best_hits.csv",
-        "intermediate/04_filter/labels/queryid_by_input.json",
+        labels_best_hits="intermediate/04_filter/labels/labels_best_hits____{qfile}.csv",
+        queryid_by_input="intermediate/04_filter/labels/queryid_by_input____{qfile}.json",
+        consensus_label="intermediate/04_filter/labels/consensus_label____{qfile}.txt",
     input:
         path_labels="data/labels_krakenbracken_by_sampleid.txt",
-        path_hits="intermediate/04_filter/all_queries.fa",
+        path_hits="intermediate/04_filter/{qfile}.fa",
     params:
         outdir="intermediate/04_filter/labels",
         path_preprocessed="intermediate/00_queries_preprocessed",
     shell:
         """
-        ./scripts/benchmark.py --log logs/benchmarks/label/label_assemblies___all_queries.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/label/label_assemblies___{wildcards.qfile}.txt \\
             './scripts/labels_from_filter.py --path-labels {input.path_labels} \\
                 --path-hits {input.path_hits} --path-preprocessed {params.path_preprocessed} \\
                     --outdir {params.outdir}'

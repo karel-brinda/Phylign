@@ -6,7 +6,7 @@ import sys
 import json
 
 from pathlib import Path
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 
 def get_labels_by_sampleid(path_to_labels,):
@@ -80,6 +80,9 @@ def get_queryid_by_input(path_preprocessed="intermediate/00_queries_preprocessed
 
     return queryid_by_input
 
+def label_consensus(hits_by_queryid, labels_by_queryid, method="majority"):
+    pass
+
 def main():
 
     parser = argparse.ArgumentParser(description="Label query assembly from COBS match")
@@ -122,14 +125,30 @@ def main():
     # print(labels_by_queryid)
 
     Path(args.outdir).mkdir(exist_ok=True,parents=True)
-    dict2csv(labels_by_queryid, Path(args.outdir).joinpath("labels_best_hits.csv"))
+    dict2csv(labels_by_queryid, Path(args.outdir).joinpath("labels_best_hits____all_queries.csv"))
     print(f"Done!, see {args.outdir}")
 
     queryid_by_input = get_queryid_by_input(path_preprocessed=args.path_preprocessed)
 
+    consensus_label = dict()
+    for _input, list_queryid in queryid_by_input.items():
+
+        labels_input = []
+        for queryid in list_queryid:
+            labels_input.extend(labels_by_queryid[queryid])
+
+        label = Counter(labels_input).most_common()[0][0]
+        consensus_label[_input] = label
+
     print(queryid_by_input)
-    with open(Path(args.outdir).joinpath("queryid_by_input.json"),"w") as fp:
+    with open(Path(args.outdir).joinpath("queryid_by_input____all_queries.json"),"w") as fp:
         json.dump(queryid_by_input, fp, indent=1, ensure_ascii=False)
+
+    with open(Path(args.outdir).joinpath("consensus_label____all_queries.txt"),"w") as fp:
+        # 
+        for _input, label in consensus_label.items():
+            fp.write(f"{_input}\t{label}\n")
+        # json.dump(consensus_label, fp, indent=1, ensure_ascii=False)
 
 
 if __name__ == "__main__":
