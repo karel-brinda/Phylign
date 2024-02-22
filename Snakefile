@@ -418,7 +418,7 @@ rule run_cobs:
         "envs/cobs.yaml"
     shell:
         """
-        ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____{wildcards.qfile}.txt \\
+        ./scripts/benchmark.py --log logs/benchmarks/run_cobs/{wildcards.batch}____all_queries.txt \\
             'cobs query \\
                     {params.load_complete} \\
                     -t {params.kmer_thres} \\

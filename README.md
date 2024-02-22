@@ -220,10 +220,14 @@ followed by `make map`.
 
 
 >    **Optional** 
->    replace `make match` by `make label` (running `make label` right after `make match` will also work).
->    This will use the outputs from `make match` to get the labels (at species taxonomic level) of the matches.
->    Labels are save here: `intermediate/04_filter/labels`
-
+>    replace `make match` with `make label` (running `make label` right after `make match` will also work).
+>    This will use the outputs from `make match` to generate the labels (at species taxonomic level) of the matches.
+>    The labels are saved here: `intermediate/04_filter/labels`, and there you will find
+>    * CSV: in each row the first element is the query-id,
+          the other values correspond to the labels of the filtered 
+          `intermediate/04_filter/all_queries.fa`, in the same order.
+>    * json: keys are the filenames of files in `input/` (without extension), 
+          for each filename, a list with the id of its sequences.
 ### 4e) Step 5: Analyze your results
 
 Check the output files in `output/` (for more info about formats, see
@@ -297,11 +301,6 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
    * `03_match/` COBS matches
    * `04_filter/` Filtered candidates
      * `labels/` Labels of the filtered candidates by query.
-        * A CSV: in each row the first element is the query-id,
-          the other values correspond to the labels of the filtered 
-          `intermediate/04_filter/all_queries.fa`, in the same order.
-        * A json: keys are the filenames of files in `input/` (without extension), 
-          for each filename, a list with the id of its sequences.   
    * `05_map/` Minimap2 alignments
 * `logs/` Logs and benchmarks
 * `output/` The resulting files (in a headerless SAM format)

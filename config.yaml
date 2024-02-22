@@ -4,7 +4,7 @@
 ##################################################
 # general
 # batches to consider during search
-batches: "data/batches_small.txt"
+batches: "data/batches_full.txt"
 ##################################################
 
 ##################################################
