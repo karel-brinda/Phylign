@@ -357,3 +357,7 @@ quite light and usually start running as soon as they are scheduled.
 
 * [Karel Brinda](https://brinda.eu) \<karel.brinda@inria.fr\>
 * [Leandro Lima](https://github.com/leoisl) \<leandro@ebi.ac.uk\>
+
+
+___
+Test workflows
