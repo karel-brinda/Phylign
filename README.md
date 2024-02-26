@@ -307,6 +307,14 @@ are searched in the `input/` directory, as files with the following suffixes:
 * `output/{name}.sam_summary.stats`: statistics about your computed alignments
   in TSV
 
+SAM headers are omitted as all search experiments
+generate hits across large numbers of assemblies (many
+of them being spurious). As a result, SAM headers then
+dominate the outputs. Nevertheless, we note that, in
+principle, the SAM headers can always be recreated from the
+FASTA files in `asms/`, although this functionality is not
+currently implemented.
+
 
 ### 5d) Running on a cluster
 
