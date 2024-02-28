@@ -192,7 +192,7 @@ The downloaded files will be located in the `asms/` and `cobs/` directories.
 
 ### 4a) Step 1: Copy or symlink your queries
 
-Remove the default test files or your old files in the `queries/` directory and
+Remove the default test files or your old files in the `input/` directory and
 copy or symlink (recommended) your query files. The supported input formats are
 FASTA and FASTQ, possibly gzipped. All query files will be preprocessed and
 merged together.
