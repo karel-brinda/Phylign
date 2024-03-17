@@ -1,4 +1,4 @@
-.PHONY: all test help clean cleanall cluster download match map format checkformat report viewconf conda
+.PHONY: all test help clean cleanall cluster download download_asms download_cobs match map checkformat report config conda
 
 SHELL=/usr/bin/env bash -eo pipefail
 DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
@@ -9,6 +9,7 @@ DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
 
 THREADS=$(shell grep "^threads:" config.yaml | awk '{print $$2}')
 MAX_DOWNLOAD_THREADS=$(shell grep "^max_download_threads" config.yaml | awk '{print $$2}')
+DOWNLOAD_RETRIES=$(shell grep "^download_retries" config.yaml | awk '{print $$2}')
 MAX_IO_HEAVY_THREADS=$(shell grep "^max_io_heavy_threads" config.yaml | awk '{print $$2}')
 MAX_RAM_MB=$(shell grep "^max_ram_gb:" config.yaml | awk '{print $$2*1024}')
 
@@ -19,6 +20,8 @@ else
     # configure cluster run
     SMK_PARAMS=--cores all --rerun-incomplete --printshellcmds --keep-going --use-conda --resources max_download_threads=10000000 max_io_heavy_threads=10000000 max_ram_mb=1000000000 $(SMK_CLUSTER_ARGS)
 endif
+
+DOWNLOAD_PARAMS=--cores $(MAX_DOWNLOAD_THREADS) -j $(MAX_DOWNLOAD_THREADS) --restart-times $(DOWNLOAD_RETRIES)
 
 
 ######################
@@ -32,7 +35,7 @@ all: ## Run everything (the default rule)
 DIFF_CMD=diff -q <(gunzip --stdout output/reads_1___reads_2___reads_3___reads_4.sam_summary.gz | cut -f -3) <(xzcat data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz | cut -f -3)
 
 test: ## Quick test using 3 batches
-	snakemake download $(SMK_PARAMS) -j 99999 --config batches=data/batches_small.txt  # download is not benchmarked
+	snakemake download $(SMK_PARAMS) $(DOWNLOAD_PARAMS) --config batches=data/batches_small.txt  # download is not benchmarked
 	scripts/benchmark.py --log logs/benchmarks/test_match_$(DATETIME).txt "snakemake match $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
 	scripts/benchmark.py --log logs/benchmarks/test_map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS) --config batches=data/batches_small.txt nb_best_hits=1"
 	@if $(DIFF_CMD); then \
@@ -47,8 +50,13 @@ test: ## Quick test using 3 batches
 	fi
 
 help: ## Print help messages
-	@echo "$$(grep -hE '^\S*(:.*)?##' $(MAKEFILE_LIST) \
-		| sed -e 's/:.*##\s*/:/' -e 's/^\(.\+\):\(.*\)/\\x1b[36m\1\\x1b[m:\2/' -e 's/^\([^#]\)/    \1/g'\
+	@echo -e "$$(grep -hE '^\S*(:.*)?##' $(MAKEFILE_LIST) \
+		| sed \
+			-e 's/:.*##\s*/:/' \
+			-e 's/^\(.*\):\(.*\)/   \\x1b[36m\1\\x1b[m:\2/' \
+			-e 's/^\([^#]\)/\1/g' \
+			-e 's/: /:/g' \
+			-e 's/^#\(.*\)#/\\x1b[90m\1\\x1b[m/' \
 		| column -c2 -t -s : )"
 
 clean: ## Clean intermediate search files
@@ -69,7 +77,13 @@ conda: ## Create the conda environments
 	snakemake $(SMK_PARAMS) --conda-create-envs-only
 
 download: ## Download the assemblies and COBS indexes
-	snakemake download $(SMK_PARAMS) -j 99999
+	snakemake download $(SMK_PARAMS) $(DOWNLOAD_PARAMS)
+
+download_asms: ## Download only the assemblies
+	snakemake download_asms_batches $(SMK_PARAMS) $(DOWNLOAD_PARAMS)
+
+download_cobs: ## Download only the COBS indexes
+	snakemake download_cobs_batches $(SMK_PARAMS) $(DOWNLOAD_PARAMS)
 
 match: ## Match queries using COBS (queries -> candidates)
 	scripts/benchmark.py --log logs/benchmarks/match_$(DATETIME).txt "snakemake match $(SMK_PARAMS)"
@@ -81,7 +95,7 @@ map: ## Map candidates to assemblies (candidates -> alignments)
 ## Reporting ##
 ###############
 
-viewconf: ## View configuration without comments
+config: ## Print configuration without comments
 	@cat config.yaml \
 		| perl -pe 's/ *#.*//g' \
 		| grep --color='auto' -E '.*\:'
@@ -98,7 +112,6 @@ report: ## Generate Snakemake report
 cluster_slurm: ## Submit to a SLURM cluster
 	sbatch \
         -c 10 \
-        -p priority \
         --mem=80GB \
         -t 0-08:00:00 \
         --wrap="make"
