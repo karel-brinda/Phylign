@@ -1,13 +1,13 @@
-# MOF-Search
+# Phylign – alignment to all pre-2019 bacteria (former MOF-Search)
 
 <p>
 <a href="https://brinda.eu/mof">
     <img src="docs/logo_wbg.svg" align="left" style="width:100px;" />
 </a>
-Pipeline for BLAST-like search across
+Alignment to
 <a href="https://doi.org/10.1371/journal.pbio.3001421">all pre-2019 bacteria from ENA</a>
 on standard desktop and laptops computers.
-MOF-Search uses
+Phylign uses
 <a href="https://brinda.eu/mof">
 phylogenetically compressed assemblies and their <i>k</i>-mer
 indexes</a>
@@ -18,8 +18,8 @@ all within only several hours.
 
 [![Info](https://img.shields.io/badge/Project-Info-blue)](https://brinda.eu/mof)
 [![Paper DOI](https://zenodo.org/badge/DOI/10.1101/2023.04.15.536996.svg)](https://doi.org/10.1101/2023.04.15.536996)
-[![Tests](https://github.com/karel-brinda/mof-search/actions/workflows/ci.yaml/badge.svg)](https://github.com/karel-brinda/mof-search/actions/)
-[![GitHub release](https://img.shields.io/github/release/karel-brinda/mof-search.svg)](https://github.com/karel-brinda/mof-search/releases/)
+[![Tests](https://github.com/karel-brinda/phylign/actions/workflows/ci.yaml/badge.svg)](https://github.com/karel-brinda/phylign/actions/)
+[![GitHub release](https://img.shields.io/github/release/karel-brinda/phylign.svg)](https://github.com/karel-brinda/phylign/releases/)
 
 <h2>Contents</h2>
 
@@ -55,7 +55,7 @@ all within only several hours.
 
 ## 1. Introduction
 
-The central idea behind MOF-Search, enabling alignment locally at such a large
+The central idea behind Phylign, enabling alignment locally at such a large
 scale, is [**phylogenetic compression**](https://brinda.eu/mof)
 ([paper](https://doi.org/10.1101/2023.04.15.536996)) - a technique based on
 using estimated evolutionary history to guide compression and search of large
@@ -73,7 +73,7 @@ requirements, small database size, better memory locality, and better branch
 prediction.
 
 For more information about phylogenetic compression and the implementation
-details of MOF-Search, see the [corresponding
+details of Phylign, see the [corresponding
 paper](https://www.biorxiv.org/content/10.1101/2023.04.15.536996v2) (including
 its [supplementary
 material](https://www.biorxiv.org/content/biorxiv/early/2023/04/18/2023.04.15.536996/DC1/embed/media-1.pdf)
@@ -89,7 +89,7 @@ and visit the [associated website](https://brinda.eu/mof).
 
 ### 2a) Hardware
 
-MOF-Search requires a standard desktop or laptop computer with an \*nix system,
+Phylign requires a standard desktop or laptop computer with an \*nix system,
 and it can also run on a cluster. The minimal hardware requirements are **12 GB
 RAM** and approximately **120 GB of disk space** (102 GB for the database and
 a margin for intermediate files).
@@ -97,7 +97,7 @@ a margin for intermediate files).
 
 ### 2b) Dependencies
 
-MOF-Search is implemented as a [Snakemake](https://snakemake.github.io)
+Phylign is implemented as a [Snakemake](https://snakemake.github.io)
 pipeline, using the Conda system to manage non-standard dependencies. Ensure
 you have [Conda](https://docs.conda.io/en/latest/miniconda.html) installed with
 the following packages:
@@ -107,7 +107,7 @@ the following packages:
 * [Snakemake](https://snakemake.github.io) (>=6.2.0)
 * [Mamba](https://mamba.readthedocs.io/) (>= 0.20.0) - optional, but recommended
 
-Additionally, MOF-Search uses standard Unix tools like
+Additionally, Phylign uses standard Unix tools like
 [GNU Make](https://www.gnu.org/software/make/),
 [cURL](https://curl.se/),
 [XZ Utils](https://tukaani.org/xz/), and
@@ -145,11 +145,11 @@ conda install -y -c bioconda -c conda-forge \
 
 ### 3b) Step 2: Clone the repository
 
-Clone the MOF-Search repository from GitHub and navigate into the directory:
+Clone the Phylign repository from GitHub and navigate into the directory:
 
 ```bash
- git clone https://github.com/karel-brinda/mof-search
- cd mof-search
+ git clone https://github.com/karel-brinda/phylign
+ cd phylign
 ```
 
 
@@ -233,7 +233,7 @@ the changes, you proceed more rapidly by manually removing the files in
 
 ### 5a) List of workflow commands
 
-MOF-Search is executed via [GNU Make](https://www.gnu.org/software/make/),
+Phylign is executed via [GNU Make](https://www.gnu.org/software/make/),
 which handles all parameters and passes them to Snakemake.
 
 Here's a list of all implemented commands (to be executed as `make {command}`):
@@ -339,7 +339,7 @@ quite light and usually start running as soon as they are scheduled.
   may result in swapping. Try to keep the number of queries moderate and
   ideally their names short.
 * **No support for ambiguous characters in queries.** As the tools used
-  internally by MOF-Search support only the nucleotide alphabet, all non-ACGT
+  internally by Phylign support only the nucleotide alphabet, all non-ACGT
   characters in queries are first converted to A.
 * **Too many reported hits.** When queries have too many equally good hits in
   the database, even if the threshold on the maximum number of hits is chosen
@@ -349,7 +349,7 @@ quite light and usually start running as soon as they are scheduled.
 
 ## 6. License
 
-[MIT](https://github.com/karel-brinda/mof-search/blob/master/LICENSE)
+[MIT](https://github.com/karel-brinda/phylign/blob/master/LICENSE)
 
 
 

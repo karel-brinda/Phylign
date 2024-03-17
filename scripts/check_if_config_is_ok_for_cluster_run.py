@@ -14,7 +14,7 @@ try:
     int(config["cobs_threads"])
 except ValueError:
     print(
-        "ERROR: to run mof-search in cluster mode, the parameter cobs_threads in config.yaml MUST BE SET to a fixed "
+        "ERROR: to run Phylign in cluster mode, the parameter cobs_threads in config.yaml MUST BE SET to a fixed "
         "int value. Aborting.",
         file=sys.stderr)
     sys.exit(1)

@@ -1,4 +1,4 @@
-name: mof-search test
+name: Phylign test
 
 on:
   push:

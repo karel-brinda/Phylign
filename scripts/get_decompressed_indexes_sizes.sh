@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Note: run this script from mof-search root
+# Note: run this script from Phylign root
 xz --robot --list -vv cobs/*.cobs_classic.xz |
   grep -v "^totals" |
   awk 'BEGIN{ORS=""}
