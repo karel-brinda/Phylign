@@ -17,7 +17,8 @@ def readfq(fp):
                 if l[0] in '>@':
                     last = l[:-1]
                     break
-        if not last: break
+        if not last:
+            break
         name, seqs, last = last[1:].partition(" ")[0], [], None
         for l in fp:
             if l[0] in '@+>':
@@ -26,7 +27,8 @@ def readfq(fp):
             seqs.append(l[:-1])
         if not last or last[0] != '+':
             yield name, ''.join(seqs), None
-            if not last: break
+            if not last:
+                break
         else:
             seq, leng, seqs = ''.join(seqs), 0, []
             for l in fp:

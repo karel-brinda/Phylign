@@ -1,3 +1,4 @@
 [style]
+BASED_ON_STYLE = google
 COLUMN_LIMIT=120
 

@@ -243,6 +243,7 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 ####################
 # General commands #
 ####################
+
    all                Run everything (the default rule)
    test               Quick test using 3 batches
    help               Print help messages
