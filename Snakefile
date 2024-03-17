@@ -200,13 +200,16 @@ def cobs_url_fct(wildcards):
     else:
         return f"https://zenodo.org/record/6845083/files/{x}.cobs_classic.xz"
 
+
 def asms_url_fct(wildcards):
     asm_zenodo = 4602622
     asm_url = f"https://zenodo.org/record/{asm_zenodo}/files/{wildcards.batch}.tar.xz"
     return asm_url
 
+
 def get_sleep_amount(attempt):
     return int(config["download_retry_wait"]) * (attempt - 1)
+
 
 ##################################
 ## Top-level rules
@@ -242,6 +245,7 @@ rule download_cobs_batches:
     input:
         [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
 
+
 rule match:
     """Match reads to the COBS indexes.
     """
@@ -271,13 +275,14 @@ rule download_asm_batch:
         mem_mb=200,
         # note: sleep_amount has to be defined as a resource
         # note: I tried a hack to route it to params, but it did not work, see https://github.com/snakemake/snakemake/issues/499
-        sleep_amount=lambda wildcards, attempt: get_sleep_amount(attempt)
+        sleep_amount=lambda wildcards, attempt: get_sleep_amount(attempt),
     params:
-        url=asms_url_fct
+        url=asms_url_fct,
     shell:
         """
         scripts/download.sh {params.url} {output.xz} {resources.sleep_amount}
         """
+
 
 rule download_cobs_batch:
     """Download compressed cobs indexes
@@ -288,9 +293,9 @@ rule download_cobs_batch:
     resources:
         max_download_threads=1,
         mem_mb=200,
-        sleep_amount=lambda wildcards, attempt: get_sleep_amount(attempt)
+        sleep_amount=lambda wildcards, attempt: get_sleep_amount(attempt),
     params:
-        url=cobs_url_fct
+        url=cobs_url_fct,
     shell:
         """
         scripts/download.sh {params.url} {output.xz} {resources.sleep_amount}
