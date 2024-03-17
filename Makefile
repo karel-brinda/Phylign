@@ -1,4 +1,9 @@
-.PHONY: all test help clean cleanall cluster download download_asms download_cobs match map checkformat report config conda
+.PHONY: \
+	all test help clean cleanall \
+	conda download download_asms download_cobs match map \
+	config report \
+	cluster_slurm cluster_lsf cluster_lsf_test \
+	format checkformat
 
 SHELL=/usr/bin/env bash -eo pipefail
 DATETIME=$(shell date -u +"%Y_%m_%dT%H_%M_%S")
@@ -109,6 +114,7 @@ report: ## Generate Snakemake report
 #############
 ## Cluster ##
 #############
+
 cluster_slurm: ## Submit to a SLURM cluster
 	sbatch \
         -c 10 \
@@ -116,17 +122,19 @@ cluster_slurm: ## Submit to a SLURM cluster
         -t 0-08:00:00 \
         --wrap="make"
 
-cluster_lsf_test: ## Submit the test pipeline to LSF cluster
-	scripts/check_if_config_is_ok_for_cluster_run.py
-	scripts/submit_lsf.sh test
-
 cluster_lsf: ## Submit to LSF cluster
 	scripts/check_if_config_is_ok_for_cluster_run.py
 	scripts/submit_lsf.sh
 
+cluster_lsf_test: ## Submit the test pipeline to LSF cluster
+	scripts/check_if_config_is_ok_for_cluster_run.py
+	scripts/submit_lsf.sh test
+
+
 ####################
 ## For developers ##
 ####################
+
 format: ## Reformat Python and Snakemake files
 	yapf -i */*.py
 	snakefmt Snakefile

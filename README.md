@@ -243,7 +243,6 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 ####################
 # General commands #
 ####################
-
    all                Run everything (the default rule)
    test               Quick test using 3 batches
    help               Print help messages
@@ -263,13 +262,17 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 #############
    config             Print configuration without comments
    report             Generate Snakemake report
-########
-# Misc #
-########
+###########
+# Cluster #
+###########
    cluster_slurm      Submit to a SLURM cluster
-   cluster_lsf_test   Submit the test pipeline to LSF cluster
    cluster_lsf        Submit to LSF cluster
+   cluster_lsf_test   Submit the test pipeline to LSF cluster
+##################
+# For developers #
+##################
    format             Reformat Python and Snakemake files
+   checkformat        Check source code format
 ```
 
 *Note:* `make format` requires
