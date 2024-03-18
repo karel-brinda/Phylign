@@ -199,7 +199,7 @@ merged together.
 
 *Notes:*
 * All query names have to be unique among all query files.
-* All non-`ACGT` characters in your query sequences will be translated to `A`.
+* Queries should not contain non-ACGT characters. All non-`ACGT` characters in your query sequences will be translated to `A`.
 
 
 ### 4b) Step 2: Adjust configuration
@@ -334,17 +334,16 @@ quite light and usually start running as soon as they are scheduled.
 ### 5e) Known limitations
 
 * **Swapping if the number of queries too high.** If the number of queries is
-  too high (e.g., 10M Illumina reads),
-  the auxiliary Python scripts start to use too much memory, which
-  may result in swapping. Try to keep the number of queries moderate and
-  ideally their names short.
-* **No support for ambiguous characters in queries.** As the tools used
-  internally by Phylign support only the nucleotide alphabet, all non-ACGT
-  characters in queries are first converted to A.
+  too high (e.g., 10M Illumina reads), the auxiliary Python scripts start to
+  use too much memory, which may result in swapping. Try to keep the number of
+  queries moderate and ideally their names short.
+* **No support for ambiguous characters in queries.** Queries are expected to
+  be over the ACGT alphabet. All non-ACGT characters in queries are first
+  converted to A.
 * **Too many reported hits.** When queries have too many equally good hits in
   the database, even if the threshold on the maximum number of hits is chosen
-  low – for instance 10 – the program will take top 10 + ties, which can be a
-  huge number (especially for short sequences).
+  low – for instance 10 – the program will take top 10 + ties, which can be
+  a huge number (especially for short sequences).
 
 
 ## 6. License
