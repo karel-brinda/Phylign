@@ -35,9 +35,10 @@ DOWNLOAD_PARAMS=--cores $(MAX_DOWNLOAD_THREADS) -j $(MAX_DOWNLOAD_THREADS) --res
 all: ## Run everything (the default rule)
 	make download
 	make match
+	make label
 	make map
 
-DIFF_CMD=diff -q <(gunzip --stdout output/reads_1___reads_2___reads_3___reads_4.sam_summary.gz | cut -f -3) <(xzcat data/reads_1___reads_2___reads_3___reads_4.sam_summary.xz | cut -f -3)
+DIFF_CMD=diff -q <(gunzip --stdout output/all_queries.sam_summary.gz | cut -f -3) <(xzcat data/all_queries.sam_summary.xz | cut -f -3)
 
 test: ## Quick test using 3 batches
 	snakemake download $(SMK_PARAMS) $(DOWNLOAD_PARAMS) --config batches=data/batches_small.txt  # download is not benchmarked
@@ -54,6 +55,8 @@ test: ## Quick test using 3 batches
 	    exit 1;\
 	fi
 
+# echo gunzip --stdout output/all_queries.sam_summary.gz | cut -f -3 | less;
+
 help: ## Print help messages
 	@echo -e "$$(grep -hE '^\S*(:.*)?##' $(MAKEFILE_LIST) \
 		| sed \
@@ -65,6 +68,7 @@ help: ## Print help messages
 		| column -c2 -t -s : )"
 
 clean: ## Clean intermediate search files
+	rm -rfv intermediate/04_filter/labels
 	rm -fv intermediate/*/*
 	rm -rfv logs
 	rm -fv output/*
@@ -96,6 +100,8 @@ match: ## Match queries using COBS (queries -> candidates)
 map: ## Map candidates to assemblies (candidates -> alignments)
 	scripts/benchmark.py --log logs/benchmarks/map_$(DATETIME).txt   "snakemake map $(SMK_PARAMS)"
 
+label: ## Label assemblies using labels from assemblies retrieved by querying COBS indexes
+	scripts/benchmark.py --log logs/benchmarks/label_$(DATETIME).txt "snakemake label $(SMK_PARAMS)"
 ###############
 ## Reporting ##
 ###############

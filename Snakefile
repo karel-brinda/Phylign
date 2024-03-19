@@ -10,8 +10,7 @@ import re
 ##################################
 
 
-extensions = ["fa", "fasta", "fq", "fastq"]
-
+extensions = ["fa", "fasta", "fna","fq", "fastq"]
 
 def multiglob(patterns):
     files = []
@@ -35,7 +34,7 @@ def get_batches():
 
 
 def get_filename_for_all_queries():
-    return "___".join(get_all_query_filenames())
+    return "all_queries" #"___".join(get_all_query_filenames())
 
 
 def get_index_metadata(wildcards, input):
@@ -176,8 +175,7 @@ elif index_load_mode == "mmap-disk":
 
 
 wildcard_constraints:
-    batch=".+__\d\d",
-
+    batch=".+__\d\d"
 
 if keep_cobs_indexes:
 
@@ -251,7 +249,15 @@ rule match:
     """
     input:
         f"intermediate/04_filter/{get_filename_for_all_queries()}.fa",
+        # "intermediate/04_filter/all_queries.fa"
 
+rule label:
+    """Label assemblies using labels from assemblies retrieved by querying COBS indexes
+    """
+    input:
+        f"intermediate/04_filter/labels/labels_best_hits____{get_filename_for_all_queries()}.csv",
+        f"intermediate/04_filter/labels/queryid_by_input____{get_filename_for_all_queries()}.json",
+        f"intermediate/04_filter/labels/consensus_label____{get_filename_for_all_queries()}.txt",
 
 rule map:
     """Map reads to the assemblies.
@@ -392,9 +398,11 @@ rule run_cobs:
     """
     output:
         match="intermediate/03_match/{batch}____{qfile}.gz",
+        # match="intermediate/03_match/{batch}____all_queries.gz",
     input:
         cobs_index=f"{decompression_dir}/{{batch}}.cobs_classic",
         fa="intermediate/01_queries_merged/{qfile}.fa",
+        # fa="intermediate/01_queries_merged/all_queries.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
@@ -436,6 +444,7 @@ rule decompress_and_run_cobs:
     input:
         compressed_cobs_index=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
         fa="intermediate/01_queries_merged/{qfile}.fa",
+        # fa="intermediate/01_queries_merged/all_queries.fa",
         decompressed_indexes_sizes="data/decompressed_indexes_sizes.txt",
     resources:
         max_io_heavy_threads=int(cobs_is_an_IO_heavy_job),
@@ -584,7 +593,8 @@ rule final_stats:
         stats="output/{qfile}.sam_summary.stats",
     input:
         pseudosam="output/{qfile}.sam_summary.gz",
-        concatenated_query=f"intermediate/01_queries_merged/{get_filename_for_all_queries()}.fa",
+        concatenated_query="intermediate/01_queries_merged/{qfile}.fa",
+        # concatenated_query=f"intermediate/01_queries_merged/all_queries.fa",
     conda:
         "envs/minimap2.yaml"
     threads: 1
@@ -595,4 +605,28 @@ rule final_stats:
         ./scripts/benchmark.py --log logs/benchmarks/aggregate_sams/final_stats___{wildcards.qfile}.txt \\
             './scripts/final_stats.py {input.concatenated_query} {input.pseudosam} \\
                 > {output.stats}'
+        """
+
+
+##################################
+## [New] Processing rules
+##################################
+
+rule label_assemblies:
+    output:
+        labels_best_hits="intermediate/04_filter/labels/labels_best_hits____{qfile}.csv",
+        queryid_by_input="intermediate/04_filter/labels/queryid_by_input____{qfile}.json",
+        consensus_label="intermediate/04_filter/labels/consensus_label____{qfile}.txt",
+    input:
+        path_labels="data/labels_krakenbracken_by_sampleid.txt",
+        path_hits="intermediate/04_filter/{qfile}.fa",
+    params:
+        outdir="intermediate/04_filter/labels",
+        path_preprocessed="intermediate/00_queries_preprocessed",
+    shell:
+        """
+        ./scripts/benchmark.py --log logs/benchmarks/label/label_assemblies___{wildcards.qfile}.txt \\
+            './scripts/labels_from_filter.py --path-labels {input.path_labels} \\
+                --path-hits {input.path_hits} --path-preprocessed {params.path_preprocessed} \\
+                    --outdir {params.outdir}'
         """
