@@ -4,7 +4,7 @@
 ##################################################
 # general
 # batches to consider during search
-batches: "data/batches_full.txt"
+batches: "data/batches_2m.txt"
 ##################################################
 
 ##################################################
@@ -20,7 +20,7 @@ batches: "data/batches_full.txt"
 cobs_kmer_thres: 0.7
 
 # number of best kmer matching hits to keep for each query record (in case of tie, all equivalent hits are included too)
-nb_best_hits: 100
+nb_best_hits: 1000
 ##################################################
 
 ##################################################
@@ -48,33 +48,14 @@ minimap_extra_params: "--eqx"
 
 # overall number of threads to use in the pipeline, an integer number (e.g. 8 for 8 threads) or "all" (to use all threads)
 # WARNING: this parameter is ignored when running on a cluster
-threads: all
+threads: 48
 
 # maximum RAM to use in GB - this should be at most 80% of your max RAM
 # note: if you use more than your available RAM, constant page swapping will happen and the pipeline will severely
 # slow down.
 # if index_load_mode == mmap-disk, then this parameter is ignored as the OS will manage RAM usage
 # WARNING: this parameter is ignored when running on a cluster
-max_ram_gb: 12
-##################################################
-
-##################################################
-# download
-
-# maximum number of download threads at a time (note: too many might slow down download speed and make Zenodo block your requests)
-# WARNING: this parameter is ignored when running on a cluster
-max_download_threads: 8
-
-# how many times to retry a download if it fails
-download_retries: 3
-
-# how many seconds to wait between retries
-download_retry_wait: 10
-
-# directory to store all downloaded files. This is where an "asms" folder with all assemblies and a "cobs" folder
-# with all COBS indexes will be created. This is a heavy directory, put it in a filesystem that has at least
-# 100 GB free
-download_dir: "."
+max_ram_gb: 50
 ##################################################
 
 ##################################################
@@ -86,7 +67,7 @@ download_dir: "."
 # auto(N): same as auto, but the maximum number of threads is N, where N is an integer > 0
 # N: sets cobs_threads to a fixed value N, where N is an integer > 0 (note: too many might limit the pipeline parallelism)
 # WARNING: this parameter MUST BE SET to a fixed int value when running on a cluster
-cobs_threads: auto
+cobs_threads: 4
 
 # specify how to load the kmer index. Options are:
 # 1. mem-stream : default and preferred. With this mode, the pipeline extracts the compressed kmer index and streams

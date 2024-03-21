@@ -176,7 +176,7 @@ elif index_load_mode == "mmap-disk":
 
 
 wildcard_constraints:
-    batch=".+__\d\d",
+    batch=".+__\d+",
 
 
 if keep_cobs_indexes:
@@ -187,28 +187,6 @@ else:
 
     ruleorder: decompress_and_run_cobs > decompress_cobs > run_cobs
 
-
-##################################
-## Download params
-##################################
-
-
-def cobs_url_fct(wildcards):
-    x = wildcards.batch
-    if x >= "eubacterium":
-        return f"https://zenodo.org/record/6849657/files/{x}.cobs_classic.xz"
-    else:
-        return f"https://zenodo.org/record/6845083/files/{x}.cobs_classic.xz"
-
-
-def asms_url_fct(wildcards):
-    asm_zenodo = 4602622
-    asm_url = f"https://zenodo.org/record/{asm_zenodo}/files/{wildcards.batch}.tar.xz"
-    return asm_url
-
-
-def get_sleep_amount(attempt):
-    return int(config["download_retry_wait"]) * (attempt - 1)
 
 
 ##################################
@@ -224,28 +202,6 @@ rule all:
         f"output/{get_filename_for_all_queries()}.sam_summary.stats",
 
 
-rule download:
-    """Download assemblies and COBS indexes.
-    """
-    input:
-        [f"{assemblies_dir}/{x}.tar.xz" for x in batches],
-        [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
-
-
-rule download_asms_batches:
-    """Download assemblies.
-    """
-    input:
-        [f"{assemblies_dir}/{x}.tar.xz" for x in batches],
-
-
-rule download_cobs_batches:
-    """Download COBS indexes.
-    """
-    input:
-        [f"{cobs_dir}/{x}.cobs_classic.xz" for x in batches],
-
-
 rule match:
     """Match reads to the COBS indexes.
     """
@@ -259,47 +215,6 @@ rule map:
     input:
         f"output/{get_filename_for_all_queries()}.sam_summary.gz",
         f"output/{get_filename_for_all_queries()}.sam_summary.stats",
-
-
-##################################
-## Download rules
-##################################
-rule download_asm_batch:
-    """Download compressed assemblies
-    """
-    output:
-        xz=f"{assemblies_dir}/{{batch}}.tar.xz",
-    threads: 1
-    resources:
-        max_download_threads=1,
-        mem_mb=200,
-        # note: sleep_amount has to be defined as a resource
-        # note: I tried a hack to route it to params, but it did not work, see https://github.com/snakemake/snakemake/issues/499
-        sleep_amount=lambda wildcards, attempt: get_sleep_amount(attempt),
-    params:
-        url=asms_url_fct,
-    shell:
-        """
-        scripts/download.sh {params.url} {output.xz} {resources.sleep_amount}
-        """
-
-
-rule download_cobs_batch:
-    """Download compressed cobs indexes
-    """
-    output:
-        xz=f"{cobs_dir}/{{batch}}.cobs_classic.xz",
-    threads: 1
-    resources:
-        max_download_threads=1,
-        mem_mb=200,
-        sleep_amount=lambda wildcards, attempt: get_sleep_amount(attempt),
-    params:
-        url=cobs_url_fct,
-    shell:
-        """
-        scripts/download.sh {params.url} {output.xz} {resources.sleep_amount}
-        """
 
 
 ##################################
@@ -540,7 +455,7 @@ rule batch_align_minimap2:
         mem_mb=lambda wildcards, attempt: 1000 * 2 ** (attempt),  # 1GB, 2GB, 4GB, 8GB...
     shell:
         """
-        xzcat data/661k_batches.txt.xz \\
+        xzcat data/2kk_batches.txt.xz \\
             | grep {wildcards.batch} \\
             | cut -f2 \\
             > {params.refs_tmp}
