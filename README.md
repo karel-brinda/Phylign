@@ -34,8 +34,6 @@ all within only several hours.
 * [3. Installation](#3-installation)
   * [3a) Step 1: Install dependencies](#3a-step-1-install-dependencies)
   * [3b) Step 2: Clone the repository](#3b-step-2-clone-the-repository)
-  * [3c) Step 3: Run a simple test](#3c-step-3-run-a-simple-test)
-  * [3d) Step 4: Download the database](#3d-step-4-download-the-database)
 * [4. Usage](#4-usage)
   * [4a) Step 1: Copy or symlink your queries](#4a-step-1-copy-or-symlink-your-queries)
   * [4b) Step 2: Adjust configuration](#4b-step-2-adjust-configuration)
