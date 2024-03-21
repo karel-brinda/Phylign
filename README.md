@@ -135,12 +135,11 @@ brew install conda
 brew install gnu-time
 ```
 
-Install Python (>=3.7), Snakemake (>=6.2.0), and Mamba (optional but
+Install Python (=3.9), Snakemake (=7.3.2), and Mamba (optional but
 recommended) using Conda:
 
 ```bash
-conda install -y -c bioconda -c conda-forge \
-    "python>=3.7" "snakemake>=6.2.0" "mamba>=0.20.0"
+conda env create -f /home/daniel/Documents/GitHub/Phylign/enivronment.yaml && conda activate phylign
 ```
 
 
@@ -152,42 +151,6 @@ Clone the Phylign repository from GitHub and navigate into the directory:
  git clone https://github.com/karel-brinda/phylign
  cd phylign
 ```
-
-
-### 3c) Step 3: Run a simple test
-
-Run the following command to ensure the pipeline works for sample queries and
-3 batches (this will also install all additional dependencies using Conda):
-
-```bash
-make test
-```
-
-Make sure the test returns 0 (success) and that you see the expected output
-message:
-
-```bash
- Success! Test run produced the expected output.
-```
-
-
-### 3d) Step 4: Download the database
-
-Download all phylogenetically compressed assemblies and COBS *k*-mer indexes
-for the [661k-HQ collection](https://doi.org/10.1371/journal.pbio.3001421) by:
-
-```bash
-make download
-```
-
-The downloaded files will be located in the `asms/` and `cobs/` directories.
-
-
-*Notes:*
-* The compressed assemblies comprise *all* the genomes from the 661k
-  collection.The COBS indexes comprise only those genomes that passed quality
-  control.
-
 
 ## 4. Usage
 
@@ -253,9 +216,6 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 # Pipeline steps #
 ##################
    conda              Create the conda environments
-   download           Download the assemblies and COBS indexes
-   download_asms      Download only the assemblies
-   download_cobs      Download only the COBS indexes
    match              Match queries using COBS (queries -> candidates)
    map                Map candidates to assemblies (candidates -> alignments)
 #############
@@ -268,7 +228,6 @@ Here's a list of all implemented commands (to be executed as `make {command}`):
 ###########
    cluster_slurm      Submit to a SLURM cluster
    cluster_lsf        Submit to LSF cluster
-   cluster_lsf_test   Submit the test pipeline to LSF cluster
 ##################
 # For developers #
 ##################
