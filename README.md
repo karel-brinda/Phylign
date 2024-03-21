@@ -139,7 +139,7 @@ Install Python (=3.9), Snakemake (=7.3.2), and Mamba (optional but
 recommended) using Conda:
 
 ```bash
-conda env create -f /home/daniel/Documents/GitHub/Phylign/enivronment.yaml && conda activate phylign
+conda env create -f enivronment.yaml && conda activate phylign
 ```
 
 
