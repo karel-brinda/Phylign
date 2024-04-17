@@ -1,2 +1,5 @@
 *.fa
 *.fasta
+!ARGannot_r3.fa
+!reads_3.fasta
+!reads_4.fa
